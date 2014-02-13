@@ -93,13 +93,11 @@ int execkillCommand(Command const &cmd)
     if (cmd.args.size() != 2 || !IsNumeric(cmd.args[0].c_str()) ||
         !IsNumeric(cmd.args[1].c_str())) {
         std::cout << "Invalid command parameters" << std::endl;
+    } else {
+        int signal = atoi(cmd.args[0].c_str());
+        int pid = atoi(cmd.args[1].c_str());        
+        kill(pid, signal);
     }
-
-    int pid = atoi(cmd.args[0].c_str());
-    int signal = atoi(cmd.args[1].c_str());
-
-    kill(pid, signal);
-
     return 0;
 }
 
