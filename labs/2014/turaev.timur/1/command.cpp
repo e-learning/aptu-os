@@ -72,12 +72,12 @@ int execpsCommand(Command const &cmd)
         std::string commandLine;
         while ((pid = readdir(procdir)) != 0) {
             if (pid->d_type == DT_DIR && IsNumeric(pid->d_name)) {
-                std::string cmdFilePath = pathprocdir + std::string(pid->d_name) + "/cmdline";
+                std::string cmdFilePath = pathprocdir + std::string(pid->d_name) + "/comm";
                 std::ifstream cmdFile(cmdFilePath.c_str());
 
                 if (cmdFile.is_open()) {
                     getline(cmdFile, commandLine);
-                    std::cout << commandLine << std::endl;
+                    std::cout << pid->d_name << ": " << commandLine << std::endl;
                 }
                 cmdFile.close();
             }
