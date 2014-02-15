@@ -35,15 +35,6 @@ void handler_pwd(const char *_)
     printf("%s\n", path);
 }
 
-int is_number(const char *str)
-{
-    errno = 0;
-    long int i = strtol(str, NULL, 10);
-    if (errno == 0 && i > 0)
-        return 1;
-    return 0;
-}
-
 void handler_ps(const char *_)
 {
     DIR *pd = opendir("/proc");
@@ -52,23 +43,23 @@ void handler_ps(const char *_)
 
     struct dirent *dent = readdir(pd);
     while (dent != 0) {
-        if (is_number(dent->d_name)) {
-            char inf_fpath[PATH_MAX];
-            strcpy(inf_fpath, "/proc/");
-            strcat(inf_fpath, dent->d_name);
-            strcat(inf_fpath, "/cmdline");
+        char inf_fpath[PATH_MAX];
+        strcpy(inf_fpath, "/proc/");
+        strcat(inf_fpath, dent->d_name);
+        strcat(inf_fpath, "/cmdline");
 
-            FILE *inf = fopen(inf_fpath, "r");
-            if (inf) {
-                char cmdline[4096];
-                fread(cmdline, 1, 4095, inf);
-                cmdline[4095] = '\0';
-                printf("%s\t%s\n", dent->d_name, cmdline);
-                fclose(inf);
-            }
+        FILE *inf = fopen(inf_fpath, "r");
+        if (inf) {
+            char cmdline[4096];
+            fread(cmdline, 1, 4095, inf);
+            cmdline[4095] = '\0';
+            printf("%s\t%s\n", dent->d_name, cmdline);
+            fclose(inf);
         }
+
         dent = readdir(pd);
     }
+    closedir(pd);
     return;
 
 ERROR:
