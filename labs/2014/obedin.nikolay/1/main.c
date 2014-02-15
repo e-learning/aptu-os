@@ -69,6 +69,9 @@ ERROR:
 
 void handler_kill(const char *args)
 {
+    if (args == NULL)
+        goto NOT_ENOUGH_ARGS;
+
     char argstr[256] = {0};
     strncpy(argstr, args, 255);
     long int pid, signal;
