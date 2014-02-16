@@ -49,11 +49,14 @@ void start_ls(std::vector<std::string> & args)
 
 void start_pwd(std::vector<std::string> & args)   
 {
-   if( !args.empty() ){
+   if( !args.empty() )
+   {
       std::cout << "this command have not parameters" << "\n";
       return;   
    }
-   std::cout << get_current_dir_name() << "\n";
+   char* p = get_current_dir_name();
+   std::cout << p << "\n";
+   free(p);
 }
 
 
@@ -135,7 +138,7 @@ int main()
       else if( command == "ps") start_ps(args);
       else if( command == "pwd") start_pwd(args);
       else if( command == "kill") start_kill(args);
-      else system(command.c_str());
+      else system(str.c_str());
       
    }     
        
