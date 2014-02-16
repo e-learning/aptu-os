@@ -149,6 +149,14 @@ int commands_match(const char *fst, char *snd)
     return 0;
 }
 
+const char *find_args_start(const char *cmd)
+{
+    const char *start = strpbrk(cmd, " \t");
+    while (start && isspace(*start))
+        start++;
+    return start && *start != '\0' ? start : NULL;
+}
+
 int main(int argc, const char *argv[])
 {
     while (1) {
@@ -160,11 +168,11 @@ int main(int argc, const char *argv[])
             continue;
         cmd[len-1] = '\0';
 
-        const char *args = strchr(cmd, ' ');
         int i = 0;
         while (commands[i]) {
             if (commands_match(commands[i], cmd)) {
-                handlers[i](args == NULL ? args : args+1);
+                const char *args = find_args_start(cmd);
+                handlers[i](args);
                 break;
             }
             i++;
