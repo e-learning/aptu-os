@@ -5,7 +5,6 @@
 #include <linux/limits.h>
 #include <unistd.h>
 #include <dirent.h>
-#include <sys/types.h>
 #include <signal.h>
 #include <errno.h>
 
@@ -15,7 +14,7 @@ void handler_ls(const char *args)
     const char *path = args ? args : ".";
     DIR *dir = opendir(path);
     if (!dir)
-        goto ERROR;
+        goto OPEN_ERROR;
 
     struct dirent *dent = readdir(dir);
     while (dent != 0) {
@@ -25,7 +24,7 @@ void handler_ls(const char *args)
     closedir(dir);
     return;
 
-ERROR:
+OPEN_ERROR:
     printf("%s\n", strerror(errno));
 }
 
@@ -40,21 +39,27 @@ void handler_ps(const char *_)
 {
     DIR *pd = opendir("/proc");
     if (!pd)
-        goto ERROR;
+        goto OPEN_ERROR;
 
     struct dirent *dent = readdir(pd);
     while (dent != 0) {
+        if (strcmp(dent->d_name, "self") == 0) {
+            dent = readdir(pd);
+            continue;
+        }
+
         char inf_fpath[PATH_MAX];
         strcpy(inf_fpath, "/proc/");
         strcat(inf_fpath, dent->d_name);
-        strcat(inf_fpath, "/cmdline");
+        strcat(inf_fpath, "/comm");
 
         FILE *inf = fopen(inf_fpath, "r");
         if (inf) {
-            char cmdline[4096];
-            fread(cmdline, 1, 4095, inf);
-            cmdline[4095] = '\0';
-            printf("%s\t%s\n", dent->d_name, cmdline);
+            char *cmdline = NULL;
+            size_t _ = 0;
+            getline(&cmdline, &_, inf);
+            printf("%s\t%s", dent->d_name, cmdline);
+            free(cmdline);
             fclose(inf);
         }
 
@@ -63,7 +68,7 @@ void handler_ps(const char *_)
     closedir(pd);
     return;
 
-ERROR:
+OPEN_ERROR:
     printf("Can't access /proc\n");
 }
 
@@ -91,7 +96,12 @@ void handler_kill(const char *args)
     if (signal < 0 || signal > 64 || errno != 0)
         goto ERRONEOUS_ARGS;
 
-    kill(pid, signal);
+    if (kill(pid, signal) == -1)
+        goto ERROR_WHILE_KILLING;
+    return;
+
+ERROR_WHILE_KILLING:
+    printf("%s\n", strerror(errno));
     return;
 
 ERRONEOUS_ARGS:
@@ -139,24 +149,38 @@ int commands_match(const char *fst, char *snd)
     return 0;
 }
 
+const char *find_args_start(const char *cmd)
+{
+    const char *start = strpbrk(cmd, " \t");
+    while (start && isspace(*start))
+        start++;
+    return start && *start != '\0' ? start : NULL;
+}
+
 int main(int argc, const char *argv[])
 {
-    char cmd[256];
     while (1) {
         printf(">> ");
-        fgets(cmd, 255, stdin);
-        cmd[strlen(cmd)-1] = '\0';
-        const char *args = strchr(cmd, ' ');
+        char *cmd  = NULL;
+        size_t _ = 0;
+        ssize_t len = getline(&cmd, &_, stdin);
+        if (len <= 0)
+            continue;
+        cmd[len-1] = '\0';
+
         int i = 0;
         while (commands[i]) {
             if (commands_match(commands[i], cmd)) {
-                handlers[i](args == NULL ? args : args+1);
+                const char *args = find_args_start(cmd);
+                handlers[i](args);
                 break;
             }
             i++;
         }
+
         if (!commands[i])
             system(cmd);
+        free(cmd);
     }
     return 0;
 }
