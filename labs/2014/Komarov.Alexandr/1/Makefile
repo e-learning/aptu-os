@@ -1,4 +1,6 @@
-prog: main.o
+default: shell
+
+shell: main.o
 	g++ main.o -o shell
 	
 main.o: main.cpp
