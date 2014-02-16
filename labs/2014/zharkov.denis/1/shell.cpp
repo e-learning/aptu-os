@@ -159,6 +159,10 @@ int main() {
             } else if (cmd_name == "pwd") {
                 pwd_cmd();
             } else if (cmd_name == "kill") {
+                if (args.size() < 3) {
+                    std::cout << "two arguments expected" << std::endl;
+                    continue;
+                }
                 kill_cmd(args[1], args[2]);
             } else if (cmd_name == "exit") {
                 return 0;

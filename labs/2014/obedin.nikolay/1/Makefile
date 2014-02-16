@@ -1,5 +1,5 @@
 CXX=gcc
-CXXFLAGS=-Wall -pedantic -g -std=c99
+CXXFLAGS=-Wall -Werror -pedantic -g -std=c99 -D_POSIX_SOURCE -D_POSIX_C_SOURCE=200809L
 
 EXECUTABLE=shell
 
