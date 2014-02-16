@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sys/signal.h>
 #include <map>
+#include <iomanip>
 
 using std::endl;
 using std::cout;
@@ -38,6 +39,7 @@ void Ls() {
 }
 
 void Ps() {
+    cout << "  " << "PID" << "    " << "CMD" << endl;
     TriverseDir(string(PROC_PATH), &PrintIfPs);
 }
 
@@ -116,7 +118,7 @@ void PrintIfPs(dirent * entry) {
     int id = atoi(entry->d_name);
     if (id > 0) {
         string status_path = string(PROC_PATH) + "/" + string(entry->d_name) + "/" + "status";
-        cout << GetPsName(status_path) << endl;
+        cout << ' ' << std::setw(4) << entry->d_name << "    " << GetPsName(status_path) << endl;
     }
 }
 
