@@ -26,4 +26,4 @@ init:
 	@mkdir -p $(OBJDIR)
 
 clean:
-	@rm -rf $(BINDIR) 	
+	@rm -rf $(BINDIR) shell	
