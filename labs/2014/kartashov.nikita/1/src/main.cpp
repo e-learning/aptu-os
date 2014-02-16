@@ -122,6 +122,9 @@ bool kill_call(string const& command)
   if (v[0] != kill_command)
     return false;
 
+  if (v.size() != 3)
+    return false;
+
   int result = kill(std::atoi(v[1].c_str()), resolve_signal(v[2]));;
   if (result != 0)
     cout << "Unable to send signal " << v[2] << " to process with pid " << std::atoi(v[1].c_str()) << endl;
