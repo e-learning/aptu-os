@@ -12,7 +12,7 @@
 #include <sstream>
 
 #include <signal.h>
-
+#include <unistd.h>
 
 
 bool is_digit( std::string& str)
