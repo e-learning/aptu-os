@@ -1,6 +1,7 @@
 #include "command_handler.h"
 #include <iostream>
 #include <dirent.h>
+#include <unistd.h>
 using std::cout;
 using std::cerr;
 using std::endl;
