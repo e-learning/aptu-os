@@ -8,9 +8,7 @@
 #include "comminterp.h"
 #include <stdlib.h>
 #include <signal.h>
-//#include "ps.h"
 #include <dlfcn.h>
-//#include <stdio.h>
 
 using namespace std;
 
@@ -55,8 +53,6 @@ int main(void){
 			
 		err_code = -1;
 
-//		cout<<command<<endl;
-
 		comm = s_comm_args(command, 0);
 		args = s_comm_args(command, 1);
 
@@ -68,9 +64,7 @@ int main(void){
 
 		if (comm=="pwd") { err_code = 0; cout<<getenv("PWD")<<endl; } 
 
-//		if ((comm=="ps")&&(!load_lib_flag)) err_code = fPS();
-		if (comm=="ps") err_code = fPS();
-
+		if ((comm=="ps")&&(!load_lib_flag)) err_code = fPS();
 
 		if (comm=="kill") err_code = fKILL(args);
 
