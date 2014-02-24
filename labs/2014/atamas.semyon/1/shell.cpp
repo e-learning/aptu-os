@@ -28,6 +28,17 @@ bool isNumber(const std::string& s)
     return !s.empty() && it == s.end();
 }
 
+bool str2int (int &i, char const *s)
+{
+    std::stringstream ss(s);
+    ss >> i;
+    if (ss.fail()) {
+        // not an integer
+        return false;
+    }
+    return true;
+}
+
 void parseCommand(){
 	char in[256];
 	cin.getline(in, 256);
@@ -50,8 +61,18 @@ void parseCommand(){
 		cout << path << std::endl;
  	}else if(command == "kill"){
 		int procNo, sig;
-		instream >> sig;
-		instream >> procNo;
+		string tmp;
+		instream >> tmp;
+		if(!isNumber(tmp)){
+			std::cout << "Input parameters are -signalNo processNo";
+		}else{
+			str2int(sig, tmp.c_str());
+			instream >> tmp;
+			if(!isNumber(tmp)){
+				std::cout << "Input parameters are -signalNo processNo";
+			}
+			str2int(procNo, tmp.c_str());
+		}
 		kill(procNo, -sig);
 	}else if(command == "exit"){
 		exit(0);
