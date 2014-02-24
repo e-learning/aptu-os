@@ -50,9 +50,9 @@ void parseCommand(){
 		cout << path << std::endl;
  	}else if(command == "kill"){
 		int procNo, sig;
-		instream >> procNo;
 		instream >> sig;
-		kill(procNo,sig);
+		instream >> procNo;
+		kill(procNo, -sig);
 	}else if(command == "exit"){
 		exit(0);
 	}else if(command == "ps"){
@@ -85,6 +85,8 @@ void parseCommand(){
 
 		case 0:{
 			execvp(command.c_str(), &argv[0]);
+			std::cout << "can't find process " << command << std::endl;
+			exit(0);
 		}
 		break;
 
