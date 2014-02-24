@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <dlfcn.h>
+#include <stdio.h>
 
 using namespace std;
 
