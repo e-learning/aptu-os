@@ -84,8 +84,7 @@ void parseCommand(){
 		switch(pid){
 
 		case 0:{
-			char * envArg[] = {NULL};
-			execve(command.c_str(), &argv[0], envArg);
+			execvp(command.c_str(), &argv[0]);
 		}
 		break;
 
