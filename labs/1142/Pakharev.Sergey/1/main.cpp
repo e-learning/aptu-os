@@ -109,7 +109,7 @@ int Interpetation()
 	}
 	else
 	{
-		std::string arg = input.substr(space_pos+1,input.length()-space_pos); //вычленим из строки аргументы
+		std::string arg = input.substr(space_pos+1,input.length()-space_pos);
 		
 		if (command=="kill")
 		{
@@ -190,11 +190,11 @@ int MyPs()
 	string file_name; 
 	printf("%5s | %15s | %11s | %7s | %8s\n\r","PID","NAME","AVG_PER_CPU","THREADS","PRIORITY");
 	if (proc_dir)
-        while((f_dir=readdir(proc_dir))!=NULL) //считываем содержимое папки
+        while((f_dir=readdir(proc_dir))!=NULL)
         {
-                if ((f_dir->d_name[0] <= '9')&&(f_dir->d_name[0] >= '0')) //для проверки того,что мы открываем
+                if ((f_dir->d_name[0] <= '9')&&(f_dir->d_name[0] >= '0'))
                 {
-                        file_name = "/proc/" + string(f_dir->d_name) + "/sched"; //файл процесса с текстовым именем файла
+                        file_name = "/proc/" + string(f_dir->d_name) + "/sched";
                         		                        
                         std::ifstream file(file_name.c_str());
                         std::string current_line,cpu_usage,thread_num,proc_name,priority;
@@ -228,7 +228,7 @@ int MyPs()
 	else
 	{
 		printf("Error opening /proc dirrectory../n/r");
-		return 1; //can't open /proc
+		return 1;
 	}
 	return 0;
 }
