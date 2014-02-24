@@ -147,13 +147,7 @@ void delete_spaces(std::string tmp)
 
 void  INThandler(int sig)
 {
-     signal(sig,SIG_IGN);
-     printf("You entered Ctrl-C?\n\r");
-     if (Exit_func())
-          exit(0);
-     else
-          signal(SIGINT, INThandler);
-     getchar();
+     printf("You entered Ctrl-C\n\r");
 }
 
 int Exit_func()
