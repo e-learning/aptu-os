@@ -2,6 +2,7 @@ using namespace std;
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/utsname.h>
 #include <string>
 #include <sstream> 
