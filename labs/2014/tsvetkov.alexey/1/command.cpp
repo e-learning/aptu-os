@@ -143,7 +143,7 @@ void KillCommand::run() {
   }
 
   if (signals.size() > 1) {
-    print_error("Warning: more than one signal specified (sending only first)");
+    print_error("Error: more than one signal is specified");
     return;
   }
 
