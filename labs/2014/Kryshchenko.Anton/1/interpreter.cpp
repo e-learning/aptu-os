@@ -113,6 +113,8 @@ bool exec_kill(const Command & c) {
     if( c.args.size() != 2 ) {
 
         cout<< "Parameters Error" << endl;
+        cout<< "Format command: "<<endl;
+        cout<< "kill [SIG] [PID]"<< endl;
         return true;
 
     }
