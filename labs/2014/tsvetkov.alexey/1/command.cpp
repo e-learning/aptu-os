@@ -144,6 +144,12 @@ void KillCommand::run() {
 
   if (signals.size() > 1) {
     print_error("Warning: more than one signal specified (sending only first)");
+    return;
+  }
+
+  if (pids.empty()) {
+    print_error("Error: at least one pid is mandatory");
+    return;
   }
 
   for (int pid : pids) {
@@ -157,6 +163,7 @@ void KillCommand::run() {
 
     if (res < 0) {
       print_error();
+      return;
     }
   }
 }
