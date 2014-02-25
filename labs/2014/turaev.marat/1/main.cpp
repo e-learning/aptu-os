@@ -114,9 +114,9 @@ int exec(command const &cmd) {
 	}
 
 	if (cmd.cmd == "kill") {
-		if (cmd.args.size() != 2 || !is_num(cmd.args[0].c_str()) ||
-				!is_num(cmd.args[1].c_str())) {
+		if (cmd.args.size() != 2 || !is_num(cmd.args[0].c_str()) || !is_num(cmd.args[1].c_str())) {
 			std::cout << "invalid command parameters" << std::endl;
+			std::cout << "please use the following pattern: kill <SIGNAL ID> <PROCESS ID>" << std::endl;
 		} else {
 			int signal = atoi(cmd.args[0].c_str());
 			int pid = atoi(cmd.args[1].c_str());
