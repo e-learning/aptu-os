@@ -15,3 +15,4 @@ all: $(OBJ_FILES)
 
 clean:
 	rm -rf *.o
+	rm shell

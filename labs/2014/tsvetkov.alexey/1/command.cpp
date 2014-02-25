@@ -130,7 +130,7 @@ void KillCommand::run() {
 
     for (size_t i = offset; i < arg.size(); ++i) {
       if (arg[i] < '0' || arg[i] > '9') {
-        print_error("Error: kill argument is not a number");
+        print_error("kill argument is not a number");
         return;
       }
     }
@@ -143,12 +143,12 @@ void KillCommand::run() {
   }
 
   if (signals.size() > 1) {
-    print_error("Error: more than one signal is specified");
+    print_error("more than one signal is specified");
     return;
   }
 
   if (pids.empty()) {
-    print_error("Error: at least one pid is mandatory");
+    print_error("at least one pid is mandatory");
     return;
   }
 
