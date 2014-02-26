@@ -148,7 +148,12 @@ void Executor::execute(CmdInfoPtr cmdInfo)
 	case CmdInfo::C_PROG :	{
 					std::vector<char*> argv;
 					cmdInfo->getArgs(argv);
-					res = execv(cmdInfo->command.c_str(), &argv[0]);		
+					res = execv(cmdInfo->command.c_str(), &argv[0]);	
+					if (res == -1) {
+						std::string path = "/bin/";
+						path += cmdInfo->command;
+						res = execv(path.c_str(), &argv[0]);	
+					}	
 					procError(res, "cli", true);	
 					break; 
 				}
