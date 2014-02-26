@@ -9,7 +9,6 @@
 Command parse(std::string const &str)
 {
     Command result;
-    // result.raw = str;
 
     std::istringstream stream(str);
     stream >> result.cmd;
@@ -18,6 +17,9 @@ Command parse(std::string const &str)
     while (stream >> arg) {
         result.args.push_back(arg);
     }
+
+    if (result.args.empty()) result.hasNoArguments = true;
+    else result.hasNoArguments = false;
 
     return result;
 }

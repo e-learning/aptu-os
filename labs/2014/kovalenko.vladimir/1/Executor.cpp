@@ -1,5 +1,12 @@
 #include "Executor.h"
 #include <iostream>
+#include <cstdlib>
+#include <cctype>
+#include <cstdio>
+
+#include <sys/types.h>
+#include <unistd.h>
+#include <dirent.h>
 #include <signal.h>
 
 
@@ -14,9 +21,7 @@ bool isNumber(const std::string& str)
     return (!str.empty() && (it == str.end()));
 }
 
-bool Command::hasNoArguments(){
-	return args.empty();
-}
+
 
 bool Executor::execute(Command const & c){
 	 
@@ -57,6 +62,16 @@ void Executor::executeLsCommand(Command const & cmd){
 }
 
 void Executor::executePwdCommand(Command const & cmd){
+    if (!cmd.hasNoArguments)
+    {
+        std::cerr << "'pwd' command takes no arguments" << std::endl;
+        return;
+
+    }
+        
+    char *pwd = getcwd(NULL, 0);
+    std::cout << pwd << std::endl;
+    free(pwd);
 
 }
 

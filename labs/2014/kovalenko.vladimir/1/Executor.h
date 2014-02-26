@@ -4,7 +4,7 @@
 struct Command{
 	std::string cmd;
 	std::vector<std::string> args;
-	bool hasNoArguments();
+	bool hasNoArguments;
 };
 
 class Executor{
