@@ -9,7 +9,6 @@ struct Command{
 
 class Executor{
 	public:
-	 // Executor();
 	 bool execute(Command const & c);
 	private:
 	 void executeKillCommand(Command const & c);
@@ -17,8 +16,6 @@ class Executor{
 	 void executePwdCommand(Command const & c);
 	 void executePsCommand(Command const & c);
 	 void executeOtherCommand(Command const & c);	
-
-	 void killProcess(int pid, int sig);
 	 void listFiles();
 	 void showDirPath();
 	 void showProcessList();
