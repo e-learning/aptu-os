@@ -10,8 +10,8 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <signal.h>
-
-
+#include <algorithm>
+#include <iterator>
 
 bool isNumber(const std::string& str)
 {
