@@ -48,7 +48,7 @@ void Executor::executeKillCommand(Command const & cmd){
     	std::cerr << "'kill' command requires two numeric arguments" << std::endl;
     	return;
     }
-    kill(atoi(cmd.args[0].c_str()), atoi(cmd.args[1].c_str()));
+    kill(atoi(cmd.args[1].c_str()), atoi(cmd.args[0].c_str()));
 }
 
 void Executor::executePsCommand(Command const & cmd){
