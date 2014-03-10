@@ -1,6 +1,6 @@
 #include <stdio.h>
 int main()
 {
-printf ("hEllO\n");
+printf ("Pyatigorsk\n");
 return 0;
 }
