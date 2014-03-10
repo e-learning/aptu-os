@@ -2,7 +2,7 @@ run: ver2
 	./a.out
 
 ver1: main.o comminterp.o libps.so
-	g++ main.o comminterp.o -L. -lps 
+	g++ main.o comminterp.o -L. -lps -Wl,-rpath,. 
 
 ver2: MAIN.o comminterp.o libps.so
 	g++ MAIN.o comminterp.o -ldl 
@@ -18,3 +18,10 @@ ps.o: ps.h ps.cpp
 
 libps.so: ps.o
 	gcc -shared -o libps.so ps.o
+
+clear:
+	rm *.o
+
+clearAll: clear
+	rm a.out
+	rm *.so
