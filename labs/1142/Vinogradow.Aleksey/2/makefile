@@ -1,4 +1,4 @@
-run: a.out  ver1
+run: ver2
 	./a.out
 
 ver1: main.o comminterp.o libps.so
