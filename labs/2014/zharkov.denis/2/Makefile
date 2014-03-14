@@ -1,7 +1,7 @@
 
 all: scheduler  
 scheduler: scheduler.cpp
-	g++ -std=c++11 -g scheduler.cpp -o scheduler 
+	g++ -std=c++11 scheduler.cpp -o scheduler 
 	
 .PHONY: clean
 

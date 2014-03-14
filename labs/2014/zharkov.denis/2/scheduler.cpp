@@ -17,7 +17,7 @@ struct ExecutionResult {
 
 struct Process {
     bool operator<(Process const & other) const {
-        return activates_at < other.activates_at;
+        return activates_at < other.activates_at || (activates_at == other.activates_at && pid < other.pid);
     }
 
     bool will_freeze_within_time(int time) {
@@ -35,17 +35,17 @@ struct Process {
         
         ExecutionResult result { false, quantum_length, -1 };
 
-        if (will_be >= duration) {
-            result.used_time = quantum_length - (will_be - duration);
-            result.interrupted = true;
-            
-            executed = duration;
-        } else if (!ios.empty() && will_be >= ios.front().first) {
+        if (!ios.empty() && will_be >= ios.front().first) {
             result.interrupted = true;
             result.used_time = ios.front().first - executed;     
             result.last_io_details = ios.front().second;
 
             executed = ios.front().first;
+        } else if (will_be >= duration) {
+            result.used_time = quantum_length - (will_be - duration);
+            result.interrupted = true;
+            
+            executed = duration;
         } else {
             executed = will_be;
         }
@@ -62,13 +62,23 @@ struct Process {
         return executed == duration;
     }
 
+    void acquire_pid() {
+        pid = pid_counter++;
+    }
+
     string name;
     int activates_at;
     int duration;
 
     queue<pair<int,int>> ios;
+    
+    int pid;
+    
     int executed = 0;
+    static int pid_counter;
 };
+
+int Process::pid_counter = 0;
 
 istream & operator >> (istream & in, Process & result) {
     
@@ -76,6 +86,8 @@ istream & operator >> (istream & in, Process & result) {
         return in;
     }
     
+    result.acquire_pid();
+
     int from,to;
     
     string line;
@@ -107,13 +119,14 @@ struct Event {
     int pid;
     int when;
 
-    bool operator<(Event const & other) const {
-        return when > other.when;
+    bool operator>(Event const & other) const {
+        return when > other.when || (when == other.when && pid > other.pid);
     }
 };
 
 
 int main() {
+    freopen("input.txt", "r", stdin);
     int quantum_length;
     cin >> quantum_length;
 
@@ -127,11 +140,10 @@ int main() {
     queue<int> io_level;
     queue<int> second_level;
 
-    priority_queue<Event> events;
-    int pid_counter = 0;
+    priority_queue<Event, vector<Event>, greater<Event>> events;
     
     for (auto & process : processes) {
-        events.push({Event::ACTIVATION, pid_counter++, process.activates_at});        
+        events.push({Event::ACTIVATION, process.pid, process.activates_at});        
     }
     
     int current_time = 0;
