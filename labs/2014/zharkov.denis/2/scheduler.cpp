@@ -126,7 +126,6 @@ struct Event {
 
 
 int main() {
-    freopen("input.txt", "r", stdin);
     int quantum_length;
     cin >> quantum_length;
 
