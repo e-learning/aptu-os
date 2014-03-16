@@ -113,14 +113,14 @@ int main()
         t = std::max(t, ti);
         std::cout << t << ' ' << proc.id << '\n';
 
-        if (proc.tw - proc.tc <= c) {
-            t += proc.tw - proc.tc;
-        } else if (!proc.io.empty()
+        if (!proc.io.empty()
                    && proc.io.back().first - proc.tc <= c) {
             t += proc.io.back().first - proc.tc;
             proc.tc = proc.io.back().first + proc.io.back().second;
             queue.push(Pii(t + proc.io.back().second, procInfo.second));
             proc.io.pop_back();
+        } else if (proc.tw - proc.tc <= c) {
+            t += proc.tw - proc.tc;
         } else {
             t += c;
             proc.tc += c;
