@@ -61,10 +61,16 @@ switch(inp[0])
     case 'k':       
 		if(inp.compare(0,4,"kill")==0)
 		{
-			printf("kill");
+		        size_t pid_pos_st=inp.find(" ");
+			size_t pid_pos_en=inp.find(" ",pid_pos_st+1);
+                        string pid=inp.substr(pid_pos_st+1,pid_pos_en-pid_pos_st-1);
+			size_t sig_pos=inp.find("-");
+			string sig=inp.substr(sig_pos+1,inp.length()-sig_pos);
+			printf("%s\n",pid.c_str());
+			printf("%s\n",sig.c_str());
 			cout << "\n";
 			break;
-        }
+                }
     case 'e':       
 		if(inp.compare(0,4,"exit")==0)
 		{
