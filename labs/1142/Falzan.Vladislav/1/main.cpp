@@ -117,6 +117,7 @@ void  obr(int sig)
 
 int Kill(string arg,int space)
 {
+	string arg1,arg2;
 	while(arg[0] == ' ')
 	    {
 		arg = arg.substr(1,arg.length()-1);
@@ -127,12 +128,10 @@ int Kill(string arg,int space)
 	}
 	space = arg.find(' ');
 
-	string first_arg,second_arg;
-
-	first_arg = arg.substr(1,space-1);
+	arg1 = arg.substr(1,space-1);
 	space = arg.rfind('-');
-	second_arg = arg.substr(space+1,arg.length()-space-1);
-	if (kill(atoi(first_arg.c_str()),atoi(second_arg.c_str())))
+	arg2 = arg.substr(space+1,arg.length()-space-1);
+	if (kill(atoi(arg1.c_str()),atoi(arg2.c_str())))
 		return 0;
 	else
 	{
