@@ -13,7 +13,7 @@ string inp;
 while(1)
 {
 cout << ">";
-cin >> inp;
+getline(cin,inp);
 
 switch(inp[0])
 {
@@ -74,7 +74,7 @@ switch(inp[0])
 		}
 	default: 
 		{
-		printf("fail");
+		printf("There's no such cmd :(");
 		cout << "\n";
 		break;
 		}
