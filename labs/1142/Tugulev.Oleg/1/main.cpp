@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <fstream>
 using namespace std;
 
 
@@ -54,7 +55,28 @@ switch(inp[0])
         }
 		if(inp.compare(0,2,"ps")==0)
 		{
-		        system("ps");
+		  DIR *dir; 
+		  struct dirent *ent;	 
+		  dir=opendir("/proc");
+		  if(!dir)
+		    {
+		      printf("Error opening proc/!");
+		      closedir(dir);
+		      break;
+		    }
+		  while((ent=readdir(dir)) !=0)
+		    {
+		      string tmp = ent->d_name;
+		      if ((tmp[0] >= '0')&&(tmp[0] <= '9'))
+			{
+			  string path_to_proc = "/proc/"+tmp+"/comm";
+			  std::ifstream total(path_to_proc.c_str(),std::ifstream::in);
+			  string outp;
+			  total >> outp;
+			  total.close();
+			  cout<<tmp<<"\t"<<outp<<"\n";
+			}
+		    }
 			cout << "\n";
 			break;
        
@@ -88,10 +110,3 @@ switch(inp[0])
 }
 }
 }
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
->>>>>>> dc5a708388ab5a511b25e4b7e9bf413c1f66989c
-=======
->>>>>>> dc5a708388ab5a511b25e4b7e9bf413c1f66989c
