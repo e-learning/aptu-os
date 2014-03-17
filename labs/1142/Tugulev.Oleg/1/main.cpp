@@ -159,7 +159,7 @@ switch(inp[0])
 			printf("ps");
 			cout << "\n";
 			break;
-         Олег Говнюк !!!!!!!!!!!!!!!11111111111 азазазазза
+       
 		}
     case 'k':       
 		if(inp.compare(0,4,"kill")==0)
