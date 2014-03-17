@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+#include <ctype.h>
 #include <dirent.h>
+#include <dlfcn.h>
+
 
 #define PWD 1
 #define PS 2
@@ -9,6 +13,8 @@
 #define LS 4
 #define EXIT 5
 #define EXE 6
+#define MAXPROC 200
+#define NAME 50
 
 int getPWD(char *st){
 FILE *f;
@@ -93,7 +99,6 @@ int parse(char *s){
 	}
 	return 0;
 }
-
 int getSt(char *st){
 	int i = 0;
 	char c;
@@ -110,14 +115,31 @@ int getSt(char *st){
 int main(int argc, char *argv[]){
 char st[30];
 char s[60];
+char **buf;
 char ext = 0;
-		printf("%s\n",argv[0]);
-	while(!ext){
+int i,kolProc;
+void *func;
+int (*funcPS) (char **buf);
+
+func = dlopen("./libps.so", RTLD_LAZY);
+funcPS = (int (*)(char **buf))dlsym(func, "getPS");
+
+buf = malloc(sizeof(char*)*MAXPROC);
+for(i=0;i<MAXPROC;i++){
+	buf[i] = malloc(sizeof(char)*NAME);
+}
+
+	while(!ext){		
 		printf(">");
 		getSt(st);
+		printf("%s\n",st);
 		switch(parse(st)){
 			case KILL:system(st); break;
-			case PS: system("ps"); break;
+			case PS: 	kolProc = funcPS(buf);
+						for(i=0;i<kolProc;i++){
+							printf("%s\n",buf[i]);
+						}
+						break;
 			case PWD: 	getPWD(s); 
 						printf("%s\n",s);
 						memset(&s,0,sizeof(s)); 
@@ -131,5 +153,10 @@ char ext = 0;
 			default:break;
 		}
 	}
+for(i=0;i<MAXPROC;i++){
+	free(buf[i]);
+}
+dlclose(func);
+free(buf);
 return 0;
 }
