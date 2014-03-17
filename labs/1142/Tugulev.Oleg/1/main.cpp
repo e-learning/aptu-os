@@ -54,7 +54,7 @@ switch(inp[0])
         }
 		if(inp.compare(0,2,"ps")==0)
 		{
-			printf("ps");
+		        system("ps");
 			cout << "\n";
 			break;
        
@@ -88,3 +88,10 @@ switch(inp[0])
 }
 }
 }
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+=======
+>>>>>>> dc5a708388ab5a511b25e4b7e9bf413c1f66989c
+=======
+>>>>>>> dc5a708388ab5a511b25e4b7e9bf413c1f66989c
