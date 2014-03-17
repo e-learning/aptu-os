@@ -172,7 +172,7 @@ int Ps()
 	return 0;
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
 	signal(SIGINT, obr);
 	printf("\nLaba 1.\n");
