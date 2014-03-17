@@ -6,8 +6,6 @@ using namespace std;
 #include <dirent.h>
 #include <fstream>
 
-sighandler_t signal(int signum, sighandler_t handler);
-
 void Menu();
 int Action();
 void obr(int);
