@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fstream>
+#include <signal.h>
 using namespace std;
 
 
@@ -68,14 +69,14 @@ switch(inp[0])
 		    {
 		      string tmp = ent->d_name;
 		      if ((tmp[0] >= '0')&&(tmp[0] <= '9'))
-			{
-			  string path_to_proc = "/proc/"+tmp+"/comm";
-			  std::ifstream total(path_to_proc.c_str(),std::ifstream::in);
-			  string outp;
-			  total >> outp;
-			  total.close();
-			  cout<<tmp<<"\t"<<outp<<"\n";
-			}
+           {
+             string path_to_proc = "/proc/"+tmp+"/comm";
+             std::ifstream total(path_to_proc.c_str(),std::ifstream::in);
+             string outp;
+             total >> outp;
+             total.close();
+             cout<<tmp<<"\t"<<outp<<"\n";
+           }
 		    }
 			cout << "\n";
 			break;
@@ -84,23 +85,24 @@ switch(inp[0])
     case 'k':       
 		if(inp.compare(0,4,"kill")==0)
 		{
-		        size_t pid_pos_st=inp.find(" ");
+			size_t pid_pos_st=inp.find(" ");
 			size_t pid_pos_en=inp.find(" ",pid_pos_st+1);
-                        string pid=inp.substr(pid_pos_st+1,pid_pos_en-pid_pos_st-1);
+			string pid=inp.substr(pid_pos_st+1,pid_pos_en-pid_pos_st-1);
 			size_t sig_pos=inp.find("-");
 			string sig=inp.substr(sig_pos+1,inp.length()-sig_pos);
 			//printf("%s\n",pid.c_str());
 			//printf("%s\n",sig.c_str());
+
 			if(!kill(atoi(pid.c_str()),atoi(sig.c_str())))
 			{
-				prinf("Killed successfully!\n");
+				printf("Killed successfully!\n");
 				break;
 			}
 			
 			printf("Can't kill!\n");
 			break;
                 }
-    case 'e':       
+	case 'e':       
 		if(inp.compare(0,4,"exit")==0)
 		{
 			printf("Exit program.");
