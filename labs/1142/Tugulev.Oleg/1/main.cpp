@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fstream>
+#include <signal.h>
 using namespace std;
 
 
