@@ -89,9 +89,15 @@ switch(inp[0])
                         string pid=inp.substr(pid_pos_st+1,pid_pos_en-pid_pos_st-1);
 			size_t sig_pos=inp.find("-");
 			string sig=inp.substr(sig_pos+1,inp.length()-sig_pos);
-			printf("%s\n",pid.c_str());
-			printf("%s\n",sig.c_str());
-			cout << "\n";
+			//printf("%s\n",pid.c_str());
+			//printf("%s\n",sig.c_str());
+			if(!kill(atoi(pid.c_str()),atoi(sig.c_str())))
+			{
+				prinf("Killed successfully!\n");
+				break;
+			}
+			
+			printf("Can't kill!\n");
 			break;
                 }
     case 'e':       
