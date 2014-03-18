@@ -22,48 +22,51 @@ struct io_operation {
     io_operation(uint s, uint d)
         : start_time(s), duration(d) {}
 
-    struct start_time_comparator {
-        bool operator()(const io_operation &fst, const io_operation &snd)
-            { return fst.start_time > snd.start_time; }
-    };
+    friend bool operator<(const io_operation &fst, const io_operation &snd)
+        { return fst.start_time > snd.start_time; }
 };
 
 struct process {
     string id;
-    uint start_time;
-    uint duration;
     vector<io_operation> io_operations;
 
-    bool used_full_quantum = false;
     uint time_passed = 0;
+    uint activation_time;
+    uint duration;
+
+    bool used_full_quantum = false;
 
     process()
-        : id(""), start_time(UINT_MAX), duration(0) {}
+        : id(""), activation_time(UINT_MAX), duration(0) {}
 
     process(const string &id, uint s, uint d)
-        : id(id), start_time(s), duration(d) {}
+        : id(id), activation_time(s), duration(d) {}
 
     bool is_done() const
         { return duration <= time_passed; }
 
     bool is_available_at(uint time) const
-        { return time >= start_time; }
+        { return time >= activation_time; }
 
     uint priority() const
         { return (2 * has_io_operation()) + used_full_quantum; }
+
+    const io_operation &current_io() const
+        { return io_operations.back(); }
 
     bool has_io_operation() const
         { return !io_operations.empty()
             && current_io().start_time <= time_passed + quantum; }
 
-    const io_operation &current_io() const
-        { return io_operations.back(); }
-
     io_operation pop_current_io()
-        { io_operation r = current_io(); io_operations.pop_back(); return r; }
+    {
+        io_operation r = current_io();
+        io_operations.pop_back();
+        return r;
+    }
 
     friend bool operator<(const process &fst, const process &snd)
-        { return fst.start_time >= snd.start_time; }
+        { return fst.activation_time >= snd.activation_time; }
 
     struct priority_comparator {
         bool operator()(const process &fst, const process &snd)
@@ -78,7 +81,7 @@ istream &operator>>(istream &in, io_operation &op)
 
 istream &operator>>(istream &in, process &proc)
 {
-    in >> proc.id >> proc.start_time >> proc.duration;
+    in >> proc.id >> proc.activation_time >> proc.duration;
     string line;
     getline(in, line);
     istringstream isn(line);
@@ -86,8 +89,7 @@ istream &operator>>(istream &in, process &proc)
     proc.io_operations.assign
         (istream_iterator<io_operation>(isn)
         ,istream_iterator<io_operation>());
-    sort(proc.io_operations.begin(), proc.io_operations.end(),
-            io_operation::start_time_comparator());
+    sort(proc.io_operations.begin(), proc.io_operations.end());
     return in;
 }
 
@@ -111,7 +113,7 @@ int main(int argc, const char *argv[])
 
         if (matches.empty()) {
             cout << time << " IDLE" << endl;
-            time = process_queue.top().start_time;
+            time = process_queue.top().activation_time;
             continue;
         }
 
@@ -129,7 +131,7 @@ int main(int argc, const char *argv[])
             uint dt = op.start_time - match.time_passed;
 
             time += dt;
-            match.start_time = time + op.duration;
+            match.activation_time = time + op.duration;
             match.time_passed += (dt + op.duration);
             match.used_full_quantum = dt < quantum;
 
@@ -140,7 +142,7 @@ int main(int argc, const char *argv[])
             match.time_passed += dt;
 
             if (!match.is_done()) {
-                match.start_time = time;
+                match.activation_time = time;
                 match.used_full_quantum = true;
                 process_queue.push(match);
             }
