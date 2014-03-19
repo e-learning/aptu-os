@@ -134,8 +134,8 @@ class tokenizer
 			if (has_finished())
 				return "";
 			
-			int start = m_offset;
-			int length = 0;
+			size_t start = m_offset;
+			size_t length = 0;
 			while(start + length < m_source.length() && is_in(m_source[start], delimiters))
 			{
 				++start;

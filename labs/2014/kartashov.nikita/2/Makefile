@@ -1,5 +1,5 @@
 CC = clang++
-CFLAGS = -Wall -O2 -ggdb -std=c++11
+CFLAGS = -Wall -O2 -ggdb -Wextra -pedantic -Werror -std=c++11
 
 BINDIR = bin
 SOURCEDIR = src
@@ -30,3 +30,4 @@ init:
 
 clean:
 	@rm -rf $(BINDIR) $(TARGET)	
+
