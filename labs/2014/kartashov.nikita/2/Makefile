@@ -1,4 +1,4 @@
-CC = g++
+CC = clang++
 CFLAGS = -Wall -O2 -ggdb -std=c++11
 
 BINDIR = bin
