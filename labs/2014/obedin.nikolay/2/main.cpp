@@ -49,8 +49,13 @@ struct process {
     bool is_available_at(uint time) const
         { return time >= activation_time; }
 
+    bool can_end_in_this_quantum() const
+        { return (duration - time_passed) < quantum; }
+
     uint priority() const
-        { return (2 * has_io_operation()) + used_full_quantum; }
+        { return  (3 * can_end_in_this_quantum())
+                + (3 * has_io_operation())
+                + used_full_quantum; }
 
     const io_operation &current_io() const
         { return io_operations.back(); }
