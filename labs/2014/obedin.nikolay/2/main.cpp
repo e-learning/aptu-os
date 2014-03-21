@@ -50,7 +50,7 @@ struct process {
         { return time >= activation_time; }
 
     bool can_end_in_this_quantum() const
-        { return (duration - time_passed) < quantum; }
+        { return (duration - time_passed) <= quantum; }
 
     uint priority() const
         { return  (3 * can_end_in_this_quantum())
