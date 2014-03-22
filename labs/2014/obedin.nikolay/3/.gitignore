@@ -5,9 +5,9 @@ init*
 format*
 import*
 export*
-ls*
 copy*
 move*
 rm*
 mkdir*
 codegen
+ls

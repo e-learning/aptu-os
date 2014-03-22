@@ -1,14 +1,30 @@
 #include "directory.hpp"
 
 
-bool directory::find_child
-(const string &name, directory *out)
+directory *directory::find_child_dir(const string &name)
 {
     dirmap::iterator match = m_dirs.find(name);
     if (match == m_dirs.end())
-        return false;
-    out = &(match->second);
-    return true;
+        return nullptr;
+    return &(match->second);
+}
+
+file *directory::find_child_file(const string &name)
+{
+    filemap::iterator match = m_files.find(name);
+    if (match == m_files.end())
+        return nullptr;
+    return &(match->second);
+}
+
+string directory::info() const
+{
+    ostringstream ss;
+    for (auto &entry: m_dirs)
+        ss << "D " << entry.first << endl;
+    for (auto &entry: m_files)
+        ss << "F " << entry.first << endl;
+    return ss.str();
 }
 
 istream &operator>>(istream &in, directory &d)

@@ -1,7 +1,7 @@
 CXX=g++-4.8
 CXXFLAGS=-Wall -Werror -pedantic -g -std=c++11
 
-EXECUTABLES=init format import #export ls copy move rm mkdir
+EXECUTABLES=init format import ls #export copy move rm mkdir
 SOURCES=filesystem.cpp file.cpp directory.cpp filebuf.cpp
 OBJECTS=$(patsubst %,%,$(SOURCES:.cpp=.o))
 

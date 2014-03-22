@@ -36,11 +36,12 @@ void filesystem::import(const string &from_path, const string &to_path)
 
     auto splits = file::split_path(to_path);
     string &filename = splits.second;
-    directory *root = &m_root;
-    for (const string &dir: splits.first) {
-        if (!root->find_child(dir, root))
-            throw error("destination dir not found");
-    }
+    if (filename.empty())
+        throw error("empty destination filename");
+
+    directory *root = find_last(splits.first);
+    if (!root)
+        throw error("destination dir not found");
 
     block_num start_block = next_free_block_num();
     if (start_block == NO_FREE_BLOCKS)
@@ -58,6 +59,29 @@ void filesystem::import(const string &from_path, const string &to_path)
     root->add_child(f);
 }
 
+string filesystem::ls(const string &path)
+{
+    auto splits = file::split_path(path);
+    directory *root = find_last(splits.first);
+    if (!root)
+        throw error("file or dir not found");
+
+    directory *dmatch = nullptr;
+    if (splits.second.empty())
+        dmatch = root;
+    else
+        dmatch = root->find_child_dir(splits.second);
+
+    if (dmatch)
+        return dmatch->info();
+
+    file *fmatch = root->find_child_file(splits.second);
+    if (fmatch)
+        return fmatch->info();
+
+    throw error("file or dir not found");
+}
+
 block_num filesystem::next_free_block_num() const
 {
     if (!is_formatted())
@@ -66,6 +90,17 @@ block_num filesystem::next_free_block_num() const
     return (match == end(m_bitmap))
             ? NO_FREE_BLOCKS
             : match - begin(m_bitmap);
+}
+
+directory *filesystem::find_last(vector<string> path)
+{
+    directory *out = &m_root;
+    for (const string &dir: path) {
+        out = out->find_child_dir(dir);
+        if (!out)
+            return nullptr;
+    }
+    return out;
 }
 
 void filesystem::read_config()

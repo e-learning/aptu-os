@@ -15,6 +15,9 @@ using namespace std;
 
 class file {
 public:
+    static pair<vector<string>, string> split_path(const string &path);
+
+public:
     file() {};
     file(const string &name, block_num start_block, bytes size)
         : m_name(name), m_start_block(start_block), m_size(size)
@@ -30,7 +33,7 @@ public:
     bool is_valid() const
         { return !m_name.empty(); }
 
-    static pair<vector<string>, string> split_path(const string &path);
+    string info() const;
 
 private:
     string m_name;

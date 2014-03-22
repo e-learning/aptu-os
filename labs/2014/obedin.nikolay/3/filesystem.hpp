@@ -35,6 +35,7 @@ public:
     void format();
     void import(const string &from_path, const string &to_path);
     //void export(const string &to_path, const string &from_path);
+    string ls(const string &path);
 
 private:
     friend class ofilebuf;
@@ -62,6 +63,8 @@ private:
     block_num next_free_block_num() const;
     void mark_block(block_num n, char t)
         { m_bitmap[n] = t; }
+
+    directory *find_last(vector<string> path);
 
     void read_config();
     void read_metadata();

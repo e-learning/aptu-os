@@ -27,9 +27,13 @@ public:
     bool is_valid() const
         { return !m_name.empty(); }
 
-    bool find_child(const string &name, directory *out);
+    directory *find_child_dir(const string &name);
+    file *find_child_file(const string &name);
+
     void add_child(const file &f)
         { m_files[f.name()] = f; }
+
+    string info() const;
 
     friend istream &operator>>(istream &in, directory &d);
     friend ostream &operator<<(ostream &out, const directory &d);
