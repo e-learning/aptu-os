@@ -95,7 +95,7 @@ class process
 
 		size_t admission_time() const {return m_admission_time;}			
 		
-		void out() {cout << m_identifier << " at: " << m_admission_time << " wt: " << m_work_time << " io: " << has_io() << endl; }
+		void out() const {cout << m_identifier << " at: " << m_admission_time << " wt: " << m_work_time << " io: " << has_io() << endl; }
 
 	private:
 		string m_identifier;
@@ -119,31 +119,35 @@ size_t as_number(string const& token)
 class tokenizer
 {
 	public:
-		tokenizer(string const& source, size_t offset = 0, string const& delimiters = " \n") : 
+		tokenizer(string const& source, size_t offset = 0) : 
 			m_source(source), 
-			m_offset(offset),
-			m_delimiters(delimiters) {}
-		
+			m_offset(offset) {}
+
 		string next_token()
 		{
-			return next_token(m_delimiters);
-		}
+			size_t start = m_offset;
+			size_t length = 0;
 
-		string next_token(string const& delimiters)
-		{
-			size_t start = m_source.find_first_not_of(delimiters, m_offset);
-			m_offset = m_source.find_first_of(delimiters, start);
-			size_t length = m_offset == string::npos ? m_source.length() - start : m_offset - start;
+			while (!has_finished() && m_source[m_offset] != ' ') 
+			{
+				++length;
+				++m_offset;
+			}
+
+			while (!has_finished() && m_source[m_offset] == ' ') 
+			{
+				++m_offset;	
+			}
 
 			return m_source.substr(start, length);
 		}
 
-	bool has_finished() {return m_offset == m_source.length() || m_offset == string::npos;}
+
+	bool has_finished() {return m_offset >= m_source.length();}
 
 	private:
 			string const& m_source;
 			size_t m_offset;
-			string const& m_delimiters;
 };
 
 
@@ -158,8 +162,12 @@ process build_process(string const& line)
 
 	while (!t.has_finished())
 	{
-		size_t start_time = as_number(t.next_token());
-		size_t length = as_number(t.next_token());
+		string s_start_time = t.next_token();
+		string s_length = t.next_token();
+		if (s_start_time.empty() || s_length.empty())
+			break;
+		size_t start_time = as_number(s_start_time);
+		size_t length = as_number(s_length);
 		io_operations.push_back(io_operation(start_time, length));
 	}
 
@@ -268,7 +276,6 @@ int main()
 		if (!line.empty())
 			processes.push(build_process(line));
 	
-
 	handle_processes(processes, quantum);
 	
 	return 0;
