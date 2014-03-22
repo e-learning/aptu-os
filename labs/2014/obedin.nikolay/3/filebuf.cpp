@@ -1,0 +1,40 @@
+#include "filebuf.hpp"
+
+int ofilebuf::flush()
+{
+    int cur_buf_size = pptr() - pbase();
+    if (cur_buf_size == 0)
+        return cur_buf_size;
+
+    if (m_cur_block_num == filesystem::NO_FREE_BLOCKS)
+        return EOF;
+
+    ofstream out(m_fs->block_path(m_cur_block_num), ios::binary | ios::trunc);
+    if (!out.is_open())
+        return EOF;
+
+    m_fs->mark_block(m_cur_block_num, filesystem::USED);
+    m_cur_block_num = m_fs->next_free_block_num();
+
+    char next_block[sizeof(block_num)];
+    for (size_t i = 0; i < sizeof(block_num); i++) {
+        int offset = 8 * (sizeof(block_num) - i - 1);
+        next_block[i] = (m_cur_block_num >> offset) & 0xFF;
+    }
+
+    out.write(m_buffer, cur_buf_size);
+    if (cur_buf_size >= m_buffer_size-1)
+        out.write(next_block, (long int)sizeof(block_num));
+    pbump(-cur_buf_size);
+
+    return cur_buf_size;
+}
+
+int ofilebuf::overflow(int c)
+{
+    if (c != EOF) {
+        *pptr() = c;
+        pbump(1);
+    }
+    return (flush() == EOF) ? EOF : c;
+}

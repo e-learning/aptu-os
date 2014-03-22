@@ -1,8 +1,8 @@
-CXX=g++
+CXX=g++-4.8
 CXXFLAGS=-Wall -Werror -pedantic -g -std=c++11
 
-EXECUTABLES=init format #import export ls copy move rm mkdir
-SOURCES=filesystem.cpp file.cpp
+EXECUTABLES=init format import #export ls copy move rm mkdir
+SOURCES=filesystem.cpp file.cpp directory.cpp filebuf.cpp
 OBJECTS=$(patsubst %,%,$(SOURCES:.cpp=.o))
 
 .PHONY: clean codegen
@@ -16,8 +16,9 @@ clean:
 
 codegen:
 	@$(CXX) $(CXXFLAGS) -o $@ codegen.cpp
-	@./codegen init 1 path
-	@./codegen format 1 path
+	@./codegen init f 1 path
+	@./codegen format f 1 path
+	@./codegen import t 3 path host_file fs_file
 	@make programs
 
 $(EXECUTABLES): %: %.o $(OBJECTS)

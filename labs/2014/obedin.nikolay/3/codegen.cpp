@@ -7,18 +7,19 @@ using namespace std;
  */
 int main(int argc, const char *argv[])
 {
-    if (argc < 3)
+    if (argc < 4)
         return 1;
 
     const char *prog_name = argv[1];
-    int args_size = stoi(argv[2]);
+    const char *read_metadata = argv[2][0] == 't' ? "true" : "false";
+    int args_size = stoi(argv[3]);
 
-    if (argc < 3+args_size)
+    if (argc < 4+args_size)
         return 2;
 
     string usage_str = string("Usage: ") + prog_name + string(" ");
     for (int i = 0; i < args_size; i++) {
-        usage_str += string("<") + argv[3+i] + string("> ");
+        usage_str += string("<") + argv[4+i] + string("> ");
     }
 
     string call_str = string("fs.") + prog_name + string("(");
@@ -49,7 +50,7 @@ int main(int argc, const char *argv[])
     out << "    }" << endl;
     out << endl;
     out << "    try {" << endl;
-    out << "        filesystem fs(argv[0]);" << endl;
+    out << "        filesystem fs(argv[0]," << read_metadata << ");" << endl;
     out << "        " << call_str << endl;
     out << "    } catch (filesystem::error e) {" << endl;
     out << "        cerr << \"Error: \" << e.what() << endl;" << endl;
