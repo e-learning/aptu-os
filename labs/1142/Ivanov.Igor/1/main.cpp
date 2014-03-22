@@ -8,21 +8,51 @@ using namespace std;
 
 int main(void)
 {
-string command;
-while (1)
-{
-cout<<">";
-cin>>command;
-if(command=="ls")
-{
-DIR *Dir = opendir(".");
-if(!Dir) return 1;
+	cout<<"Привет, "<<getenv("USERNAME")<<"!"<<endl;	
 
-struct dirent *entry;
-while((entry=readdir(Dir))!=NULL)
-printf("%s\n", entry->d_name);
-closedir(Dir);
-}
-if(command=="exit") break;
-}
+	string command;
+	while (1)
+	{
+		cout<<">";
+		cin>>command;
+		
+		if(command=="help")
+		{
+			cout	<<"help - помощь"<<endl
+				<<"ls - вывод списка файлов в текущем каталоге"<<endl
+				<<"pwd - вывод полного имени текущего каталога"<<endl
+				<<"ps - вывод списка процессов"<<endl
+				<<"kill - отправка сигнала с заданным номером конкретному процессу"<<endl
+				<<"exit - выход"<<endl;
+		}
+		if(command=="ls")
+		{
+			DIR *Dir = opendir(".");
+			if(!Dir) return 1;
+
+			struct dirent *entry;
+			while((entry=readdir(Dir))!=NULL)
+				cout<<entry->d_name<<endl;
+			closedir(Dir);
+		}
+		if(command=="pwd") cout<<getenv("PWD")<<endl;
+		if(command=="ps")
+		{
+			DIR *Dir = opendir("/proc");
+			if(!Dir) return 1;
+			
+			struct dirent *entry;
+			while((entry=readdir(Dir))!=NULL)
+			{
+				FILE *Inf=fopen(("/proc/"+entry->d_name+"/comm"),"r");
+				if(Inf==NULL) return 1;
+				string name;
+				getline(Inf,name);
+				cout<<entry->d_name<<" "<<name<<endl;
+				fclose(Inf);
+			}
+		}
+				
+		if(command=="exit") break;
+	}
 }

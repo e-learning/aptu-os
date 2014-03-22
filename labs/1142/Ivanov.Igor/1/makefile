@@ -3,3 +3,4 @@ all: main.cpp
 
 clean:
 	rm -rf a.out
+
