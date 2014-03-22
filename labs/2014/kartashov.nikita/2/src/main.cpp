@@ -133,7 +133,7 @@ class tokenizer
 		{
 			size_t start = m_source.find_first_not_of(delimiters, m_offset);
 			m_offset = m_source.find_first_of(delimiters, start);
-			size_t length = m_offset - start;
+			size_t length = m_offset == string::npos ? m_source.length() - start : m_offset - start;
 
 			return m_source.substr(start, length);
 		}
