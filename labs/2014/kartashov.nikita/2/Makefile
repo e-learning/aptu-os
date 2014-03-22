@@ -20,7 +20,7 @@ $(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp
 	@$(CC) -c $(CFLAGS) $< -o $@
 	@echo ' OK'
 
-test:
+test: $(TARGET)
 	@tests/run_tests.sh
 
 .PHONY: clean init test

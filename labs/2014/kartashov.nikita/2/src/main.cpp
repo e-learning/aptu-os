@@ -131,27 +131,14 @@ class tokenizer
 
 		string next_token(string const& delimiters)
 		{
-			if (has_finished())
-				return "";
-			
-			size_t start = m_offset;
-			size_t length = 0;
-			while(start + length < m_source.length() && is_in(m_source[start], delimiters))
-			{
-				++start;
-				++m_offset;
-			}
-
-			while(start + length < m_source.length() && !is_in(m_source[start + length], delimiters))
-			{
-				++length;
-				++m_offset;				
-			}
+			size_t start = m_source.find_first_not_of(delimiters, m_offset);
+			m_offset = m_source.find_first_of(delimiters, start);
+			size_t length = m_offset - start;
 
 			return m_source.substr(start, length);
 		}
 
-	bool has_finished() {return m_offset == m_source.length();}
+	bool has_finished() {return m_offset == m_source.length() || m_offset == string::npos;}
 
 	private:
 			string const& m_source;
@@ -275,7 +262,7 @@ int main()
 	size_t quantum = 0;
 	cin >> quantum;
 
-	string line;
+	string line = "";
 	admission_queue processes(admission_time_comparer);
 	while (getline(cin, line))
 		if (!line.empty())
