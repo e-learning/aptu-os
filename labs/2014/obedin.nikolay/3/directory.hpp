@@ -30,8 +30,11 @@ public:
     directory *find_child_dir(const string &name);
     file *find_child_file(const string &name);
 
-    void add_child(const file &f)
+    void add_child_file(const file &f)
         { m_files[f.name()] = f; }
+
+    directory *add_child_dir(const directory &d)
+        { m_dirs[d.name()] = d; return &(m_dirs[d.name()]); }
 
     string info() const;
 

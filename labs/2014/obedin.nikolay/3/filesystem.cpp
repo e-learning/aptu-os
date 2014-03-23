@@ -56,7 +56,7 @@ void filesystem::cmd_import(const string &from_path, const string &to_path)
     in.seekg(0, in.end);
     bytes size = in.tellg();
     file f(filename, start_block, size);
-    root->add_child(f);
+    root->add_child_file(f);
 }
 
 void filesystem::cmd_export(const string &from_path, const string &to_path)
@@ -102,6 +102,35 @@ string filesystem::cmd_ls(const string &path)
         return fmatch->info();
 
     throw error("file or dir not found");
+}
+
+void filesystem::cmd_mkdir(const string &path)
+{
+    auto splits = file::split_path(path);
+    directory *root = &m_root;
+    bool found_place = false;
+
+    for (const string &dir: splits.first) {
+        if (!found_place) {
+            directory *last_root = root;
+            root = root->find_child_dir(dir);
+            if (!root) {
+                found_place = true;
+                root = last_root;
+            }
+        }
+        if (found_place) {
+            if (root->find_child_file(dir))
+                throw error("file with the same name already exists");
+            root = root->add_child_dir(directory(dir));
+        }
+    }
+
+    if (!splits.second.empty()) {
+        if (root->find_child_file(splits.second))
+            throw error("file with the same name already exists");
+        root->add_child_dir(directory(splits.second));
+    }
 }
 
 block_num filesystem::next_free_block_num() const

@@ -55,6 +55,6 @@ ostream &operator<<(ostream &out, const directory &d)
         out << entry.second;
     for (auto &entry: d.m_files)
         out << entry.second;
-    return out << endl;
+    return out;
 }
 

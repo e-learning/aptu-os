@@ -6,7 +6,7 @@ int main(int argc, const char *argv[]) {
     argc--;
     argv++;
     if (argc < 2) {
-        cerr << "Usage: ls <path> <fs_path>" << endl;
+        cerr << "Usage: ls <root> <fs_path>" << endl;
         return 1;
     }
 

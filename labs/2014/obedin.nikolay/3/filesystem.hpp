@@ -25,7 +25,7 @@ public:
             bool try_read_metadata = true);
 
     ~filesystem()
-    { write_metadata(); write_bitmap(); }
+        { write_metadata(); write_bitmap(); }
 
     bool is_valid() const
         { return m_block_size >= 1024 && m_blocks_count > 0; }
@@ -37,6 +37,7 @@ public:
     void cmd_import(const string &from_path, const string &to_path);
     void cmd_export(const string &from_path, const string &to_path);
     string cmd_ls(const string &path);
+    void cmd_mkdir(const string &path);
 
 private:
     friend class ofilebuf;
