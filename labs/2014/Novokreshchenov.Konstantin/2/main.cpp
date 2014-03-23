@@ -8,6 +8,9 @@
 
 int main()
 {
+	freopen("input.txt", "r", stdin);
+	freopen("output.txt", "w", stdout);
+
     size_t quantum;
 	std::cin >> quantum;
 	Scheduler scheduler(quantum);
@@ -19,7 +22,12 @@ int main()
 		}
 	}
 
+	int i = 1;
 	while (! scheduler.isempty()) {
+		if (i == 32) {
+			i = 32;
+		}
+		++i;
 		scheduler.next();
 	}
 

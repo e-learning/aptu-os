@@ -17,6 +17,11 @@ size_t Scheduler::quantum_size() const
 	return quantum_;
 }
 
+size_t Scheduler::localtime() const
+{
+	return localtime_;
+}
+
 bool Scheduler::isempty() const
 {
 	return processes_.empty() && available_processes_.empty();

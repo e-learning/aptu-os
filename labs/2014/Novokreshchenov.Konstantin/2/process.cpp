@@ -80,14 +80,14 @@ size_t Process::take_quantum()
 	size_t runtime = 0;
 	if (has_quantum_io()) {
 		runtime = ios_[nextio_].first;
-		ti_ += ios_[nextio_].second;
+		ti_ = ownscheduler_->localtime() + runtime + ios_[nextio_].second;
         tw_ -= ios_[nextio_].second;
 		++nextio_;
 	}
 	else {
 		is_quantum_end() ? runtime = tw_ : runtime = ownscheduler_->quantum_size();
+		ti_ = ownscheduler_->localtime() + runtime;
 	}
-	ti_ += runtime;
 	tw_ -= runtime;
 	refresh_io(runtime);
 	return runtime;
