@@ -65,6 +65,7 @@ public:
 	Scheduler(size_t quantum);
 	void add(Process* process);
 	size_t quantum_size() const;
+	size_t localtime() const;
 	bool isempty() const;
 	void getavailable();
 	void next();
