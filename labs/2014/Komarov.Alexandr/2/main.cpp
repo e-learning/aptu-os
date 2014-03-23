@@ -42,6 +42,9 @@ int total_time = 0;
 int step_time = 0;
 
 
+bool flag_idle = 1;
+
+
 bool foo (const process& value) {
     return value.flag_erase;
 }
@@ -112,6 +115,8 @@ int main(){
 
         if( !prior3.empty() ) {
 
+            flag_idle = 1;
+
             cur_proc =  prior3.front();
             prior3.erase( prior3.begin() );
 
@@ -145,6 +150,9 @@ int main(){
         }
         else if( !prior2.empty() ) {
 
+
+            flag_idle = 1;
+
             cur_proc = prior2.front();
             prior2.erase( prior2.begin() );
 
@@ -159,9 +167,11 @@ int main(){
             step_time = quantum;
         }
         else {
-            cout << total_time <<" IDLE\n";
-            total_time += quantum;
-            step_time = quantum;
+
+            if(flag_idle) cout << total_time <<" IDLE\n";
+            flag_idle = 0;
+            total_time += 1;
+            step_time = 1;
         }
 
 
@@ -169,3 +179,4 @@ int main(){
 
     return 0;
 }
+
