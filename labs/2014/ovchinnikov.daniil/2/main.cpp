@@ -43,7 +43,7 @@ struct Process {
         return (start_time <= timer)
                 && (io.size() == 0
                     ? false
-                    : io.top().start_time <= quantum_size);
+                    : io.top().start_time - (execution_time - remaining_time) <= quantum_size);
     }
 
     bool stops_within_quant() const {
@@ -70,6 +70,9 @@ struct Process {
         io.pop();
     }
 
+    void step(){
+        remaining_time--;
+    }
 };
 
 
@@ -161,7 +164,7 @@ int main() {
         cout << timer << " " << p.id << endl;
         size_t quantum = quantum_size;
         while(quantum-- && !p.completed() && !p.needs_io() ) {
-            p.remaining_time--;
+            p.step();
             timer++;
         }
 
