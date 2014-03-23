@@ -81,6 +81,7 @@ size_t Process::take_quantum()
 	if (has_quantum_io()) {
 		runtime = ios_[nextio_].first;
 		ti_ += ios_[nextio_].second;
+        tw_ -= ios_[nextio_].second;
 		++nextio_;
 	}
 	else {
