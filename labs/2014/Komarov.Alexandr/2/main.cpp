@@ -115,7 +115,7 @@ int main(){
             cur_proc =  prior3.front();
             prior3.erase( prior3.begin() );
 
-            cerr << total_time <<" "<< cur_proc.name <<"\n";
+            cout << total_time <<" "<< cur_proc.name <<"\n";
 
             step_time = 0;
             while(step_time < quantum) {
@@ -148,7 +148,7 @@ int main(){
             cur_proc = prior2.front();
             prior2.erase( prior2.begin() );
 
-            cerr << total_time <<" "<< cur_proc.name <<"\n";
+            cout << total_time <<" "<< cur_proc.name <<"\n";
             cur_proc.duration -= quantum;
             cur_proc.count += quantum;
 
@@ -159,7 +159,7 @@ int main(){
             step_time = quantum;
         }
         else {
-            cerr << total_time <<" IDLE\n";
+            cout << total_time <<" IDLE\n";
             total_time += quantum;
             step_time = quantum;
         }
