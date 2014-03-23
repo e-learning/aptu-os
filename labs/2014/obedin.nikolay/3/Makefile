@@ -12,7 +12,7 @@ all: codegen
 programs: $(EXECUTABLES)
 
 clean:
-	rm -rvf *.dsym *.dSYM codegen $(EXECUTABLES) *.o
+	rm -rvf *.dsym *.dSYM codegen $(EXECUTABLES) *.o *.d
 
 codegen:
 	@$(CXX) $(CXXFLAGS) -o $@ codegen.cpp
@@ -23,9 +23,11 @@ codegen:
 	@make programs
 
 $(EXECUTABLES): %: %.o $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	@echo "CXX $@"
+	@$(CXX) $(CXXFLAGS) -o $@ $^
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -MMD -c -o $@ $<
+	@echo "CXX $@"
+	@$(CXX) $(CXXFLAGS) -MMD -c -o $@ $<
 
 -include *.d
