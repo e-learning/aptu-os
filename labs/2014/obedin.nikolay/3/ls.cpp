@@ -12,7 +12,7 @@ int main(int argc, const char *argv[]) {
 
     try {
         filesystem fs(argv[0], true);
-        cout << fs.ls(argv[1]);
+        cout << fs.cmd_ls(argv[1]);
     } catch (filesystem::error e) {
         cerr << "Error: " << e.what() << endl;
         return 1;

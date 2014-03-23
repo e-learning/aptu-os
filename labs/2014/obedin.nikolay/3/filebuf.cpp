@@ -38,3 +38,42 @@ int ofilebuf::overflow(int c)
     }
     return (flush() == EOF) ? EOF : c;
 }
+
+int ifilebuf::underflow()
+{
+    if (gptr() < egptr())
+        return *gptr();
+
+    if (m_bytes_read >= m_size)
+        return EOF;
+
+    ifstream in(m_fs->block_path(m_cur_block_num), ios::binary);
+    if (!in.is_open())
+        return EOF;
+
+    long int bytes_remaining = m_size - m_bytes_read;
+    if (bytes_remaining > (long int)m_fs->block_size()) {
+        bytes_remaining = m_fs->block_size() - sizeof(block_num);
+        in.read(m_buffer, bytes_remaining);
+        bytes_remaining = in.gcount();
+
+        unsigned char next_block[sizeof(block_num)];
+        in.read((char*)next_block, sizeof(block_num));
+        m_cur_block_num = 0;
+        for (size_t i = 0; i < sizeof(block_num); i++) {
+            block_num n = 0;
+            n = next_block[i];
+            int offset = 8 * (sizeof(block_num) - i - 1);
+            n = n << offset;
+            m_cur_block_num |= n;
+        }
+    } else {
+        in.read(m_buffer, bytes_remaining);
+        bytes_remaining = in.gcount();
+        m_cur_block_num = filesystem::NO_FREE_BLOCKS;
+    }
+
+    m_bytes_read += bytes_remaining;
+    setg(m_buffer, m_buffer, m_buffer+bytes_remaining);
+    return traits_type::to_int_type(*gptr());
+}

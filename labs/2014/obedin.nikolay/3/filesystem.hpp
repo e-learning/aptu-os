@@ -16,6 +16,7 @@ using namespace std;
 typedef vector<char> bitmap;
 
 class ofilebuf;
+class ifilebuf;
 
 class filesystem {
 
@@ -31,14 +32,15 @@ public:
     bool is_formatted() const
         { return is_valid() && m_root.is_valid(); }
 
-    void init();
-    void format();
-    void import(const string &from_path, const string &to_path);
-    //void export(const string &to_path, const string &from_path);
-    string ls(const string &path);
+    void cmd_init();
+    void cmd_format();
+    void cmd_import(const string &from_path, const string &to_path);
+    void cmd_export(const string &from_path, const string &to_path);
+    string cmd_ls(const string &path);
 
 private:
     friend class ofilebuf;
+    friend class ifilebuf;
 
     const string CONFIG_FILENAME   = "config";
     const string METADATA_FILENAME = "metadata";

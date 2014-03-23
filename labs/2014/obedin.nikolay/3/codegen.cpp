@@ -22,7 +22,7 @@ int main(int argc, const char *argv[])
         usage_str += string("<") + argv[4+i] + string("> ");
     }
 
-    string call_str = string("fs.") + prog_name + string("(");
+    string call_str = string("fs.cmd_") + prog_name + string("(");
     if (args_size > 1) {
         for (int i = 1; i < args_size; i++) {
             call_str += "argv[" + to_string(i);

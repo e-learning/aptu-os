@@ -13,7 +13,7 @@ filesystem::filesystem(const string &path, bool try_read_metadata)
     }
 }
 
-void filesystem::init()
+void filesystem::cmd_init()
 {
     for (size_t i = 0; i < m_blocks_count; ++i) {
         ofstream out(m_path + to_string(i), ios::trunc);
@@ -21,14 +21,14 @@ void filesystem::init()
     }
 }
 
-void filesystem::format()
+void filesystem::cmd_format()
 {
-    init();
+    cmd_init();
     m_root = directory("/");
     m_bitmap.assign(m_blocks_count, '\0');
 }
 
-void filesystem::import(const string &from_path, const string &to_path)
+void filesystem::cmd_import(const string &from_path, const string &to_path)
 {
     ifstream in(from_path, ios::binary);
     if (!in.is_open())
@@ -59,7 +59,29 @@ void filesystem::import(const string &from_path, const string &to_path)
     root->add_child(f);
 }
 
-string filesystem::ls(const string &path)
+void filesystem::cmd_export(const string &from_path, const string &to_path)
+{
+    ofstream out(to_path, ios::binary | ios::trunc);
+    if (!out.is_open())
+        throw error("can not open destination file");
+
+    auto splits = file::split_path(from_path);
+    directory *root = find_last(splits.first);
+    if (!root)
+        throw error("source file not found");
+
+    file *fmatch = root->find_child_file(splits.second);
+    if (!fmatch)
+        throw error("source file not found");
+
+    ifilebuf buf(this, *fmatch);
+    istream in(&buf);
+    out << in.rdbuf();
+    if (!out.good())
+        throw error("I/O error while writing file");
+}
+
+string filesystem::cmd_ls(const string &path)
 {
     auto splits = file::split_path(path);
     directory *root = find_last(splits.first);

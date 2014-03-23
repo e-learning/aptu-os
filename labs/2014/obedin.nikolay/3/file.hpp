@@ -35,6 +35,12 @@ public:
 
     string info() const;
 
+    block_num start_block() const
+        { return m_start_block; }
+
+    bytes size() const
+        { return m_size; }
+
 private:
     string m_name;
     block_num m_start_block;
