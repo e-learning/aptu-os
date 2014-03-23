@@ -94,7 +94,7 @@ int main(){
                 it->time_to_start -= step_time;
             else {
                 it->time_to_start = 0;
-                if(it->duration <= quantum || ( !it->interr.empty() && (it->interr.front().start - it->count) < quantum) ) {
+                if(it->duration <= quantum || ( !it->interr.empty() && (it->interr.front().start - it->count) <= quantum) ) {
                     prior3.push_back( *it );
                     it->flag_erase = 1;
                 }
@@ -120,6 +120,11 @@ int main(){
             step_time = 0;
             while(step_time < quantum) {
 
+                cur_proc.count+=1;
+                cur_proc.duration -=1;
+                total_time += 1;
+                step_time += 1;
+
                 if( !cur_proc.interr.empty() && (cur_proc.interr.front().start - cur_proc.count) == 0 ) {
                     cur_proc.time_to_start = cur_proc.interr.front().duration + step_time;
                     cur_proc.duration -= cur_proc.interr.front().duration;
@@ -127,11 +132,6 @@ int main(){
 
                     break;
                 }
-
-                cur_proc.count+=1;
-                cur_proc.duration -=1;
-                total_time += 1;
-                step_time += 1;
 
                 if(cur_proc.duration == 0) break;
 
@@ -165,18 +165,7 @@ int main(){
         }
 
 
-
-
     }
-
 
     return 0;
 }
-
-
-
-//5
-//PROC1 0 20 1 1
-//PROC2 0 20 2 2
-//PROC3 5 15 1 1
-//PROC4 5 15 2 2
