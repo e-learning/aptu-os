@@ -4,6 +4,8 @@
 #include <signal.h>
 #include <algorithm>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <dirent.h>
 
 #include <stdio.h>
@@ -11,7 +13,8 @@
 #include <string.h>
 
 
-static size_t BUFSIZE = 1024;
+static size_t const BUFSIZE = 1024;
+static size_t const SPACES = 5;
 
 
 static bool is_number (std::string const & str)
@@ -52,6 +55,27 @@ static void trim (std::string & str)
         }
     }
     str = std::string (it, str.end());
+}
+
+
+static bool comp_str_pair (std::pair<std::string, std::string> const & s1, std::pair<std::string, std::string> const & s2)
+{
+    return (atoi(s1.first.c_str()) < atoi(s2.first.c_str()));
+}
+
+
+static void get_max_pair (std::vector< std::pair<std::string, std::string> > const & vec, size_t & max_f, size_t & max_s)
+{
+    max_f = max_s = 0;
+
+    for (std::vector< std::pair<std::string, std::string> >::const_iterator it = vec.begin(); it != vec.end(); ++it) {
+        if (max_f < strlen(it->first.c_str())) {
+            max_f = strlen(it->first.c_str());
+        }
+        if (max_s < strlen(it->second.c_str())) {
+            max_s = strlen(it->second.c_str());
+        }
+    }
 }
 
 
@@ -116,12 +140,6 @@ void delete_parsers (std::vector<CommandParser*> & parsers)
 }
 
 
-static bool comp_str (std::string const & s1, std::string const & s2)
-{
-    return (atoi(s1.c_str()) < atoi(s2.c_str()));
-}
-
-
 int LsParser::parse(const std::vector<std::string> &command)
 {
     if (command[0] != "ls") {
@@ -176,14 +194,23 @@ int PsParser::parse(const std::vector<std::string> &command)
             --it;
         }
     }
-    std::sort (proc_fs.begin(), proc_fs.end(), comp_str);
     //end of list PID
 
-    for (std::vector<std::string>::iterator it = proc_fs.begin(); it != proc_fs.end(); ++it) {
-        *it = get_process_name(*it);
+    std::vector< std::pair<std::string, std::string> > procs (proc_fs.size());
+
+    for (size_t i = 0; i < proc_fs.size(); ++i) {
+        procs[i] = std::make_pair (proc_fs[i], get_process_name(proc_fs[i]));
     }
-    sort (proc_fs.begin(), proc_fs.end());
-    print (proc_fs);
+
+    sort (procs.begin(), procs.end(), comp_str_pair);
+
+    size_t max_f = 0, max_s = 0;
+    get_max_pair(procs, max_f, max_s);
+
+    std::cout << std::endl << std::setw(max_f + SPACES) << "PID" << std::setw(max_s + SPACES) << "NAME" << std::endl << std::endl;
+    for (std::vector< std::pair<std::string, std::string> >::iterator it = procs.begin(); it != procs.end(); ++it) {
+        std::cout << std::setw(max_f + SPACES) << (*it).first << std::setw(max_s + SPACES) << (*it).second << std::endl;
+    }
 
     return MATCHED;
 }

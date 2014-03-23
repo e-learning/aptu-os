@@ -1,5 +1,5 @@
-CC = g++
-CFLAGS = -Wall -O2 -ggdb
+CC = g++-4.7
+CFLAGS = -Wall -O2 -ggdb -Wextra -pedantic -Werror -std=c++11
 
 BINDIR = bin
 SOURCEDIR = src
@@ -8,7 +8,7 @@ OBJDIR = $(BINDIR)/obj
 SOURCES = $(wildcard $(SOURCEDIR)/*.cpp)
 OBJECTS = $(patsubst $(SOURCEDIR)/%, $(OBJDIR)/%, $(patsubst %.cpp, %.o, $(SOURCES)))
 
-TARGET = shell
+TARGET = scheduler
 
 $(TARGET): init $(OBJECTS)
 	@echo -n 'Linking $@ ...'
@@ -20,10 +20,14 @@ $(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp
 	@$(CC) -c $(CFLAGS) $< -o $@
 	@echo ' OK'
 
+test: $(TARGET)
+	@tests/run_tests.sh
+
 .PHONY: clean init test
 
 init:
 	@mkdir -p $(OBJDIR)
 
 clean:
-	@rm -rf $(BINDIR) shell	
+	@rm -rf $(BINDIR) $(TARGET)	
+
