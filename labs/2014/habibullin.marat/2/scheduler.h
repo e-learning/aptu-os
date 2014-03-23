@@ -4,6 +4,7 @@
 #include <queue>
 #include <iostream>
 #include "process.h"
+#include <algorithm>
 
 class ProcStartTimeLess {
 public:
@@ -78,6 +79,7 @@ private:
     void PeekNextActive(size_t& current_step) {
         if(p_ready_procs.empty()) {
             std::cout << current_step << ' ' << "IDLE" << std::endl;
+            current_step = NextProcStartTime() - 1;
             return;
         }
         Process proc = p_ready_procs.top();
@@ -97,6 +99,20 @@ private:
             p_ready_procs.push(proc);
             current_step += (p_time_slot - 1);
         }
+    }
+
+    size_t NextProcStartTime() {
+        size_t start_time = 0;
+        if(!p_all_procs.empty() && !p_blocked_procs.empty()) {
+            start_time = std::min(p_all_procs.top().start_time(), p_blocked_procs.top().start_time());
+        }
+        else if (!p_all_procs.empty()) {
+            start_time = p_all_procs.top().start_time();
+        }
+        else {
+            start_time = p_blocked_procs.top().start_time();
+        }
+        return start_time;
     }
 };
 
