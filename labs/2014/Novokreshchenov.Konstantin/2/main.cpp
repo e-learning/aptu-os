@@ -8,9 +8,6 @@
 
 int main()
 {
-	freopen("input.txt", "r", stdin);
-	freopen("output.txt", "w", stdout);
-
     size_t quantum;
 	std::cin >> quantum;
 	Scheduler scheduler(quantum);
