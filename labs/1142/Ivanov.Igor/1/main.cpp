@@ -3,22 +3,25 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <signal.h>
+#include <sys/types.h>
 #include <dirent.h>
 using namespace std;
 
 int main(void)
 {
-        cout<<"Привет, "<<getenv("USERNAME")<<"!"<<endl;        
+        //cout<<"Привет, "<<getenv("USERNAME")<<"!"<<endl;       
 
         string command,argument;
-	char qstring[50];
-	char sep[10]=" ";
+	string qstring;
+	char qchar[50];
 	while (1)
 	{
-	cout<<">";
-	cin>>qstring;
-	command=strtok(qstring,sep);
-               
+	cout<< ">";
+	getline(cin,qstring);
+	memcpy(qchar,qstring.c_str(),50);
+	command=strtok(qchar," ");
+
                 if(command=="help")
                 {
                         cout    <<"help - помощь"<<endl
@@ -46,23 +49,26 @@ int main(void)
 
 			struct dirent *entry;
 			while((entry=readdir(Dir))!=NULL)
-			{
-				string InfName = "/proc/"+string(entry->d_name)+"/comm";
-				FILE *Inf=fopen(InfName.c_str(),"r");
-				if(Inf==NULL) return 1;
-				char name[40];
-				fgets(name,40,Inf);
-				cout<<entry->d_name<<" "<<name<<endl;
-				fclose(Inf);
-			}
+				if((entry->d_name[0]<='9')&&(entry->d_name[0]>='0'))
+				{
+					string InfName = "/proc/"+string(entry->d_name)+"/comm";
+					FILE *Inf=fopen(InfName.c_str(),"r");
+					if(Inf==NULL) return 2;
+					char name[40];
+					fgets(name,40,Inf);
+					cout<< entry->d_name <<" "<< name <<endl;
+					fclose(Inf);
+				}
 			closedir(Dir);
 		}
 		if(command=="kill")
 		{
-			argument=strtok(NULL,sep);
-			//kill(atoi(argument.c_str()),0);
-		}               
+			argument=strtok(NULL," ");
+			kill((atoi(argument.c_str())),SIGKILL);
+		}
                 if(command=="exit") break;
+		if((command!="exit")&&(command!="help")&&(command!="ls")&&
+		(command!="ps")&&(command!="kill")&&(command!="pwd"))
+		system(command.c_str());
         }
 }
-
