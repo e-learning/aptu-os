@@ -1,4 +1,4 @@
-CXX=g++-4.8
+CXX=g++
 CXXFLAGS=-Wall -Werror -pedantic -g -std=c++11
 
 EXECUTABLES=init format import ls export mkdir move copy rm
