@@ -27,6 +27,13 @@ string directory::info() const
     return ss.str();
 }
 
+bool directory::is_parent(directory *child) const
+{
+    while (child && child != this)
+        child = child->parent();
+    return child == this;
+}
+
 istream &operator>>(istream &in, directory &d)
 {
     in >> d.m_name;
@@ -37,6 +44,7 @@ istream &operator>>(istream &in, directory &d)
         directory c;
         in >> c;
         d.m_dirs[c.name()] = c;
+        d.m_dirs[c.name()].set_parent(&d);
     }
     for (size_t i = 0; i < file_count; ++i) {
         file f;

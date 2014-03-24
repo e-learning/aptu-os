@@ -30,6 +30,12 @@ public:
     const string &name() const
         { return m_name; }
 
+    void set_name(const string &n)
+        { m_name = n; }
+
+    void update_ctime()
+        { m_ctime = time(nullptr); }
+
     bool is_valid() const
         { return !m_name.empty(); }
 

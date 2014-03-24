@@ -39,6 +39,8 @@ public:
     string cmd_ls(const string &path);
     void cmd_mkdir(const string &path);
 
+    void cmd_move(const string &from_path, const string &to_path);
+
 private:
     friend class ofilebuf;
     friend class ifilebuf;

@@ -133,6 +133,46 @@ void filesystem::cmd_mkdir(const string &path)
     }
 }
 
+void filesystem::cmd_move(const string &from_path, const string &to_path)
+{
+    auto from_splits = file::split_path(from_path);
+    directory *from_root = find_last(from_splits.first);
+    if (!from_root)
+        throw error("source file or dir not found");
+
+    auto to_splits = file::split_path(to_path);
+    directory *to_root = find_last(to_splits.first);
+    if (!to_root)
+        throw error("destination file or dir not found");
+
+    if (from_splits.second.compare(to_splits.second) == 0
+            && to_root == from_root)
+        throw error("can not move into the same place");
+
+    directory *dmatch = from_root->find_child_dir(from_splits.second);
+    if (dmatch) {
+        if (dmatch->is_parent(to_root))
+            throw error("can not move dir into itself");
+        directory nd(*dmatch);
+        nd.set_name(to_splits.second);
+        to_root->add_child_dir(nd);
+        from_root->remove_child_dir(dmatch->name());
+        return;
+    }
+
+    file *fmatch = from_root->find_child_file(from_splits.second);
+    if (fmatch) {
+        file nf(*fmatch);
+        nf.set_name(to_splits.second);
+        nf.update_ctime();
+        to_root->add_child_file(nf);
+        from_root->remove_child_file(fmatch->name());
+        return;
+    }
+
+    throw error("source file or dir not found");
+}
+
 block_num filesystem::next_free_block_num() const
 {
     if (!is_formatted())

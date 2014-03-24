@@ -1,7 +1,7 @@
 CXX=g++-4.8
 CXXFLAGS=-Wall -Werror -pedantic -g -std=c++11
 
-EXECUTABLES=init format import ls export mkdir #copy move rm
+EXECUTABLES=init format import ls export mkdir move #copy rm
 SOURCES=filesystem.cpp file.cpp directory.cpp filebuf.cpp
 OBJECTS=$(patsubst %,%,$(SOURCES:.cpp=.o))
 
@@ -21,6 +21,7 @@ codegen:
 	@./codegen import t 3 root host_file fs_file
 	@./codegen export t 3 root fs_file host_file
 	@./codegen mkdir  t 2 root path
+	@./codegen move   t 3 root from_path to_path
 	@make programs
 
 $(EXECUTABLES): %: %.o $(OBJECTS)
