@@ -1,0 +1,4 @@
+D test
+D test
+F file1
+Error: file with the same name already exists

@@ -1,0 +1,5 @@
+D test2
+F file1
+F file2
+Error: can not move into the same place
+Error: can not move dir into itself

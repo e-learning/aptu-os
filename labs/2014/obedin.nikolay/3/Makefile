@@ -25,6 +25,14 @@ codegen:
 	@./codegen copy   t 3 root from_path to_path
 	@make programs
 
+test:
+	@./tests/setup.sh
+	@./tests/run.sh import
+	@./tests/run.sh export
+	@./tests/run.sh mkdir
+	@./tests/run.sh move
+	@./tests/run.sh copy
+
 $(EXECUTABLES): %: %.o $(OBJECTS)
 	@echo "CXX $@"
 	@$(CXX) $(CXXFLAGS) -o $@ $^
