@@ -70,7 +70,7 @@ int main(void){
       
                 if (comm=="ls") err_code = fLS();
 
-                if (comm=="pwd") { err_code = 0; cout<<getenv("PWD")<<endl; }
+                if (comm=="pwd")  cout<<getenv("PWD")<<endl;
 
                 if (comm=="ps") err_code = fPS();
 
