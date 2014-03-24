@@ -83,12 +83,13 @@ public:
     bool operator()(process const& right, process const& left)
     {
         if(left.io_in_time(m_quant))
-            return left.io_in_time(m_quant);
-        else if (left.finishes_in_time(m_quant))
-                return left.finishes_in_time(m_quant);
-        else if (right.finishes_in_time(m_quant))
-            return !right.finishes_in_time(m_quant);
-        else return !right.io_in_time(m_quant);
+                    return left.io_in_time(m_quant);
+                else if (left.finishes_in_time(m_quant))
+                        return left.finishes_in_time(m_quant);
+                else if (right.finishes_in_time(m_quant))
+                    return !right.finishes_in_time(m_quant);
+                else return !right.io_in_time(m_quant);
+
     }
 
 
@@ -120,11 +121,7 @@ void handle_processes(queue_by_proc_priority &available_queue, queue_by_proc_beg
             process current_process = available_queue.top();
             available_queue.pop();
 
-            if (current_process.finishes_in_time(quant))
-            {   cout << timer << " " << current_process.name << endl;
-                timer += current_process.need_time;
-            }
-            else if (current_process.io_in_time(quant))
+            if (current_process.io_in_time(quant))
             {
                 io current_io = current_process.io_list.front();
 
@@ -137,7 +134,12 @@ void handle_processes(queue_by_proc_priority &available_queue, queue_by_proc_beg
 
                 current_process.begin = timer + current_io.duration;
                 not_available_queue.push(current_process);
-            }    else            {
+            }
+            else if (current_process.finishes_in_time(quant))
+            {   cout << timer << " " << current_process.name << endl;
+                timer += current_process.need_time;
+            }
+            else            {
                 current_process.need_time -= quant;
                 cout << timer << " " << current_process.name << endl;
 
