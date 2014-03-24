@@ -3,7 +3,7 @@
 
 source $(dirname $0)/common.sh
 
-echo -n "Testing $1... "
+echo "Testing $1... "
 
 TEST_OUT=$OUT_DIR/test_$1.out
 source $(dirname $0)/test_$1.sh

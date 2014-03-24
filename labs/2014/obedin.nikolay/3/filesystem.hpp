@@ -47,6 +47,7 @@ public:
 
     void cmd_move(const string &from_path, const string &to_path);
     void cmd_copy(const string &from_path, const string &to_path);
+    void cmd_rm(const string &path);
 
 private:
     friend class ofilebuf;
@@ -84,7 +85,8 @@ private:
             directory *from, directory *to);
     void copy_file(file *f, const string &filename, directory *to);
 
-    //void remove_file();
+    void remove_file(file *f);
+    void remove_dir(directory *d);
 
     void read_config();
     void read_metadata();

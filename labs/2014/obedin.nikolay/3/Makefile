@@ -1,7 +1,7 @@
 CXX=g++-4.8
 CXXFLAGS=-Wall -Werror -pedantic -g -std=c++11
 
-EXECUTABLES=init format import ls export mkdir move copy #rm
+EXECUTABLES=init format import ls export mkdir move copy rm
 SOURCES=filesystem.cpp file.cpp directory.cpp filebuf.cpp
 OBJECTS=$(patsubst %,%,$(SOURCES:.cpp=.o))
 
@@ -13,7 +13,7 @@ programs: $(EXECUTABLES)
 
 clean:
 	@rm -rf *.dsym *.dSYM codegen $(EXECUTABLES) *.o *.d
-	@./tests/clean.sh
+	./tests/clean.sh
 
 codegen:
 	@$(CXX) $(CXXFLAGS) -o $@ codegen.cpp
@@ -24,6 +24,7 @@ codegen:
 	@./codegen mkdir  t 2 root path
 	@./codegen move   t 3 root from_path to_path
 	@./codegen copy   t 3 root from_path to_path
+	@./codegen rm 	  t 2 root path
 	@make programs
 
 test:
@@ -33,6 +34,7 @@ test:
 	@./tests/run.sh mkdir
 	@./tests/run.sh move
 	@./tests/run.sh copy
+	@./tests/run.sh rm
 
 $(EXECUTABLES): %: %.o $(OBJECTS)
 	@echo "CXX $@"

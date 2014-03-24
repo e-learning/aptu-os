@@ -142,11 +142,9 @@ void filesystem::cmd_mkdir(const string &path)
 
 void filesystem::cmd_move(const string &from_path, const string &to_path)
 {
-    auto roots = find_roots(from_path, to_path);
-    directory *from_root = get<0>(roots);
-    directory *to_root   = get<1>(roots);
-    string &from_name    = get<2>(roots);
-    string &to_name      = get<3>(roots);
+    directory *from_root, *to_root;
+    string from_name, to_name;
+    tie(from_root, to_root, from_name, to_name) = find_roots(from_path, to_path);
 
     directory *dmatch = from_root->find_child_dir(from_name);
     if (dmatch) {
@@ -174,11 +172,9 @@ void filesystem::cmd_move(const string &from_path, const string &to_path)
 
 void filesystem::cmd_copy(const string &from_path, const string &to_path)
 {
-    auto roots = find_roots(from_path, to_path);
-    directory *from_root = get<0>(roots);
-    directory *to_root   = get<1>(roots);
-    string &from_name    = get<2>(roots);
-    string &to_name      = get<3>(roots);
+    directory *from_root, *to_root;
+    string from_name, to_name;
+    tie(from_root, to_root, from_name, to_name) = find_roots(from_path, to_path);
 
     directory *dmatch = from_root->find_child_dir(from_name);
     if (dmatch)
@@ -187,6 +183,40 @@ void filesystem::cmd_copy(const string &from_path, const string &to_path)
     file *fmatch = from_root->find_child_file(from_name);
     if (fmatch)
         return copy_file(fmatch, to_name, to_root);
+
+    throw error("source file or dir not found");
+}
+
+void filesystem::cmd_rm(const string &path)
+{
+    auto splits = file::split_path(path);
+    directory *root = find_last(splits.first);
+    if (!root)
+        throw error("source file or dir not found");
+
+    if (splits.second.empty()) {
+        for (directory &d: root->dirs()) {
+            remove_dir(&d);
+            root->remove_child_dir(d.name());
+        }
+        for (file &f: root->files()) {
+            remove_file(&f);
+            root->remove_child_file(f.name());
+        }
+        return;
+    }
+
+    directory *dmatch = root->find_child_dir(splits.second);
+    if (dmatch) {
+        remove_dir(dmatch);
+        return root->remove_child_dir(dmatch->name());
+    }
+
+    file *fmatch = root->find_child_file(splits.second);
+    if (fmatch) {
+        remove_file(fmatch);
+        return root->remove_child_file(fmatch->name());
+    }
 
     throw error("source file or dir not found");
 }
@@ -249,6 +279,27 @@ void filesystem::copy_file(file *f, const string &filename,
 
     file nf(filename, start_block, f->size());
     to->add_child_file(nf);
+}
+
+void filesystem::remove_file(file *f)
+{
+    ifilebuf buf(this, *f, true);
+    istream in(&buf);
+    ostream out(nullptr);
+    out << in.rdbuf();
+    if (!buf.is_good)
+        throw error("I/O error while reading file");
+
+    for(block_num i: buf.blocks)
+        m_bitmap[i] = 0;
+}
+
+void filesystem::remove_dir(directory *d)
+{
+    for(file &f: d->files())
+        remove_file(&f);
+    for(directory &cd: d->dirs())
+        remove_dir(&cd);
 }
 
 block_num filesystem::next_free_block_num() const
