@@ -90,10 +90,8 @@ string filesystem::cmd_ls(const string &path)
     if (!root)
         throw error("file or dir not found");
 
-    directory *dmatch = nullptr;
-    if (splits.second.empty())
-        dmatch = root;
-    else
+    directory *dmatch = root;
+    if (!splits.second.empty())
         dmatch = root->find_child_dir(splits.second);
 
     if (dmatch)
@@ -194,7 +192,7 @@ void filesystem::cmd_rm(const string &path)
     if (!root)
         throw error("source file or dir not found");
 
-    if (splits.second.empty()) {
+    if (splits.second.empty()) { // "/" case
         for (directory &d: root->dirs()) {
             remove_dir(&d);
             root->remove_child_dir(d.name());
