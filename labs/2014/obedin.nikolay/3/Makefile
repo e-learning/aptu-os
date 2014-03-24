@@ -12,7 +12,8 @@ all: codegen
 programs: $(EXECUTABLES)
 
 clean:
-	rm -rvf *.dsym *.dSYM codegen $(EXECUTABLES) *.o *.d
+	@rm -rf *.dsym *.dSYM codegen $(EXECUTABLES) *.o *.d
+	@./tests/clean.sh
 
 codegen:
 	@$(CXX) $(CXXFLAGS) -o $@ codegen.cpp

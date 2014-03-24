@@ -1,1 +1,4 @@
+Error: I/O error while reading/writing file
 Error: can not open source file
+Error: destination filename is too long
+Error: destination dir not found

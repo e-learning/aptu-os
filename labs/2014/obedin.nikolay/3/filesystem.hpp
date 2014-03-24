@@ -8,6 +8,7 @@
 #include <exception>
 #include <vector>
 #include <iterator>
+#include <tuple>
 using namespace std;
 
 #include "types.hpp"
@@ -25,7 +26,12 @@ public:
             bool try_read_metadata = true);
 
     ~filesystem()
-        { write_metadata(); write_bitmap(); }
+    {
+        if (!uncaught_exception()) {
+            write_metadata();
+            write_bitmap();
+        }
+    }
 
     bool is_valid() const
         { return m_block_size >= 1024 && m_blocks_count > 0; }
@@ -71,10 +77,14 @@ private:
         { m_bitmap[n] = t; }
 
     directory *find_last(vector<string> path);
+    tuple<directory*, directory*, string, string>
+        find_roots(const string &, const string &);
 
     void copy_dir(directory *d, const string &name,
             directory *from, directory *to);
     void copy_file(file *f, const string &filename, directory *to);
+
+    //void remove_file();
 
     void read_config();
     void read_metadata();

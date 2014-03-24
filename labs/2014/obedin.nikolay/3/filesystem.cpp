@@ -38,6 +38,8 @@ void filesystem::cmd_import(const string &from_path, const string &to_path)
     string &filename = splits.second;
     if (filename.empty())
         throw error("empty destination filename");
+    if (filename.size() > 10)
+        throw error("destination filename is too long");
 
     directory *root = find_last(splits.first);
     if (!root)
@@ -50,8 +52,8 @@ void filesystem::cmd_import(const string &from_path, const string &to_path)
     ofilebuf buf(this);
     ostream out(&buf);
     out << in.rdbuf();
-    if (!out.good())
-        throw error("I/O error while writing file");
+    if (!buf.is_good || !in.good())
+        throw error("I/O error while reading/writing file");
 
     in.seekg(0, in.end);
     bytes size = in.tellg();
@@ -77,8 +79,8 @@ void filesystem::cmd_export(const string &from_path, const string &to_path)
     ifilebuf buf(this, *fmatch);
     istream in(&buf);
     out << in.rdbuf();
-    if (!out.good())
-        throw error("I/O error while writing file");
+    if (!buf.is_good || !out.good())
+        throw error("I/O error while readin/writing file");
 }
 
 string filesystem::cmd_ls(const string &path)
@@ -120,54 +122,47 @@ void filesystem::cmd_mkdir(const string &path)
             }
         }
         if (found_place) {
+            if (dir.size() > 10)
+                throw error("destination filename is too long");
             if (root->find_child_file(dir))
                 throw error("file with the same name already exists");
             root = root->add_child_dir(directory(dir));
         }
     }
 
-    if (!splits.second.empty()) {
-        if (root->find_child_file(splits.second))
-            throw error("file with the same name already exists");
-        root->add_child_dir(directory(splits.second));
-    }
+    if (splits.second.empty())
+        throw error("empty destination filename");
+    if (splits.second.size() > 10)
+        throw error("destination filename is too long");
+    if (root->find_child_file(splits.second))
+        throw error("file with the same name already exists");
+
+    root->add_child_dir(directory(splits.second));
 }
 
 void filesystem::cmd_move(const string &from_path, const string &to_path)
 {
-    auto from_splits = file::split_path(from_path);
-    directory *from_root = find_last(from_splits.first);
-    if (!from_root)
-        throw error("source file or dir not found");
+    auto roots = find_roots(from_path, to_path);
+    directory *from_root = get<0>(roots);
+    directory *to_root   = get<1>(roots);
+    string &from_name    = get<2>(roots);
+    string &to_name      = get<3>(roots);
 
-    auto to_splits = file::split_path(to_path);
-    directory *to_root = find_last(to_splits.first);
-    if (!to_root)
-        throw error("destination file or dir not found");
-
-    if (from_splits.second.compare(to_splits.second) == 0
-            && to_root == from_root)
-        throw error("can not move into the same place");
-
-    if (to_root->find_child_dir(to_splits.second)
-            || to_root->find_child_file(to_splits.second))
-        throw error("destination file or dir already exists");
-
-    directory *dmatch = from_root->find_child_dir(from_splits.second);
+    directory *dmatch = from_root->find_child_dir(from_name);
     if (dmatch) {
         if (dmatch->is_parent(to_root))
             throw error("can not move dir into itself");
         directory nd(*dmatch);
-        nd.set_name(to_splits.second);
+        nd.set_name(to_name);
         to_root->add_child_dir(nd);
         from_root->remove_child_dir(dmatch->name());
         return;
     }
 
-    file *fmatch = from_root->find_child_file(from_splits.second);
+    file *fmatch = from_root->find_child_file(from_name);
     if (fmatch) {
         file nf(*fmatch);
-        nf.set_name(to_splits.second);
+        nf.set_name(to_name);
         nf.update_ctime();
         to_root->add_child_file(nf);
         from_root->remove_child_file(fmatch->name());
@@ -179,39 +174,50 @@ void filesystem::cmd_move(const string &from_path, const string &to_path)
 
 void filesystem::cmd_copy(const string &from_path, const string &to_path)
 {
-    // TODO: move this into function (and from 'cmd_move' too)
+    auto roots = find_roots(from_path, to_path);
+    directory *from_root = get<0>(roots);
+    directory *to_root   = get<1>(roots);
+    string &from_name    = get<2>(roots);
+    string &to_name      = get<3>(roots);
+
+    directory *dmatch = from_root->find_child_dir(from_name);
+    if (dmatch)
+        return copy_dir(dmatch, to_name, from_root, to_root);
+
+    file *fmatch = from_root->find_child_file(from_name);
+    if (fmatch)
+        return copy_file(fmatch, to_name, to_root);
+
+    throw error("source file or dir not found");
+}
+
+tuple<directory*, directory*, string, string>
+filesystem::find_roots(const string &from_path, const string &to_path)
+{
     auto from_splits = file::split_path(from_path);
     directory *from_root = find_last(from_splits.first);
     if (!from_root)
         throw error("source file or dir not found");
 
     auto to_splits = file::split_path(to_path);
+    if (to_splits.second.empty())
+        throw error("empty destination filename");
+    if (to_splits.second.size() > 10)
+        throw error("destination filename is too long");
+
     directory *to_root = find_last(to_splits.first);
     if (!to_root)
         throw error("destination file or dir not found");
 
     if (from_splits.second.compare(to_splits.second) == 0
             && to_root == from_root)
-        throw error("can not copy into the same place");
+        throw error("can not copy/move into the same place");
 
     if (to_root->find_child_dir(to_splits.second)
             || to_root->find_child_file(to_splits.second))
         throw error("destination file or dir already exists");
 
-    directory *dmatch = from_root->find_child_dir(from_splits.second);
-    if (dmatch) {
-        // recursively copy directory
-        copy_dir(dmatch, to_splits.second, from_root, to_root);
-        return;
-    }
-
-    file *fmatch = from_root->find_child_file(from_splits.second);
-    if (fmatch) {
-        copy_file(fmatch, to_splits.second, to_root);
-        return;
-    }
-
-    throw error("source file or dir not found");
+    return make_tuple(from_root, to_root, from_splits.second, to_splits.second);
 }
 
 void filesystem::copy_dir(directory *d, const string &name,
@@ -238,8 +244,8 @@ void filesystem::copy_file(file *f, const string &filename,
     ostream out(&obuf);
 
     out << in.rdbuf();
-    if (!out.good())
-        throw error("I/O error while writing file");
+    if (!ibuf.is_good || !obuf.is_good)
+        throw error("I/O error while reading/writing file");
 
     file nf(filename, start_block, f->size());
     to->add_child_file(nf);

@@ -6,12 +6,16 @@ int ofilebuf::flush()
     if (cur_buf_size == 0)
         return cur_buf_size;
 
-    if (m_cur_block_num == filesystem::NO_FREE_BLOCKS)
+    if (m_cur_block_num == filesystem::NO_FREE_BLOCKS) {
+        is_good = false;
         return EOF;
+    }
 
     ofstream out(m_fs->block_path(m_cur_block_num), ios::binary | ios::trunc);
-    if (!out.is_open())
+    if (!out.is_open()) {
+        is_good = false;
         return EOF;
+    }
 
     m_fs->mark_block(m_cur_block_num, filesystem::USED);
     m_cur_block_num = m_fs->next_free_block_num();
@@ -48,8 +52,10 @@ int ifilebuf::underflow()
         return EOF;
 
     ifstream in(m_fs->block_path(m_cur_block_num), ios::binary);
-    if (!in.is_open())
+    if (!in.is_open()) {
+        is_good = false;
         return EOF;
+    }
 
     long int bytes_remaining = m_size - m_bytes_read;
     if (bytes_remaining > (long int)m_fs->block_size()) {
@@ -67,6 +73,9 @@ int ifilebuf::underflow()
             n = n << offset;
             m_cur_block_num |= n;
         }
+
+        if (m_collect_blocks)
+            blocks.push_back(m_cur_block_num);
     } else {
         in.read(m_buffer, bytes_remaining);
         bytes_remaining = in.gcount();

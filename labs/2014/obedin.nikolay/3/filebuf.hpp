@@ -21,6 +21,8 @@ public:
     virtual ~ofilebuf()
         { sync(); delete[] m_buffer; }
 
+    bool is_good = true;
+
 protected:
     filesystem *m_fs;
     block_num m_cur_block_num;
@@ -42,12 +44,20 @@ private:
 class ifilebuf: public streambuf {
 
 public:
-    explicit ifilebuf(filesystem *fs, const file &f)
+    explicit ifilebuf(filesystem *fs, const file &f, bool collect_blocks=false)
         : m_fs(fs), m_cur_block_num(f.start_block())
         , m_buffer_size(max(f.size(), fs->block_size()-sizeof(block_num)))
         , m_buffer(new char[m_buffer_size])
         , m_bytes_read(0), m_size(f.size())
-        { setg(m_buffer, m_buffer, m_buffer); }
+        , m_collect_blocks(collect_blocks)
+    {
+        setg(m_buffer, m_buffer, m_buffer);
+        if (m_collect_blocks)
+            blocks.push_back(m_cur_block_num);
+    }
+
+    vector<block_num> blocks;
+    bool is_good = true;
 
 protected:
     filesystem *m_fs;
@@ -56,6 +66,7 @@ protected:
     char *m_buffer;
     long int m_bytes_read;
     long int m_size;
+    bool m_collect_blocks;
 
     virtual int underflow();
 
