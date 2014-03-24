@@ -283,13 +283,13 @@ void filesystem::remove_file(file *f)
 {
     ifilebuf buf(this, *f, true);
     istream in(&buf);
-    ostream out(nullptr);
+    ofstream out("/dev/null");
     out << in.rdbuf();
     if (!buf.is_good)
         throw error("I/O error while reading file");
 
     for(block_num i: buf.blocks)
-        m_bitmap[i] = 0;
+        m_bitmap[i] = FREE;
 }
 
 void filesystem::remove_dir(directory *d)

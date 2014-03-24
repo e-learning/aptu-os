@@ -25,4 +25,8 @@ test() {
     run ./ls        $FS_DIR /
 
     run ./rm        $FS_DIR /non_existent_dir
+    run ./import    $FS_DIR $FILES_DIR/file2 /file1
+    run ./copy      $FS_DIR /file1 /file2
+    run ./copy      $FS_DIR /file1 /file3
+    run ./copy      $FS_DIR /file1 /file4
 }
