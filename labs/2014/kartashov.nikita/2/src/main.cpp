@@ -37,7 +37,7 @@ struct io_operation
 class process
 {
 	public:
-	process(string const& id, 
+		process(string const& id, 
 			size_t at,
 			size_t wt, 
 			list<io_operation> ios, 
@@ -76,7 +76,7 @@ class process
 
 		bool finishes_in(size_t time) const
 		{
-			return m_work_time <= time;
+			return m_work_time <= time && m_operations.empty();
 		}
 
 		bool io_in_time(const size_t time) const
