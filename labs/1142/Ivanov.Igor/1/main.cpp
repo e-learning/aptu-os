@@ -10,9 +10,7 @@ using namespace std;
 
 int main(void)
 {
-        //cout<<"Привет, "<<getenv("USERNAME")<<"!"<<endl;       
-
-        string command,argument;
+	string command,argument;
 	string qstring;
 	char qchar[50];
 	while (1)
