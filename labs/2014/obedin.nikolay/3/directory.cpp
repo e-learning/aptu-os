@@ -34,6 +34,22 @@ bool directory::is_parent(directory *child) const
     return child == this;
 }
 
+vector<file> directory::files()
+{
+    vector<file> results;
+    for (auto &f: m_files)
+        results.push_back(f.second);
+    return results;
+}
+
+vector<directory> directory::dirs()
+{
+    vector<directory> results;
+    for (auto &d: m_dirs)
+        results.push_back(d.second);
+    return results;
+}
+
 istream &operator>>(istream &in, directory &d)
 {
     in >> d.m_name;

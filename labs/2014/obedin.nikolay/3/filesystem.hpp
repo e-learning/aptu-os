@@ -40,6 +40,7 @@ public:
     void cmd_mkdir(const string &path);
 
     void cmd_move(const string &from_path, const string &to_path);
+    void cmd_copy(const string &from_path, const string &to_path);
 
 private:
     friend class ofilebuf;
@@ -70,6 +71,10 @@ private:
         { m_bitmap[n] = t; }
 
     directory *find_last(vector<string> path);
+
+    void copy_dir(directory *d, const string &name,
+            directory *from, directory *to);
+    void copy_file(file *f, const string &filename, directory *to);
 
     void read_config();
     void read_metadata();

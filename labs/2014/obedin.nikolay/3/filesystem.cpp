@@ -149,6 +149,10 @@ void filesystem::cmd_move(const string &from_path, const string &to_path)
             && to_root == from_root)
         throw error("can not move into the same place");
 
+    if (to_root->find_child_dir(to_splits.second)
+            || to_root->find_child_file(to_splits.second))
+        throw error("destination file or dir already exists");
+
     directory *dmatch = from_root->find_child_dir(from_splits.second);
     if (dmatch) {
         if (dmatch->is_parent(to_root))
@@ -171,6 +175,74 @@ void filesystem::cmd_move(const string &from_path, const string &to_path)
     }
 
     throw error("source file or dir not found");
+}
+
+void filesystem::cmd_copy(const string &from_path, const string &to_path)
+{
+    // TODO: move this into function (and from 'cmd_move' too)
+    auto from_splits = file::split_path(from_path);
+    directory *from_root = find_last(from_splits.first);
+    if (!from_root)
+        throw error("source file or dir not found");
+
+    auto to_splits = file::split_path(to_path);
+    directory *to_root = find_last(to_splits.first);
+    if (!to_root)
+        throw error("destination file or dir not found");
+
+    if (from_splits.second.compare(to_splits.second) == 0
+            && to_root == from_root)
+        throw error("can not copy into the same place");
+
+    if (to_root->find_child_dir(to_splits.second)
+            || to_root->find_child_file(to_splits.second))
+        throw error("destination file or dir already exists");
+
+    directory *dmatch = from_root->find_child_dir(from_splits.second);
+    if (dmatch) {
+        // recursively copy directory
+        copy_dir(dmatch, to_splits.second, from_root, to_root);
+        return;
+    }
+
+    file *fmatch = from_root->find_child_file(from_splits.second);
+    if (fmatch) {
+        copy_file(fmatch, to_splits.second, to_root);
+        return;
+    }
+
+    throw error("source file or dir not found");
+}
+
+void filesystem::copy_dir(directory *d, const string &name,
+        directory *from, directory *to)
+{
+    directory *nd = to->add_child_dir(directory(name));
+    for(file &f: d->files())
+        copy_file(&f, f.name(), nd);
+
+    for(directory &cd: d->dirs())
+        copy_dir(&cd, cd.name(), d, nd);
+}
+
+void filesystem::copy_file(file *f, const string &filename,
+        directory *to)
+{
+    block_num start_block = next_free_block_num();
+    if (start_block == NO_FREE_BLOCKS)
+        throw error("no free blocks are available");
+
+    ifilebuf ibuf(this, *f);
+    istream in(&ibuf);
+    ofilebuf obuf(this);
+    ostream out(&obuf);
+
+    out << in.rdbuf();
+    if (!out.good())
+        throw error("I/O error while writing file");
+
+    file nf(filename, start_block, f->size());
+    to->add_child_file(nf);
 }
 
 block_num filesystem::next_free_block_num() const

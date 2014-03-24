@@ -81,6 +81,8 @@ public:
         { m_files.erase(name); }
 
     string info() const;
+    vector<file> files();
+    vector<directory> dirs();
 
     friend istream &operator>>(istream &in, directory &d);
     friend ostream &operator<<(ostream &out, const directory &d);
