@@ -31,17 +31,17 @@ void Process::start(size_t& globalTime, size_t c)
 
         if (timeBeforeIO <= c) {
             globalTime += timeBeforeIO;
-            begin_time = globalTime + ios.front()->duration + 1;
+            begin_time = globalTime + ios.front()->duration;
             real_duration += timeBeforeIO + ios.front()->duration;
             ios.pop_front();
         } else {
             globalTime += c;
-            begin_time = globalTime + 1;
+            begin_time = globalTime;
             real_duration += c;
         }
     } else {
         globalTime += c;
-        begin_time = globalTime + 1;
+        begin_time = globalTime;
         real_duration += c;
     }
 }

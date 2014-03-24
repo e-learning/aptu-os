@@ -20,23 +20,7 @@ void Scheduler::startScheduler(deque<process_ptr>& processes, size_t c)
         sort((*it)->ios.begin(), (*it)->ios.end());
 
     while(!fp.empty() || !sp.empty() || !processes.empty()) {
-        if (!fp.empty()) {
-            fp.front()->start(globalTime, c);
 
-            if(!fp.front()->stop()) processes.push_back(fp.front());
-
-            fp.pop_front();
-            prevIDLE = false;
-            continue;
-        } else if (!sp.empty()) {
-            sp.front()->start(globalTime, c);
-
-            if(!sp.front()->stop()) processes.push_back(sp.front());
-
-            sp.pop_front();
-            prevIDLE = false;
-            continue;
-        }
 
         for(int i = sp.size(); i > 0 && !sp.empty(); --i) {
             if (sp.front()->inQuantum(c) || sp.front()->hasIO(c))
@@ -58,6 +42,24 @@ void Scheduler::startScheduler(deque<process_ptr>& processes, size_t c)
             }
 
             processes.pop_front();
+        }
+
+        if (!fp.empty()) {
+            fp.front()->start(globalTime, c);
+
+            if(!fp.front()->stop()) processes.push_back(fp.front());
+
+            fp.pop_front();
+            prevIDLE = false;
+            continue;
+        } else if (!sp.empty()) {
+            sp.front()->start(globalTime, c);
+
+            if(!sp.front()->stop()) processes.push_back(sp.front());
+
+            sp.pop_front();
+            prevIDLE = false;
+            continue;
         }
 
         if (fp.empty() && sp.empty()) {
