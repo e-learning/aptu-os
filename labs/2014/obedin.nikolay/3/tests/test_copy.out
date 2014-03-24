@@ -1,0 +1,16 @@
+D test
+D test2
+F file1
+F file2
+D folder
+F file1
+F file2
+D folder
+F file1
+F file2
+D another
+Error: destination file or dir not found
+Error: source file or dir not found
+Error: source file or dir not found
+Error: can not copy/move into the same place
+Error: I/O error while reading/writing file
