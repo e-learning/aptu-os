@@ -9,6 +9,7 @@ int task::quant = 0;
 
 int main()
 {
+
     sheduler sch;
     std::cin >> task::quant;
 
@@ -23,4 +24,3 @@ int main()
 
     return 0;
 }
-
