@@ -21,15 +21,15 @@ void sheduler::task_unstarted() {
 
     std::deque<task>::iterator it = std::find_if(unstarted.begin(), unstarted.end(),
                            [&](task const & t) {return t.start > timer; });
-    std::copy(unstarted.begin(), it, std::back_inserter(waiting));
+    std::copy(unstarted.begin(), it, back_inserter(waiting));
     unstarted.erase(unstarted.begin(), it);
 }
 
 void sheduler::task_IO() {
 
-    std::vector<task>::iterator it = std::remove_if(io_waiting.begin(),
-                                         io_waiting.end(), std::mem_fun_ref(&task::update_working_time));
-    std::copy(it, io_waiting.end(), std::back_inserter(waiting));
+    std::vector<task>::iterator it = std::remove_if(io_waiting.begin(), io_waiting.end(),
+                                                    std::mem_fun_ref(&task::update_IO_time));
+    std::copy(it, io_waiting.end(), back_inserter(waiting));
     io_waiting.erase(it, io_waiting.end());
 
 }
