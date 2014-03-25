@@ -6,7 +6,7 @@ execs=stat init format import export mkdir ls copy move rm
 
 VPATH = $(srcdir) $(bindir) $(objdir) 
 CXX=g++
-CXXFLAGS=-g -std=c++11 -Wall -pedantic -Wextra -Werror
+CXXFLAGS=-O2 -std=c++11 -Wall -pedantic -Wextra -Werror
 
 objects=myfs.o 
 
