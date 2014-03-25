@@ -17,18 +17,15 @@ struct Process {
         ss >> startTime >> endTime;
         int io_start;
         int io_len;
-        // priority_queue<Process, vector<Process>, timeToRunComparator> completed; 
         while(ss >> io_start >> io_len) {
             IOs.push(make_pair(io_start, io_len));
         }
     }
-
     int timeToRun() const {
         if(!IOs.empty()) return IOs.front().first - elapsedTime;
         else return (endTime - elapsedTime);        
     }
 };
-
 
 struct startComparator {
     bool operator() (Process const & first, Process const & second) {
@@ -45,7 +42,6 @@ struct timeToRunComparator {
 int quantumLength, currentTime;
 priority_queue<Process, vector<Process>, timeToRunComparator> completed;
 priority_queue<Process, vector<Process>, startComparator> pending;
-
 
 void readInput() {
     cin >> quantumLength;
@@ -65,9 +61,7 @@ void executeProcess(Process & currentProcess) {
         int ioLength = currentProcess.IOs.front().second;
         currentProcess.elapsedTime += ioLength;
         currentProcess.startTime = currentTime + ioLength;
-
         currentProcess.IOs.pop();
-
         pending.push(currentProcess);
     }
 }
@@ -86,12 +80,10 @@ void makeMove() {
 
     Process currentProcess = completed.top();
     completed.pop();
-
     cout << currentTime << " " << currentProcess.name << endl;
     int activeTime = min(quantumLength, currentProcess.timeToRun());
     currentProcess.elapsedTime += activeTime;
     currentTime += activeTime;
-
     executeProcess(currentProcess); 
 }
 
@@ -100,6 +92,5 @@ int main() {
     while(!pending.empty() || !completed.empty()){
         makeMove();
     }
-
     return 0;
 }
