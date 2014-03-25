@@ -18,9 +18,4 @@ struct IO {
 
 typedef shared_ptr<IO> io_ptr;
 
-bool inline operator<(io_ptr const io1, io_ptr const io2)
-{
-    return io1->begin_time < io2->begin_time;
-}
-
 #endif // IO_H

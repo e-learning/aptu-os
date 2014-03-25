@@ -16,9 +16,6 @@ void Scheduler::startScheduler(deque<process_ptr>& processes, size_t c)
     deque<process_ptr> sp;
     bool prevIDLE = false;
 
-    for(deque<process_ptr>::iterator it = processes.begin(); it != processes.end(); ++it)
-        sort((*it)->ios.begin(), (*it)->ios.end());
-
     while(!fp.empty() || !sp.empty() || !processes.empty()) {
 
 
