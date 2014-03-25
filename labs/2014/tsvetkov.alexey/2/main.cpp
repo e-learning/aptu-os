@@ -87,21 +87,26 @@ int main(int argc, char* argv[]) {
     ready.erase(ready.begin());
 
     long long cpu_time;
-    if (!ts.iops.empty() && ts.iops.front().start_time <= c) {
+    if (!ts.iops.empty() && ts.iops.front().start_time == 0) {
       io_op io = ts.iops.front();
       ts.iops.pop_front();
       
-      cpu_time = io.start_time; 
-      
       ts.total_time -= io.total_time;
-      ts.start_time += io.total_time;
-      decrease_start(ts.iops, io.total_time);
+      ts.start_time = time + io.total_time;
+      decrease_start(ts.iops, io.total_time); 
+      tasks.insert(std::make_pair(ts.start_time, ts));
+      continue;     
+    } 
+
+    if (!ts.iops.empty() && ts.iops.front().start_time < c) {
+      io_op io = ts.iops.front();
+      cpu_time = io.start_time;
     } else {
       cpu_time = std::min(ts.total_time, c);
     }
     
     ts.total_time -= cpu_time;
-    ts.start_time += cpu_time;
+    ts.start_time = time + cpu_time;
     decrease_start(ts.iops, cpu_time);
 
     if (ts.total_time > 0) {
