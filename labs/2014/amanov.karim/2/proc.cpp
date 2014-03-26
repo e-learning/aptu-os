@@ -34,7 +34,7 @@ bool Proc::execIO() {
 
 int Proc::getPriority(unsigned int q) {
 	if (ioOperations.size() > 0) {
-		if (ioOperations.front().first - workCycles < q)
+		if (ioOperations.front().first - workCycles <= q)
 			return 1;
 	}
 	if (procDuration - workCycles <= q)
