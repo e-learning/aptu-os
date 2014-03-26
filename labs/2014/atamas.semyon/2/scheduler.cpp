@@ -3,6 +3,7 @@
 #include <vector>
 #include <queue>
 #include <algorithm>
+#include <fstream>
 
 using std::string;
 using std::istream;
@@ -15,7 +16,8 @@ using std::priority_queue;
 using std::pair;
 using std::queue;
 
-typedef pair<size_t, size_t> IO;
+typedef pair<int, int> IO;
+
 
 int timer = 0;
 int procQuant;
@@ -24,8 +26,16 @@ class Process {
 
 public:
 
+//    bool hasIOwithinQuant() const {
+//        return (_startTime <= timer)
+//                && (_io.size() == 0
+//                    ? false
+//                    : _io.top().first - (_duration - _remainingTime) <= procQuant);
+//    }
+
+
 	bool hasIOwithinQuant() const{
-		if( _startTime <= timer && _io.size() != 0){
+		if( _startTime <= timer && !_io.empty()){
 			return _io.top().first - ( _duration - _remainingTime ) <= procQuant;
 		} else{
 			return false;
@@ -33,7 +43,7 @@ public:
 	}
 
 	bool stopsWithinQuant() const{
-		return _startTime < timer && _remainingTime <= procQuant;
+		return _startTime <= timer && _remainingTime <= procQuant;
 	}
 
 	bool completed() const {
@@ -44,6 +54,7 @@ public:
         if(_io.size() == 0){
         	return false;
         } else{
+        	IO tmp = _io.top();
         	return _io.top().first == _duration - _remainingTime;
         }
     }
@@ -109,7 +120,7 @@ istream & operator >> (istream & in, Process & p){
 	}
 	stringstream ss(line);
 	while (ss.good()) {
-		size_t a, b;
+		int a, b;
 	    ss >> a >> b;
 	    if (!ss.fail()) {
 	    	p._io.push(IO(a,b));
@@ -143,12 +154,22 @@ void flushIOqueue() {
 
 int main() {
 
+//	std::ifstream in;
+//	in.open("in");
     cin >> procQuant;
     cin.ignore(255,'\n');
-	Process p;
-    while (cin >> p) {
-    	processes.push(p);
+	Process * p = new Process();
+    while (cin >> *p) {
+    	processes.push(*p);
+    	p = new Process();
     }
+
+//	for(int i=0 ; i < 4; ++i){
+//		in >> *p;
+//		processes.push(*p);
+//		p = new Process();
+//	}
+
 
     while(!processes.empty() || !ioProcesses.empty()) {
 
