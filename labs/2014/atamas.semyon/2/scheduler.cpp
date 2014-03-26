@@ -33,7 +33,7 @@ public:
 	}
 
 	bool stopsWithinQuant() const{
-		return _startTime < timer && _remainingTime < procQuant;
+		return _startTime < timer && _remainingTime <= procQuant;
 	}
 
 	bool completed() const {
@@ -61,16 +61,19 @@ public:
 		_remainingTime--;
 	}
 	bool operator <(const Process & other) const {
+
 		if (this->hasIOwithinQuant()) {
 			return false;
 	    } else if (other.hasIOwithinQuant()) {
 	        return true;
 	    }
+
 	    if (this->stopsWithinQuant()) {
 	        return false;
 	    } else if (other.stopsWithinQuant()) {
 	    	return true;
 	    }
+
 	    return this->_startTime > other._startTime;
 	}
 
