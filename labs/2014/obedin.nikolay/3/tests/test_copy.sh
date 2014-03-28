@@ -16,6 +16,9 @@ test() {
     run fix_ls      $FS_DIR /test
     run fix_ls      $FS_DIR /test2
     run fix_ls      $FS_DIR /test2/folder
+    run ./mkdir     $FS_DIR /test3
+    run ./copy      $FS_DIR /test3 /test2
+    run fix_ls      $FS_DIR /test2
 
     run ./copy      $FS_DIR /test2 /non_existing_dir/whatever
     run ./copy      $FS_DIR /non_existing_dir/whatever /whatever

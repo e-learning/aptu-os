@@ -13,7 +13,7 @@ programs: $(EXECUTABLES)
 
 clean:
 	@rm -rf *.dsym *.dSYM codegen $(EXECUTABLES) *.o *.d
-	./tests/clean.sh
+	@./tests/clean.sh
 
 codegen:
 	@$(CXX) $(CXXFLAGS) -o $@ codegen.cpp

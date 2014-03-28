@@ -242,9 +242,16 @@ filesystem::find_roots(const string &from_path, const string &to_path)
             && to_root == from_root)
         throw error("can not copy/move into the same place");
 
-    if (to_root->find_child_dir(to_splits.second)
-            || to_root->find_child_file(to_splits.second))
-        throw error("destination file or dir already exists");
+    if (to_root->find_child_file(to_splits.second))
+        throw error("file with the same name already exists");
+
+    if (to_root->find_child_dir(to_splits.second)) {
+        to_root = to_root->find_child_dir(to_splits.second);
+        to_splits.second = from_splits.second;
+        if (to_root->find_child_dir(to_splits.second)
+                || to_root->find_child_file(to_splits.second))
+            throw error("file or dir with the same name already exists");
+    }
 
     return make_tuple(from_root, to_root, from_splits.second, to_splits.second);
 }
