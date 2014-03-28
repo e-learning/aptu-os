@@ -95,11 +95,11 @@ string filesystem::cmd_ls(const string &path)
         dmatch = root->find_child_dir(splits.second);
 
     if (dmatch)
-        return dmatch->info();
+        return dmatch->info(m_block_size);
 
     file *fmatch = root->find_child_file(splits.second);
     if (fmatch)
-        return fmatch->info();
+        return fmatch->info(m_block_size);
 
     throw error("file or dir not found");
 }
@@ -150,6 +150,7 @@ void filesystem::cmd_move(const string &from_path, const string &to_path)
             throw error("can not move dir into itself");
         directory nd(*dmatch);
         nd.set_name(to_name);
+        nd.update_ctime();
         to_root->add_child_dir(nd);
         from_root->remove_child_dir(dmatch->name());
         return;

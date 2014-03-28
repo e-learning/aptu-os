@@ -8,9 +8,11 @@
 #include <algorithm>
 #include <iterator>
 #include <ctime>
+#include <iomanip>
 using namespace std;
 
 #include "types.hpp"
+#include "utils.hpp"
 
 
 class file {
@@ -39,7 +41,7 @@ public:
     bool is_valid() const
         { return !m_name.empty(); }
 
-    string info() const;
+    string info(bytes block_size) const;
 
     block_num start_block() const
         { return m_start_block; }

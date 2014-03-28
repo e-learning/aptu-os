@@ -17,13 +17,16 @@ file *directory::find_child_file(const string &name)
     return &(match->second);
 }
 
-string directory::info() const
+string directory::info(bytes block_size) const
 {
     ostringstream ss;
+    ss << "D | " << setw(11) << m_name
+       << " |      0 | " << time_to_string(m_ctime) << endl;
     for (auto &entry: m_dirs)
-        ss << "D " << entry.first << endl;
+        ss << "D | " << setw(11) << entry.first
+           << " |      0 | " << time_to_string(entry.second.m_ctime) << endl;
     for (auto &entry: m_files)
-        ss << "F " << entry.first << endl;
+        ss << entry.second.info(block_size);
     return ss.str();
 }
 
@@ -53,6 +56,7 @@ vector<directory> directory::dirs()
 istream &operator>>(istream &in, directory &d)
 {
     in >> d.m_name;
+    in >> d.m_ctime;
     size_t dir_count  = 0;
     size_t file_count = 0;
     in >> dir_count >> file_count;
@@ -72,7 +76,8 @@ istream &operator>>(istream &in, directory &d)
 
 ostream &operator<<(ostream &out, const directory &d)
 {
-    out << d.m_name << " ";
+    out << d.m_name  << " ";
+    out << d.m_ctime << " ";
     out << d.m_dirs.size() << " ";
     out << d.m_files.size() << endl;
     for (auto &entry: d.m_dirs)

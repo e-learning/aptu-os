@@ -17,3 +17,7 @@ before() {
 after() {
     ./format $FS_DIR
 }
+
+fix_ls() {
+    ./ls $@ | awk 'NR>2 { print $1 " " $3 }'
+}

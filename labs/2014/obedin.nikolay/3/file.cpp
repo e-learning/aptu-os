@@ -16,17 +16,13 @@ file::split_path(const string &path)
     return make_pair(result, filename);
 }
 
-string file::info() const
+string file::info(bytes block_size) const
 {
     ostringstream ss;
-    ss << m_name << endl;
-    ss << m_size << " bytes" << endl;
-
-    char buf[128];
-    time_t t = m_ctime;
-    struct tm *timeinfo = localtime(&t);
-    strftime(buf, 128, "%c", timeinfo);
-    ss << buf << endl;
+    ss << "F | ";
+    ss << setw(11) << m_name << " | ";
+    ss << setw(6) << m_size / block_size << " | ";
+    ss << time_to_string(m_ctime) << endl;
     return ss.str();
 }
 

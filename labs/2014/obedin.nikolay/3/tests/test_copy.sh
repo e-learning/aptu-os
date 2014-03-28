@@ -12,15 +12,14 @@ test() {
     run ./mkdir     $FS_DIR /test/folder
     run ./mkdir     $FS_DIR /test/folder/another
     run ./copy      $FS_DIR /test /test2
-    run ./ls        $FS_DIR /
-    run ./ls        $FS_DIR /test
-    run ./ls        $FS_DIR /test2
-    run ./ls        $FS_DIR /test2/folder
+    run fix_ls      $FS_DIR /
+    run fix_ls      $FS_DIR /test
+    run fix_ls      $FS_DIR /test2
+    run fix_ls      $FS_DIR /test2/folder
 
     run ./copy      $FS_DIR /test2 /non_existing_dir/whatever
     run ./copy      $FS_DIR /non_existing_dir/whatever /whatever
     run ./copy      $FS_DIR /non_existing_dir /whatever
     run ./copy      $FS_DIR /test2 /test2
-
     run ./copy      $FS_DIR /test2 /test3
 }

@@ -4,9 +4,12 @@
 #include <ios>
 #include <map>
 #include <string>
+#include <ctime>
+#include <iomanip>
 using namespace std;
 
 #include "types.hpp"
+#include "utils.hpp"
 #include "file.hpp"
 
 
@@ -21,6 +24,7 @@ public:
     directory() {};
     explicit directory(const string &name)
         : m_name(name), m_parent(nullptr)
+        , m_ctime(time(nullptr))
         {}
 
     directory(const directory &d)
@@ -29,6 +33,7 @@ public:
         m_parent = d.m_parent;
         m_files  = d.m_files;
         m_dirs   = d.m_dirs;
+        m_ctime  = d.m_ctime;
         for (auto &d: m_dirs)
             d.second.set_parent(this);
     }
@@ -39,6 +44,7 @@ public:
         m_parent = d.m_parent;
         m_files  = d.m_files;
         m_dirs   = d.m_dirs;
+        m_ctime  = d.m_ctime;
         for (auto &d: m_dirs)
             d.second.set_parent(this);
         return *this;
@@ -61,6 +67,9 @@ public:
 
     bool is_parent(directory *child) const;
 
+    void update_ctime()
+        { m_ctime = time(nullptr); }
+
     directory *find_child_dir(const string &name);
     file *find_child_file(const string &name);
 
@@ -80,7 +89,7 @@ public:
     void remove_child_file(const string &name)
         { m_files.erase(name); }
 
-    string info() const;
+    string info(bytes block_size) const;
     vector<file> files();
     vector<directory> dirs();
 
@@ -92,6 +101,7 @@ private:
     directory *m_parent;
     filemap m_files;
     dirmap m_dirs;
+    time_t m_ctime;
 };
 
 

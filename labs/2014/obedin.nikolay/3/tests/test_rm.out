@@ -1,11 +1,26 @@
+D /
 D test
 F file1
 F file2
+
+D /
 D test
 F file2
+
+D test
 F file1
+
+D test
 D test2
 F file1
+
+D test2
 F file2
+
+D /
 F file2
+
+D /
+
 Error: source file or dir not found
+
