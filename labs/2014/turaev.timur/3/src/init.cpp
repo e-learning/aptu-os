@@ -10,7 +10,6 @@ int main(int argc, char *argv[])
     try
     {
         FileSystem fs(argv[1]);
-        fs.load();
         fs.run_init();
         fs.save();
     }
