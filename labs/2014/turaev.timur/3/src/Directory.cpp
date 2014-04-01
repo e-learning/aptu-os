@@ -5,7 +5,8 @@
 
 using std::endl;
 
-string Directory::get_info() {
+string Directory::get_info()
+{
     std::stringstream ss;
     for (auto it = directories.begin(); it != directories.end(); ++it) {
         ss << "D " << it->first << endl;
@@ -16,8 +17,9 @@ string Directory::get_info() {
     return ss.str();
 }
 
-void Directory::load(ifstream &s, string const& location) {
-    name = utils::read_string(s);    
+void Directory::load(ifstream &s, string const &location)
+{
+    name = utils::read_string(s);
     s.read(reinterpret_cast<char *>(&modified_time), sizeof(modified_time));
     size_t d, f;
     s.read(reinterpret_cast<char *>(&d), sizeof(d));
@@ -34,7 +36,8 @@ void Directory::load(ifstream &s, string const& location) {
     }
 }
 
-void Directory::save(ofstream &s) const {
+void Directory::save(ofstream &s) const
+{
     utils::write_string(s, name);
     s.write(reinterpret_cast<const char *>(&modified_time), sizeof(modified_time));
     size_t dirSize = directories.size();
@@ -49,23 +52,25 @@ void Directory::save(ofstream &s) const {
     }
 }
 
-Directory *Directory::findLastDirectory(Path const &path) {
+Directory *Directory::findLastDirectory(Path const &path)
+{
     Directory *current_dir = this;
 
     vector<string> const &t = path.getSplittedPath();
 
-    for (int i = 0; i < (int) t.size() - 1; ++i) {
-        if (directories.find(t[i]) == directories.end())
+    for (int i = 0; i < (int)t.size() - 1; ++i) {
+        if (current_dir->directories.find(t[i]) == current_dir->directories.end())
             return nullptr;
-        current_dir = &directories[t[i]];
+        current_dir = &current_dir->directories[t[i]];
     }
     return current_dir;
 }
 
-void Directory::fillUsedBlocks(vector<char> &used) {
+void Directory::fillUsedBlocks(vector<char> &used)
+{
     for (auto d : getAllDirectories())
         d.fillUsedBlocks(used);
     for (auto f : getAllFiles())
-        for (auto b : ((File) f).blocks)
+        for (auto b : ((File)f).blocks)
             used[b] = 1;
 }
