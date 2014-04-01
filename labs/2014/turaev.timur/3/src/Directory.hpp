@@ -54,7 +54,7 @@ public:
 
     string get_info();
 
-    void load(ifstream &);
+    void load(ifstream&, string const& location);
 
     void save(ofstream &) const;
 
@@ -95,15 +95,15 @@ public:
 
     void addFile(File const &f)
     {
-        if (existsDir(f.getName()))
+        if (existsDir(f.name))
             throw std::runtime_error("There is a directory with the same name");
 
-        files[f.getName()] = f;
+        files[f.name] = f;
     }
 
     void removeFile(File const &f)
     {
-        files.erase(f.getName());
+        files.erase(f.name);
     }
 
     void removeDir(Directory const &d)
@@ -151,6 +151,8 @@ public:
             res.push_back(f.second);
         return res;
     }
+
+    void fillUsedBlocks(vector<char> &);
 
 private:
     string name;
