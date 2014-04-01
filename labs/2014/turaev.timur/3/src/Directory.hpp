@@ -28,30 +28,30 @@ public:
     {
     }
 
-    Directory(Directory const &other)
-        : name(other.name),
-          modified_time(other.modified_time),
-          files(other.files),
-          directories(other.directories)
-    {
-    }
+    // Directory(Directory const &other)
+    //     : name(other.name),
+    //       modified_time(other.modified_time),
+    //       files(other.files),
+    //       directories(other.directories)
+    // {
+    // }
 
-    void swap(Directory &directory)
-    {
-        using std::swap;
-        swap(name, directory.name);
-        swap(modified_time, directory.modified_time);
-        swap(files, directory.files);
-        swap(directories, directory.directories);
-    }
-
-    Directory &operator=(Directory const &other)
-    {
-        if (&other != this)
-            Directory(other).swap(*this);
-        return *this;
-    }
-
+    // void swap(Directory &directory)
+    // {
+    //     using std::swap;
+    //     swap(name, directory.name);
+    //     swap(modified_time, directory.modified_time);
+    //     swap(files, directory.files);
+    //     swap(directories, directory.directories);
+    // }
+    // 
+    // Directory &operator=(Directory const &other)
+    // {
+    //     if (&other != this)
+    //         Directory(other).swap(*this);
+    //     return *this;
+    // }
+    // 
     string get_info();
 
     void load(ifstream&, string const& location);

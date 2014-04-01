@@ -48,6 +48,8 @@ void FileSystem::save() {
 
 void FileSystem::load() {
     ifstream in(utils::pathAppend(location, "0"), std::ios_base::binary);
+    if (!in.is_open())
+            throw runtime_error("0 block not found");    
     root.load(in, location);
     root.fillUsedBlocks(usedBlocks);
     usedBlocks[0] = 1;
@@ -199,7 +201,7 @@ void FileSystem::copy_dir_to(Directory const &directory, const string &destinati
         Directory d(directory.getName());
         targetDirectory->addDirectory(d);
     }
-    copy_directory(directory, targetDirectory->getSubDir(directory.getName()));
+    copy_directory(directory, targetDirectory->getSubDir(path.getFileName()));
 }
 
 void FileSystem::copy_file_to(File const &file, const string &destination) {
@@ -229,7 +231,7 @@ void FileSystem::copy_file_to(File const &file, const string &destination) {
 
 void FileSystem::copy_file(File const &file, Directory &targetDirectory, string const &newName) {
     if (targetDirectory.existsFile(newName))
-        remove_file(targetDirectory, targetDirectory.getFile(file.name));
+        remove_file(targetDirectory, targetDirectory.getFile(newName));
 
     if (targetDirectory.existsDir(file.name))
         throw runtime_error("Cannot overwrite directory '" + file.name + " with non-directory");

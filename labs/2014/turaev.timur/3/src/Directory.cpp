@@ -1,6 +1,7 @@
 #include <sstream>
 #include <iostream>
 #include "Directory.hpp"
+#include "utilities.hpp"
 
 using std::endl;
 
@@ -16,7 +17,7 @@ string Directory::get_info() {
 }
 
 void Directory::load(ifstream &s, string const& location) {
-    s.read(reinterpret_cast<char *>(&name), sizeof(name));
+    name = utils::read_string(s);    
     s.read(reinterpret_cast<char *>(&modified_time), sizeof(modified_time));
     size_t d, f;
     s.read(reinterpret_cast<char *>(&d), sizeof(d));
@@ -34,9 +35,8 @@ void Directory::load(ifstream &s, string const& location) {
 }
 
 void Directory::save(ofstream &s) const {
-    s.write(reinterpret_cast<const char *>(&name), sizeof(name));
+    utils::write_string(s, name);
     s.write(reinterpret_cast<const char *>(&modified_time), sizeof(modified_time));
-
     size_t dirSize = directories.size();
     s.write(reinterpret_cast<const char *>(&dirSize), sizeof(dirSize));
     size_t filesSize = files.size();

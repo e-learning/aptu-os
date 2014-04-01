@@ -28,13 +28,17 @@ namespace utils {
 
     string tts(time_t);
 
-    size_t readMetadata(File *file, ifstream& in);
+    size_t readMetadata(File *file, ifstream &in);
 
-    size_t readNextBlockNumber(ifstream&);
+    size_t readNextBlockNumber(ifstream &);
 
     void overwrite_nextBlockNumber(const string &path, size_t blockNumber);
 
     void overwrite_metadata(File const &file, string const &path);
+
+    string read_string(ifstream &in);
+
+    size_t write_string(ofstream &s, string const &str);
 }
 
 #endif /* end of include guard: UTILITIES_HPP */
