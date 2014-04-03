@@ -1,0 +1,13 @@
+*.o
+*.d
+*.dSYM
+init*
+format*
+import*
+export*
+copy*
+move*
+rm*
+mkdir*
+codegen
+ls

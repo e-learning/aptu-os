@@ -1,4 +1,4 @@
 #include <fstream>
 #include <dirent.h>
 
-extern "C" {int fPS(void);}
+extern "C" {int fPS(std::string *zn0);}

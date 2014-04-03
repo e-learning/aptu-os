@@ -1,5 +1,8 @@
-all: main.cpp
-	g++ main.cpp
+shell: main.o
+	g++ -o shell main.o
 
-clean:
-	rm -rf a.out
+main.o: main.cpp
+	gcc -c -o main.o main.cpp
+
+clear:
+	rm *.o

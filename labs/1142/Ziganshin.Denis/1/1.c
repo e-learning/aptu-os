@@ -94,6 +94,19 @@ int parse(char *s){
 	return 0;
 }
 
+int getSt(char *st){
+	int i = 0;
+	char c;
+	c = getchar();
+	while(c != '\n'){		
+		st[i] = c;
+		i++;
+		c = getchar();
+	}
+	st[i] = '\0';
+	return i;
+}
+
 int main(int argc, char *argv[]){
 char st[30];
 char s[60];
@@ -101,7 +114,7 @@ char ext = 0;
 		printf("%s\n",argv[0]);
 	while(!ext){
 		printf(">");
-		scanf("%s",&st[0]);
+		getSt(st);
 		switch(parse(st)){
 			case KILL:system(st); break;
 			case PS: system("ps"); break;

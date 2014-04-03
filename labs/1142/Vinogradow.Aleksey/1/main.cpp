@@ -20,26 +20,6 @@ void obrab_sig(int zn){
 int main(void){
 	
 	cout<<"Hello, "<<getenv("USERNAME")<<"!"<<endl;
- 
-	//пытаемся подгрузить библиотеку
-	void *lib;
-	int (*fPS)(void);
-	int load_lib_flag=0;
-	
-	lib = dlopen("./libps.so", RTLD_LAZY);
-
-	if (!lib) {
-		cout<<"Не удалось подгрузить библиотеку :("<<endl;
-		load_lib_flag = 1;
-	}else{
-		//вычисление адреса функции
-		fPS = (int (*)(void))dlsym(lib, "fPS");
-		if (fPS==NULL) {
-			cout<<"Функция не найдена"<<endl;
-			load_lib_flag = 2;
-		}
-	}
-
 
 	string command, comm, args;
 	int err_code;
@@ -65,7 +45,7 @@ int main(void){
 
 		if (comm=="pwd") { err_code = 0; cout<<getenv("PWD")<<endl; } 
 
-		if ((comm=="ps")&&(!load_lib_flag)) err_code = fPS();
+		if (comm=="ps") err_code = fPS();
 
 		if (comm=="kill") err_code = fKILL(args);
 
@@ -77,8 +57,6 @@ int main(void){
 		if (err_code==-1) cout<<"Kажется, что данная команда не поддерживается =/"<<endl<<"Либо используете команду run"<<endl;
 	}
 	
-	if (!load_lib_flag) dlclose(lib);
-
 	cout<<"До встречи!"<<endl;
 	return 0;
 }

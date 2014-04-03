@@ -1,0 +1,18 @@
+D /
+D test
+
+D test
+
+D /
+D test
+F file1
+
+Error: file with the same name already exists
+
+D test
+
+Error: empty destination filename
+Error: destination filename is too long
+Error: destination filename is too long
+
+D test
