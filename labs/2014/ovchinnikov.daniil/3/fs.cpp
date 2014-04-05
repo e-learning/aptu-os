@@ -8,7 +8,6 @@
 #include <cstring>
 #include <unistd.h>
 
-
 using std::vector;
 using std::ofstream;
 using std::ifstream;
@@ -32,20 +31,26 @@ Config get_config(const char * root){
     return config;
 }
 
-FS::FS(const char *root) : root(root), config(get_config(root)), BLOCK_DATA_SIZE(config.block_size - sizeof(BlockDescriptor)) {
+FS::FS(const char *root)
+    : root(root),
+      root_d(read_descriptor(0)),
+      config(get_config(root)),
+      BLOCK_DATA_SIZE(config.block_size - sizeof(BlockDescriptor))  {
 
 
     initialized = ifstream(get_block_f(0), ios::binary);
 
     if (initialized) {
-        block_map = read_block_map();
+        read_block_map();
     }
 }
 
 
 
 FS::~FS() {
-    write_block_map(block_map);
+    if (initialized) {
+        write_block_map();
+    }
 }
 
 int FS::init() {
@@ -77,14 +82,12 @@ int FS::format() {
         }
     }
 
-    vector<bool> block_map;                             // create block bitmap
     block_map.assign(config.block_number, false);       // all blocks are free
     int block_map_blocks = ceil((config.block_number / 8.0 + rd_size) / config.block_size);
     for (int i = 0; i < block_map_blocks; ++i) {        // set used blocks
         block_map[i] = true;
     }
 
-    write_block_map(block_map);                           // write block bitmap
     return 0;
 }
 
@@ -131,9 +134,9 @@ int FS::mkdir(const char *dir) {
     return 0;
 }
 
-vector<bool> FS::read_block_map() {
-    vector<bool> map;
-    map.assign(config.block_number, false);
+void FS::read_block_map() {
+    block_map.clear();
+    block_map.assign(config.block_number, false);
     int current_block_id = 0;
     ifstream block(get_block_f(current_block_id), ios::in|ios::binary);
     block.seekg(sizeof(FileDescriptor));
@@ -141,19 +144,19 @@ vector<bool> FS::read_block_map() {
         char byte;
         block >> byte;
         for (int b = 0; b < 8 && i < config.block_number; b++,i++) {
-            map[i] = byte & (1 << b);
+            block_map[i] = byte & (1 << b);
         }
         if (block.tellg() == config.block_size){
             block.close();
             block.open(get_block_f(++current_block_id), ios::binary);
         }
     }
-    return map;
 }
 
-void FS::write_block_map(const vector<bool> & map) {
+void FS::write_block_map() {
     int current_block_id = 0;
-    ofstream block(get_block_f(current_block_id), ios::binary|ios::app);
+    ofstream block(get_block_f(current_block_id), ios::binary|ios::trunc);
+    block.write((char *)&root_d, sizeof(FileDescriptor));
     if (!block) {
         throw "Can't open block";
     }
@@ -161,7 +164,7 @@ void FS::write_block_map(const vector<bool> & map) {
     for (int i = 0; i < config.block_number;) {
         char byte = 0;
         for (int b = 0; b < 8 && i < config.block_number; b++,i++) {
-            byte |= map[i] << b;
+            byte |= block_map[i] << b;
         }
         block << byte;
         if (!block) {
