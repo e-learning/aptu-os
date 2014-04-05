@@ -11,9 +11,8 @@ using std::ifstream;
 using std::ofstream;
 using std::vector;
 
-class File {
+struct File {
 
-public:
     File() : modified_time(time(0))
     {
     }
@@ -36,33 +35,12 @@ public:
 
     string get_info() const;
 
-    string const &getName() const
-    {
-        return name;
-    }
-
-    vector<size_t> const &getBlocks() const
-    {
-        return blocks;
-    }
-
-    size_t getSize() const
-    {
-        return size;
-    }
-
-    void setName(const string &name)
-    {
-        File::name = name;
-    }
-
-    void load(ifstream &);
+    void load(ifstream &, string const& location);
 
     void save(ofstream &) const;
 
     void addUsedBlock(size_t block);
 
-private:
     string name;
     size_t size;
     time_t modified_time;
