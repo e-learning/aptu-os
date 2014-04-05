@@ -1,0 +1,32 @@
+CC=g++
+CFLAGS=-Wall -std=c++11
+DEPS=file_utils.h
+
+%.o: %.cpp $(DEPS)
+	$(CC) -c $< -o $@ $(CFLAGS)
+
+all: init format
+
+init: init.o
+	$(CC) $< -o init
+
+format: format.o
+	$(CC) $< -o format
+
+clean_temp:
+	rm -f *.o
+
+clean: clean_temp
+	rm -f init
+	rm -f format
+	rm 1*
+	rm 2*
+	rm 3*
+	rm 4*
+	rm 5*
+	rm 6*
+	rm 7*
+	rm 8*
+	rm 9*
+	rm 0
+
