@@ -24,14 +24,10 @@ public:
     FS(const char *root);
     ~FS();
 
-    int init();
-    int format();
-    int import(const char *filename, const char *destination);
-    int mkdir(const char *);
+    void format();
+    void rm(FileDescriptor fd);
 
-    FileDescriptor find(const string fs_path) {
-       return create_directory_if_not_exists(split(fs_path, '/'), false);
-    }
+    Config get_config();
 
     vector<FileDescriptor> list(const FileDescriptor & directory) {
         vector<FileDescriptor> fds;
@@ -46,18 +42,9 @@ public:
         return fds;
     }
 
-    int rm(FileDescriptor fd) {
-        if (fd.directory) {
-            vector<FileDescriptor> files = list(fd);
-            if (fd.first_child != -1) {
-                FileDescriptor c = read_descriptor(fd.first_child);
-                while (c.next_file!= -1){
-                    rm(c);
-                    c = read_descriptor(c.next_file);
-                }
-                rm(c);
-            }
-        } else {
+
+    void clear_descriptor(FileDescriptor fd) {
+        if (fd.first_block != -1) {
             BlockDescriptor bd = read_descriptor<BlockDescriptor>(fd.first_block);
             while (bd.next != -1) {
                 block_map[bd.id] = false;
@@ -65,6 +52,10 @@ public:
             }
             block_map[bd.id] = false;
         }
+    }
+
+    void remove_descriptor(FileDescriptor & fd) {
+        fd = read_descriptor(fd.id);
 
         if (fd.prev_file == -1 && fd.next_file == -1) {
             FileDescriptor parent = read_descriptor(fd.parent_file);
@@ -74,6 +65,7 @@ public:
             FileDescriptor parent = read_descriptor(fd.parent_file);
             FileDescriptor next = read_descriptor(fd.next_file);
             parent.first_child = next.id;
+            next.parent_file = parent.id;
             next.prev_file = -1;
             write_descriptor(parent);
             write_descriptor(next);
@@ -91,11 +83,8 @@ public:
         }
 
         block_map[fd.id] = false;
-
-        return 0;
     }
 
-private:
     const char * root;
     FileDescriptor root_d;
     Config config;
@@ -106,7 +95,24 @@ private:
     void read_block_map();
     void write_block_map();
 
+    void insert_child(FileDescriptor & d, FileDescriptor & f) {
+        d = read_descriptor(d.id);
+        f = read_descriptor(f.id);
 
+        if (d.first_child != -1) {
+            FileDescriptor c = read_descriptor(d.first_child);
+            c.prev_file = f.id;
+            f.next_file = c.id;
+            c.parent_file = -1;
+            write_descriptor(c);
+        }
+
+        f.parent_file = d.id;
+        d.first_child = f.id;
+
+        write_descriptor(d);
+        write_descriptor(f);
+    }
 
     FileDescriptor create_descriptor(const string & name, bool directory = true) {
         FileDescriptor dd;
@@ -123,11 +129,43 @@ private:
         return dd;
     }
 
-    FileDescriptor create_directory_if_not_exists(vector<string> path, bool create = true) {
+    void write_data(FileDescriptor fd, std::istream & source_stream) {
+
+        clear_descriptor(fd);
+
+        char * buf = new char[BLOCK_DATA_SIZE];
+        size_t id = fd.first_block = find_first_free_block();
+        while (source_stream) {
+            source_stream.read(buf, BLOCK_DATA_SIZE);
+
+            BlockDescriptor bd;
+            bd.id = id;
+            bd.len = source_stream.gcount();
+            bd.next = source_stream ? find_first_free_block (id) : -1;
+            block_map[bd.id] = true;
+
+            ofstream block(get_block_f(id), ios::binary | ios::trunc);
+            block.write((char *) &bd, sizeof(BlockDescriptor));
+            block.write(buf, bd.len);
+            block.close();
+            if (!block) {
+                throw "Cannot write block";
+            }
+
+            fd.number_of_blocks++;
+            id = bd.next;
+        }
+
+        write_descriptor(fd);
+    }
+
+    FileDescriptor find_directory(vector<string> path, bool create = true) {
         if (path.size() < 1 || path[0] != "") {
             throw "Path should start with /";
         }
+
         FileDescriptor current = read_descriptor(0);    // start with root
+
         for (auto it = path.begin() + 1; it != path.end(); ++it) {
             if (current.first_child == -1) {             // empty directory
                 if (create) {
@@ -136,77 +174,85 @@ private:
                     dd.parent_file = current.id;
                     write_descriptor(current);
                     write_descriptor(dd);
-                    current = dd;                           // go next level
+                    current = dd;                       // go next level
                 } else {
                     throw ("Cannot find " + *it).c_str();
                 }
-            } else {
-                // directory not empty, start traversing its children
+            } else { // directory not empty, start traversing its children
                 current = read_descriptor(current.first_child);
                 while (*it != current.name && current.next_file != -1) {
                     current = read_descriptor(current.next_file);
                 }
-                if (*it == current.name) {
-                    if ((create && !current.directory)
-                            || (!create && !current.directory && it + 2 == path.end())) {       // check if it is a directory
+                if (*it == current.name) {              // descriptor found
+                    if (!current.directory) {
                         throw (*it + " is a file").c_str();
                     }
-                } else if (current.next_file == -1) {
+                } else {                                // descriptor not found
                     if (create) {
-                        // name not found, create new one
-                        FileDescriptor dd = create_descriptor(*it);
-                        current.next_file = dd.id = find_first_free_block();
-                        dd.prev_file = current.id;
-                        dd.parent_file = current.parent_file;
+                        FileDescriptor new_directory = create_descriptor(*it);
+                        current.next_file = new_directory.id = find_first_free_block();
+                        new_directory.prev_file = current.id;
                         write_descriptor(current);
-                        write_descriptor(dd);
-                        current = dd;                       // go next level
+                        write_descriptor(new_directory);
+                        current = new_directory;        // go next level
                     } else {
                         throw ("Cannot find " + *it).c_str();
                     }
                 }
             }
         }
+
         return current;
     }
 
-    FileDescriptor create_file_for_write(const char * destination) {
-        vector<string> path = split(string(destination), '/');
-        string file_name = path.back(); path.pop_back();
-        FileDescriptor directory = create_directory_if_not_exists(path);
+    FileDescriptor find_descriptor(const char *destination,  bool create = true, bool is_directory = false) {
 
-        FileDescriptor nd = create_descriptor(file_name, false);
+        vector<string> path = split(string(destination), '/');
+
+        string descriptor_name = path.back(); path.pop_back();
+        if (descriptor_name == "") {
+            return root_d;
+        }
+
+        FileDescriptor directory = find_directory(path, create);
+
         if (directory.first_child == -1) {      // empty directory
-            directory.first_child = nd.id = find_first_free_block();
-            nd.parent_file = directory.id;
-            write_descriptor(directory);
-        } else {
+            if (create) {
+                FileDescriptor new_descriptor = create_descriptor(descriptor_name, is_directory);
+                directory.first_child = new_descriptor.id = find_first_free_block();
+                new_descriptor.parent_file = directory.id;
+                write_descriptor(directory);
+                write_descriptor(new_descriptor);
+                return new_descriptor;
+            }
+        } else {                                    // directory not empty, looking up children
             FileDescriptor current = read_descriptor(directory.first_child);
-            while (file_name != current.name && current.next_file != -1) {
+            while (descriptor_name != current.name && current.next_file != -1) {
                 current = read_descriptor(current.next_file);
             }
-            if (file_name == current.name) {
-                if (current.directory) {
-                    throw (file_name + " is a directory").c_str();
-                } else {
-                    nd = current;
-                    nd.time = time(0);
-                    BlockDescriptor bd = read_descriptor<BlockDescriptor>(current.first_block);
-                    while (bd.next != -1) {
-                        block_map[bd.id] = false;
-                        bd = read_descriptor<BlockDescriptor>(bd.next);
-                    }
-                    block_map[bd.id] = false;
+            if (descriptor_name == current.name) {  // descriptor found
+//                if (force_type)
+//                if (is_directory && !current.directory) {   // need directory, got file
+//                    throw ("'" + descriptor_name + "' is a file").c_str();
+//                } else if (!is_directory && current.directory) { // need file, got directory
+//                    throw ("'" + descriptor_name + "' is a directory").c_str();
+//                } else {
+//                    current.time = time(0);
+//                    clear_descriptor(current);
+                    return current;
+//                }
+            } else {                                // descriptor not found if this directory
+                if (create) {
+                    FileDescriptor new_file = create_descriptor(descriptor_name, is_directory);
+                    current.next_file = new_file.id = find_first_free_block();
+                    new_file.prev_file = current.id;
+                    write_descriptor(current);
+                    write_descriptor(new_file);
+                    return new_file;
                 }
-            } else {
-                current.next_file = nd.id = find_first_free_block();
-                nd.prev_file = current.id;
-                nd.parent_file = current.parent_file;
-                write_descriptor(current);
             }
         }
-        write_descriptor(nd);
-        return nd;
+        throw ("Cannot find '" + descriptor_name + "'").c_str();
     }
 
     template <typename D = FileDescriptor>
@@ -223,6 +269,9 @@ private:
 
     template <typename D = FileDescriptor>
     void write_descriptor(const D & d) {
+        if (d.id == 0) {
+            root_d = d;
+        }
         ofstream block(get_block_f(d.id), ios::binary);
         block.write((char *) &d, sizeof(D));
         if (!block) {

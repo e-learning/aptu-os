@@ -8,7 +8,9 @@ int main (const int argc, const char *argv[]) try {
         std::cout << "Usage: mkdir root path" << std::endl;
         return 0;
     } else {
-        FS(argv[1]).mkdir(argv[2]);
+        if (!FS(argv[1]).find_descriptor(argv[2], true, true).directory) {
+            throw (string(argv[2]) + " is a file").c_str();
+        }
     }
     return 0;
 } catch (const char * msg) {

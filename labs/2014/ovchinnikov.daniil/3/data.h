@@ -2,6 +2,12 @@
 #define __DATA_H
 
 #include <time.h>
+#include <iostream>
+#include <vector>
+
+using std::ostream;
+using std::endl;
+using std::vector;
 
 struct FileDescriptor {
     int id;
@@ -26,5 +32,26 @@ struct Config {
     int block_size;             // size of block
     int block_number;           // number of blocks
 };
+
+template<typename T>
+ostream & operator<<(ostream & out_, const vector<T> & v) {
+    out_ << "total " << v.size() << " file(s)" << endl;
+    for (auto it = v.begin(); it!=v.end(); ++it) {
+       out_ << *it;
+    }
+    return out_;
+}
+
+inline ostream & operator <<(ostream & out_, const FileDescriptor & fd) {
+    out_ << (fd.directory ? 'd' : 'f') << "\t '" << fd.name << "'\t";
+
+    if  (fd.directory) {
+        out_ << endl;
+    } else {
+        out_ << fd.number_of_blocks << " blocks";
+        out_<< '\t' << ctime(&fd.time);
+    }
+    return out_;
+}
 
 #endif // __DATA_H

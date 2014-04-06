@@ -8,9 +8,9 @@ int main (const int argc, const char *argv[]) try {
         std::cout << "Usage: rm root path" << std::endl;
         return 0;
     } else {
-        FS f = FS(argv[1]);
-        FileDescriptor d = f.find(argv[2]);
-        f.rm(d);
+        FS fs = FS(argv[1]);
+        FileDescriptor d = fs.find_descriptor(argv[2], false);
+        fs.rm(d);
     }
     return 0;
 } catch (const char * msg) {
