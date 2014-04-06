@@ -20,7 +20,8 @@ void printDir(std::shared_ptr<file> dir) {
 
 void execute(char ** argv) {
     fileManager fmanager;
-    
+    std::string path(argv[0]);
+
     auto curFile = fmanager.findFile(argv[0]);
 
     if(curFile == nullptr) {
@@ -29,8 +30,8 @@ void execute(char ** argv) {
     
     time_t rawTime = curFile->getTimeStamp();
     tm *timeinfo = localtime(&rawTime);
-    
-    std::cout << curFile->getName() << std::endl;
+     
+    std::cout << (path == "/" ? "/" : curFile->getName()) << std::endl;
     std::cout << "size: " << curFile->getSizeInBlocks() << std::endl;
     std::cout << "time: " << asctime(timeinfo);
     
