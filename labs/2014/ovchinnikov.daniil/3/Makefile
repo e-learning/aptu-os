@@ -3,10 +3,11 @@ CFLAGS=-Wall -std=c++11
 DEPS=fs.h data.h string_utils.h
 APPS=init format import export ls copy move rm mkdir
 
-all: $(APPS)
-	
-fs.o: fs.cpp $(DEPS) 
-	$(CC) -c $< -o $@ $(CFLAGS)
+all: fs.o $(APPS)
+	echo lol
+
+fs.o: fs.cpp $(DEPS)
+	$(CC) -c fs.cpp -o fs.o $(CFLAGS)
 
 %: fs.o $(DEPS)
 	$(CC) $@.cpp fs.o $(CFLAGS) -o $@

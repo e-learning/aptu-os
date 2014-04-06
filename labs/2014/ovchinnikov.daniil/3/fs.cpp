@@ -3,15 +3,18 @@
 
 #include <math.h>
 #include <cstring>
+#include <string>
+
+using std::string;
 
 FS::FS(const char *root)
     : root(root),
       config(get_config()),
       BLOCK_DATA_SIZE(config.block_size - sizeof(BlockDescriptor)),
-      initialized(ifstream(get_block_f(0), ios::binary)) ,
-      root_d(read_descriptor(0)){
+      initialized(ifstream(get_block_f(0), ios::binary)) {
 
     if (initialized) {
+        root_d = read_descriptor(0);
         read_block_map();
     }
 }
@@ -383,7 +386,7 @@ void FS::move(const FileDescriptor & source_d, FileDescriptor & destination_d) {
             }
             remove_descriptor(source_d.id);
         } else {    // cannot move directory to a file
-            throw (string(destination_d.name) + " is a file").c_str();
+            throw (string("'") + destination_d.name + "' is a file").c_str();
         }
     } else {        // source is a file
         if (destination_d.directory) {
