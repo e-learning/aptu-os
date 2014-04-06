@@ -19,20 +19,16 @@ public:
     ~FS();
 
     void format();
-    void rm(FileDescriptor &fd);
+    void rm(const FileDescriptor &fd);
+    void copy(const FileDescriptor &, FileDescriptor &);
+    void move(const FileDescriptor &, FileDescriptor &);
     vector<FileDescriptor> list(const FileDescriptor & directory) const;
-
-    FileDescriptor init_descriptor(const string &name, bool directory = true);
-    void clear_descriptor(const FileDescriptor &fd);
-    void remove_descriptor(const int);
-    void insert_child(FileDescriptor &d, FileDescriptor f);
 
     FileDescriptor find_descriptor(const char *destination,  bool create = true, bool is_directory = false);
     FileDescriptor find_directory(const char *destination, bool create = true);
-    FileDescriptor find_directory(const vector<string> & path, bool create = true);
 
-    void read_data(const FileDescriptor & fd, std::ostream & destination_stream);
-    void write_data(FileDescriptor & fd, std::istream & source_stream);
+    void read_data(const FileDescriptor &, std::ostream &);
+    void write_data(FileDescriptor &, std::istream &);
 
     Config get_config();
 
@@ -77,6 +73,13 @@ private:
     const bool initialized;
     FileDescriptor root_d;
     vector<bool> block_map;
+
+    FileDescriptor init_descriptor(const string &name, bool directory = true);
+    void clear_descriptor(const FileDescriptor &fd);
+    void remove_descriptor(const int);
+
+    FileDescriptor find_descriptor(FileDescriptor & directory, const string & name, bool create = true, bool is_directory = false);
+    FileDescriptor find_directory(const vector<string> & path, bool create = true);
 
     void read_block_map();
     void write_block_map();

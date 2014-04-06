@@ -4,6 +4,7 @@
 #include <time.h>
 #include <iostream>
 #include <vector>
+#include <cstring>
 
 struct FileDescriptor {
     int id;
@@ -16,6 +17,19 @@ struct FileDescriptor {
     size_t number_of_blocks;    // total blocks in file
     char name[10];              // filename
     time_t time;                // last updated time
+
+//    FileDescriptor(const FileDescriptor & other) {
+//        id = -1;
+//        directory = other.directory;
+//        first_child = -1;
+//        parent_file = -1;
+//        next_file = -1;
+//        prev_file = -1;
+//        first_block = -1;
+//        number_of_blocks = other.number_of_blocks;
+//        strncpy(name,other.name,sizeof(other.name));
+//        time = time(0);
+//    }
 };
 
 struct BlockDescriptor {

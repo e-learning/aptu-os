@@ -3,20 +3,6 @@
 
 #include <math.h>
 #include <cstring>
-//#include <iostream>
-//#include <fstream>
-//#include <vector>
-//#include <sstream>
-
-//#include <unistd.h>
-
-//using std::vector;
-//using std::ofstream;
-//using std::ifstream;
-//using std::ios;
-//using std::string;
-//using std::istringstream;
-//using std::to_string;
 
 FS::FS(const char *root)
     : root(root),
@@ -40,8 +26,9 @@ void FS::format() {
     check_initialized();
 
     int rd_size = sizeof(FileDescriptor);               // size of data
-    root_d = init_descriptor("/");                    // recreate root descriptor
+    root_d = init_descriptor("/");                      // recreate root descriptor
     root_d.id = 0;
+
     block_map.assign(config.block_number, false);       // all blocks are free
     int block_map_blocks = ceil((config.block_number / 8.0 + rd_size) / config.block_size);
     for (int i = 0; i < block_map_blocks; ++i) {        // set used blocks
@@ -49,15 +36,15 @@ void FS::format() {
     }
 }
 
-void FS::rm(FileDescriptor & fd) {
+void FS::rm(const FileDescriptor & fd) {
     if (fd.directory) {
         if (fd.first_child != -1) {
-            FileDescriptor c = read_descriptor(fd.first_child);
-            while (c.next_file!= -1){
+            int next_child = fd.first_child;
+            do {
+                FileDescriptor c = read_descriptor(next_child);
                 rm(c);
-                c = read_descriptor(c.next_file);
-            }
-            rm(c);
+                next_child = c.next_file;
+            } while (next_child != -1);
         }
     } else {
         clear_descriptor(fd);
@@ -103,67 +90,43 @@ void FS::clear_descriptor(const FileDescriptor & fd) {
 }
 
 void FS::remove_descriptor(const int id) {
+
     FileDescriptor fd = read_descriptor(id);
 
-    if (fd.prev_file == -1 && fd.next_file == -1) {
-        FileDescriptor parent = read_descriptor(fd.parent_file);
-        parent.first_child = -1;
-        write_descriptor(parent);
-    } else if (fd.prev_file == -1 && fd.next_file != -1) {
-        FileDescriptor parent = read_descriptor(fd.parent_file);
-        FileDescriptor next = read_descriptor(fd.next_file);
-        parent.first_child = next.id;
-        next.parent_file = parent.id;
-        next.prev_file = -1;
-        write_descriptor(parent);
-        write_descriptor(next);
-    } else if (fd.prev_file != -1 && fd.next_file == -1) {
-        FileDescriptor prev = read_descriptor(fd.prev_file);
-        prev.next_file = -1;
-        write_descriptor(prev);
-    } else {
-        FileDescriptor prev = read_descriptor(fd.prev_file);
-        FileDescriptor next = read_descriptor(fd.next_file);
-        prev.next_file = next.id;
-        next.prev_file = prev.id;
-        write_descriptor(prev);
-        write_descriptor(next);
+    if (fd.prev_file == -1) {       // no previous file
+        if (fd.next_file == -1) {   // only file in directory
+            FileDescriptor parent = read_descriptor(fd.parent_file);
+            parent.first_child = -1;
+            write_descriptor(parent);
+        } else {                    // has next file
+            FileDescriptor parent = read_descriptor(fd.parent_file);
+            FileDescriptor next = read_descriptor(fd.next_file);
+            parent.first_child = next.id;
+            next.parent_file = parent.id;
+            next.prev_file = -1;
+            write_descriptor(parent);
+            write_descriptor(next);
+        }
+    } else {                        // has previous file
+        if (fd.next_file == -1) {   // no next file, is last file
+            FileDescriptor prev = read_descriptor(fd.prev_file);
+            prev.next_file = -1;
+            write_descriptor(prev);
+        } else {                    // has next file
+            FileDescriptor prev = read_descriptor(fd.prev_file);
+            FileDescriptor next = read_descriptor(fd.next_file);
+            prev.next_file = next.id;
+            next.prev_file = prev.id;
+            write_descriptor(prev);
+            write_descriptor(next);
+        }
     }
 
     block_map[fd.id] = false;
 }
 
-void FS::insert_child(FileDescriptor & d, FileDescriptor f) {
-    d = read_descriptor(d.id);
-    f = read_descriptor(f.id);
-
-    if (d.first_child != -1) {
-        FileDescriptor c = read_descriptor(d.first_child);
-        c.prev_file = f.id;
-        f.next_file = c.id;
-        c.parent_file = -1;
-        write_descriptor(c);
-    }
-
-    f.parent_file = d.id;
-    d.first_child = f.id;
-
-    write_descriptor(d);
-    write_descriptor(f);
-}
-
-FileDescriptor FS::find_descriptor(const char *destination,  bool create, bool is_directory) {
-
-    vector<string> path = split(string(destination), '/');
-
-    string descriptor_name = path.back(); path.pop_back();
-    if (descriptor_name == "") {
-        return root_d;
-    }
-
-    FileDescriptor directory = find_directory(path, create);
-
-    if (directory.first_child == -1) {      // empty directory
+FileDescriptor FS::find_descriptor(FileDescriptor & directory, const string & descriptor_name, bool create, bool is_directory) {
+    if (directory.first_child == -1) {          // empty directory
         if (create) {
             FileDescriptor new_descriptor = init_descriptor(descriptor_name, is_directory);
             directory.first_child = new_descriptor.id = find_first_free_block();
@@ -191,6 +154,16 @@ FileDescriptor FS::find_descriptor(const char *destination,  bool create, bool i
         }
     }
     throw ("Cannot find '" + descriptor_name + "'").c_str();
+}
+
+FileDescriptor FS::find_descriptor(const char *destination,  bool create, bool is_directory) {
+    vector<string> path = split(string(destination), '/');
+    string descriptor_name = path.back(); path.pop_back();
+    if (descriptor_name == "") {
+        return root_d;
+    }
+    FileDescriptor directory = find_directory(path, create);
+    return find_descriptor(directory,descriptor_name,create, is_directory);
 }
 
 FileDescriptor FS::find_directory(const char *destination, bool create) {
@@ -255,7 +228,7 @@ void FS::read_data(const FileDescriptor & fd, std::ostream & destination_stream)
         block.close();
         if (!block) {
             delete[] buf;
-            throw "Cannot write block";
+            throw "Cannot read block";
         }
 
         destination_stream.write(buf, block_d.len);
@@ -339,6 +312,90 @@ void FS::write_block_map() {
         }
     }
     block.close();
+}
+
+void FS::copy(const FileDescriptor &from, FileDescriptor &to) {
+
+    if (from.directory && !to.directory) {          // dir to file
+        throw (string("'") + to.name + "' is a file").c_str();
+    } else if (from.directory && to.directory) {    // dir to dir
+        if (from.first_child != -1) {
+            int next_child = from.first_child;
+            do {
+                FileDescriptor child = read_descriptor(next_child);
+                FileDescriptor new_d = find_descriptor(to, child.name, true, child.directory);
+                copy(child, new_d);
+                next_child = child.next_file;
+            } while (next_child != -1);
+        }
+    } else  if (!from.directory && to.directory) {  //file to dir
+        FileDescriptor new_file = find_descriptor(to, from.name, true, false);
+        copy(from, new_file);
+    } else if (!from.directory && !to.directory) {  // file to file
+        clear_descriptor(to);
+
+        char * buf = new char[BLOCK_DATA_SIZE];
+        int next_source = from.first_block;
+        int next_dest = to.first_block = find_first_free_block();
+        do {
+            BlockDescriptor block_d;
+            // read old block
+            ifstream block(get_block_f(next_source), ios::binary);
+            block.read((char *) &block_d, sizeof(BlockDescriptor));
+            block.read(buf, block_d.len);
+            block.close();
+            next_source = block_d.next;
+
+            BlockDescriptor new_block_d = block_d;
+            new_block_d.id = next_dest;
+            new_block_d.next = next_dest = (next_source == -1 ? -1 : find_first_free_block(new_block_d.id));
+            //write new one
+            ofstream new_block(get_block_f(new_block_d.id), ios::binary);
+            new_block.write((char *)&new_block_d, sizeof(BlockDescriptor));
+            new_block.write(buf, new_block_d.len);
+            block_map[new_block_d.id] = true;
+        } while (next_source != -1);
+
+        to.number_of_blocks = from.number_of_blocks;
+        write_descriptor(to);
+    }
+}
+
+void FS::move(const FileDescriptor & source_d, FileDescriptor & destination_d) {
+    if (source_d.directory) {
+        if (destination_d.directory) {
+            if (source_d.first_child != 1) {
+                FileDescriptor first_child = read_descriptor(source_d.first_child);
+                if (destination_d.first_child == -1) {
+                    destination_d.first_child = first_child.id;
+                    first_child.parent_file = destination_d.id;
+                    write_descriptor(destination_d);
+                } else {
+                    FileDescriptor last_child = read_descriptor(destination_d.first_child);
+                    while (last_child.next_file != -1) {
+                        last_child = read_descriptor(last_child.next_file);
+                    }
+                    last_child.next_file = first_child.id;
+                    first_child.prev_file = last_child.id;
+                    write_descriptor(last_child);
+                }
+                write_descriptor(first_child);
+            }
+            remove_descriptor(source_d.id);
+        } else {    // cannot move directory to a file
+            throw (string(destination_d.name) + " is a file").c_str();
+        }
+    } else {        // source is a file
+        if (destination_d.directory) {
+            destination_d = find_descriptor(destination_d, source_d.name);
+        }
+        clear_descriptor(destination_d);
+        destination_d.number_of_blocks = source_d.number_of_blocks;
+        destination_d.first_block = source_d.first_block;
+        destination_d.time = time(0);
+        write_descriptor(destination_d);
+        remove_descriptor(source_d.id);
+    }
 }
 
 Config FS::get_config(){
