@@ -5,9 +5,12 @@ using namespace std;
 
 int main (const int argc, const char *argv[]) try {
     if (argc < 3) {
-        std::cout << "Usage: mkdir root path" << std::endl;
+        std::cout << "Usage: rm root path" << std::endl;
+        return 0;
     } else {
-        FS(argv[1]).find_directory(argv[2],true);
+        FS fs = FS(argv[1]);
+        FileDescriptor d = fs.find_descriptor(argv[2], false);
+        fs.rm(d);
     }
     return 0;
 } catch (const char * msg) {

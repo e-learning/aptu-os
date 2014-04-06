@@ -5,10 +5,6 @@
 #include <iostream>
 #include <vector>
 
-using std::ostream;
-using std::endl;
-using std::vector;
-
 struct FileDescriptor {
     int id;
     bool directory;             // if this is a directory
@@ -34,22 +30,22 @@ struct Config {
 };
 
 template<typename T>
-ostream & operator<<(ostream & out_, const vector<T> & v) {
-    out_ << "total " << v.size() << " file(s)" << endl;
+std::ostream & operator<<(std::ostream & out_, const std::vector<T> & v) {
+    out_ << "total " << v.size() << " file(s)" << std::endl;
     for (auto it = v.begin(); it!=v.end(); ++it) {
-       out_ << *it;
+        out_ << *it;
     }
     return out_;
 }
 
-inline ostream & operator <<(ostream & out_, const FileDescriptor & fd) {
+inline std::ostream & operator <<(std::ostream & out_, const FileDescriptor & fd) {
     out_ << (fd.directory ? 'd' : 'f') << "\t '" << fd.name << "'\t";
 
     if  (fd.directory) {
-        out_ << endl;
+        out_ << std::endl;
     } else {
         out_ << fd.number_of_blocks << " blocks";
-        out_<< '\t' << ctime(&fd.time);
+        out_ << '\t' << ctime(&fd.time);
     }
     return out_;
 }
