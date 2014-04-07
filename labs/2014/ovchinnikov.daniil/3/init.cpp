@@ -9,9 +9,9 @@ int main (const int argc, const char *argv[]) try {
         FS fs(argv[1]);
         Config config = fs.get_config();
         for (int i = 0; i < config.block_number; ++i) {
-            const char *block_name = fs.get_block_f(i);
+            const string block_name = fs.get_block_f(i);
             ofstream(block_name, ios::trunc).close();
-            if (truncate(block_name, config.block_size)) {
+            if (truncate(block_name.c_str(), config.block_size)) {
                 throw "Cannot create blocks";
             }
         }

@@ -62,8 +62,8 @@ public:
         }
     }
 
-    const char *get_block_f(const int id) const {
-        return (string(root) +"/"+ std::to_string(id)).c_str();
+    const string get_block_f(const int id) const {
+        return string(root) +"/"+ std::to_string(id);
     }
 
 private:
