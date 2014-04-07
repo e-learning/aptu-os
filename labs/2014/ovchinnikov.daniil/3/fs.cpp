@@ -156,7 +156,7 @@ FileDescriptor FS::find_descriptor(FileDescriptor & directory, const string & de
             }
         }
     }
-    throw ("Cannot find '" + descriptor_name + "'").c_str();
+    throw "Cannot find '" + descriptor_name + "'";
 }
 
 FileDescriptor FS::find_descriptor(const char *destination,  bool create, bool is_directory) {
@@ -190,7 +190,7 @@ FileDescriptor FS::find_directory(const vector<string> & path, bool create) {
                 write_descriptor(new_directory);
                 current = new_directory;            // go next level
             } else {
-                throw ("Cannot find '" + *it + "'").c_str();
+                throw "Cannot find '" + *it + "'";
             }
         } else { // directory not empty, start traversing its children
             current = read_descriptor(current.first_child);
@@ -199,7 +199,7 @@ FileDescriptor FS::find_directory(const vector<string> & path, bool create) {
             }
             if (*it == current.name) {              // descriptor found
                 if (!current.directory) {
-                    throw ("'" + *it + "' is a file").c_str();
+                    throw "'" + *it + "' is a file";
                 }
             } else {                                // descriptor not found
                 if (create) {
@@ -210,7 +210,7 @@ FileDescriptor FS::find_directory(const vector<string> & path, bool create) {
                     write_descriptor(new_directory);
                     current = new_directory;        // go next level
                 } else {
-                    throw ("Cannot find '" + *it + "'").c_str();
+                    throw "Cannot find '" + *it + "'";
                 }
             }
         }
@@ -320,7 +320,7 @@ void FS::write_block_map() {
 void FS::copy(const FileDescriptor &from, FileDescriptor &to) {
 
     if (from.directory && !to.directory) {          // dir to file
-        throw (string("'") + to.name + "' is a file").c_str();
+        throw string("'") + to.name + "' is a file";
     } else if (from.directory && to.directory) {    // dir to dir
         if (from.first_child != -1) {
             int next_child = from.first_child;
@@ -386,7 +386,7 @@ void FS::move(const FileDescriptor & source_d, FileDescriptor & destination_d) {
             }
             remove_descriptor(source_d.id);
         } else {    // cannot move directory to a file
-            throw (string("'") + destination_d.name + "' is a file").c_str();
+            throw string("'") + destination_d.name + "' is a file";
         }
     } else {        // source is a file
         if (destination_d.directory) {

@@ -1,7 +1,9 @@
 #include <iostream>
 #include "fs.h"
+#include <string>
 
-using namespace std;
+using std::string;
+using std::ifstream;
 
 int main (const int argc, const char *argv[]) try {
     if (argc < 4) {
@@ -19,7 +21,7 @@ int main (const int argc, const char *argv[]) try {
 
         FileDescriptor fd = fs.find_descriptor(argv[3]);
         if (fd.directory) {
-            throw (string("'") + fd.name + "' is a directory").c_str();
+            throw string("'") + fd.name + "' is a directory";
         }
 
         fs.write_data(fd,source_file);
@@ -28,4 +30,6 @@ int main (const int argc, const char *argv[]) try {
 } catch (const char * msg) {
     std::cerr << msg << std::endl;
     return 1;
+} catch (const string msg) {
+    std::cerr << msg << std::endl;
 }

@@ -20,5 +20,8 @@ int main (const int argc, const char *argv[]) try {
 } catch (const char * msg) {
     std::cerr << msg << std::endl;
     return 1;
+} catch (const string msg) {
+    std::cerr << msg << std::endl;
+    return 1;
 }
 
