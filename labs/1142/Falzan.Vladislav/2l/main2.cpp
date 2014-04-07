@@ -74,7 +74,13 @@ int Action()
 		{
 			string resultPs;
 			Ps(&resultPs);
-			cout << resultPs;
+			if (resultPs == "n")
+				return 1;
+			else
+			{
+				cout << resultPs;
+				return 0;
+			}
 		}
 
 		if (in == 5)

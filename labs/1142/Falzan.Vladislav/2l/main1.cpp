@@ -6,6 +6,7 @@ using namespace std;
 #include <dirent.h>
 #include <fstream>
 #include <dlfcn.h>
+#include <unistd.h>
 
 void Menu();
 int Action();
@@ -74,7 +75,13 @@ int Action()
 		{
 			string resultPs;
 			Ps(&resultPs);
-			cout << resultPs;
+			if (resultPs == "n")
+				return 1;
+			else
+			{
+				cout << resultPs;
+				return 0;
+			}
 		}
 
 		if (in == 5)
@@ -146,4 +153,3 @@ int main(void)
 	}
 	return 0;
 }
-

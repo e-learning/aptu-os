@@ -8,11 +8,17 @@ int Ps(string *resultPs)
 			
 	struct dirent *entry;
 	string file_name;
+	int time = 0;
  
-	*resultPs = "PID\tPROC_NAME\n";
+//	*resultPs = "PID\tPROC_NAME\n";
 	if (proc_dir)
         while((entry = readdir(proc_dir)) != NULL)
         {
+		if (time == 0)
+		{
+			*resultPs = "PID\tPROC_NAME\n";
+			time = 1;
+		}
                 if ((entry->d_name[0] <= '9')&&(entry->d_name[0] >= '0'))
                 {
                         file_name = "/proc/" + string(entry->d_name) + "/comm";
@@ -29,9 +35,7 @@ int Ps(string *resultPs)
 	else
 	{
 		printf("Error: Can't open ""/proc"" directory. (ps)\n");
-		return 1;
+		*resultPs = "n";
 	}
-	return 0;
 }
 }
-
