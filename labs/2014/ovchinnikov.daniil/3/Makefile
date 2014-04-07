@@ -9,7 +9,7 @@ all: fs.o $(APPS)
 fs.o: fs.cpp $(DEPS)
 	$(CC) -c fs.cpp -o fs.o $(CFLAGS)
 
-%: fs.o $(DEPS)
+$(APPS): fs.o $(DEPS)
 	$(CC) $@.cpp fs.o $(CFLAGS) -o $@
 
 clean_temp:
