@@ -1,6 +1,12 @@
 #!/bin/bash
 [ "$1" == "" ] && echo "Please specify file" && exit 1
 
+if [ "$2" == "" ]; then 
+        ROOT=. 
+else
+        ROOT=$2
+fi
+
 function assert {
     if [ "$1" != "$2" ]; then
             echo "'$1' not equals '$2'"

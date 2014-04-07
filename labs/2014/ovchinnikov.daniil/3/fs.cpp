@@ -401,7 +401,7 @@ void FS::move(const FileDescriptor & source_d, FileDescriptor & destination_d) {
     }
 }
 
-Config FS::get_config(){
+Config FS::get_config() {
     Config config;
     std::ifstream config_file((string(root) + "/config").c_str());
     if (!config_file.good()) {
@@ -409,8 +409,7 @@ Config FS::get_config(){
     }
     config_file  >> config.block_size >> config.block_number;
     if (!config_file.good()
-            || config.block_size > 50000000 || config.block_size < 1024
-            || config.block_number > 50000 || config.block_number < 1) {
+            || config.block_size < 1024 || config.block_number < 1) {
         throw "Config file is bad";
     }
     return config;
