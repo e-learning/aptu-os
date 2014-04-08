@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "page.h"
 #include "file.h"
+#include "defs.h"
 
 
 #include "rm.h"
@@ -171,7 +172,7 @@ int copy_main(int argc, char **argv)
 
             PageWriter writer(page2);
             writer.step<int>(4).write(time(0));
-            writer.write<int>(path.list().back().size()).writeString(path.list().back());
+            writer.write<int>(LEN/*path.list().back().size()*/).writeString(path.list().back()); //.step<char>(LEN - (int) path.list().back().size()); // !!!
 
             PageWriter(page2).step<int>().write(getFirstFileNumber(page));
             PageWriter(page).write(firstPage);

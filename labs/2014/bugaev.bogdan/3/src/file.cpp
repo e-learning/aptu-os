@@ -1,4 +1,5 @@
 #include "file.h"
+#include "defs.h"
 
 
 void createDir(Config const &config, int pageNumber,
@@ -9,7 +10,7 @@ void createDir(Config const &config, int pageNumber,
     PageWriter writer(page);
     writer.write(-1).write(-1).write(-1);
     writer.write(config.pageSize).write(time(0));
-    writer.write<int>(name.size()).writeString(name);
+    writer.write<int>(LEN/*name.size()*/).writeString(name);
     page.unload();
 }
 
@@ -22,7 +23,7 @@ void createFile(Config const &config, int pageNumber,
     PageWriter writer(page);
     writer.write(0).write(-1).write(-1);
     writer.step<int>().write(time(0));
-    writer.write<int>(name.size()).writeString(name);
+    writer.write<int>(LEN/*name.size()*/).writeString(name);
     page.unload();
 }
 
@@ -33,7 +34,9 @@ std::string const getFileName(Page &page)
     int len = reader.step<int>(4).step<time_t>().read<int>();
     std::string result;
     for (int i = 0; i < len; ++i) {
-        result += reader.read<char>();
+        char tmp = reader.read<char>();
+        if (!tmp) break;
+        result += tmp;
     }
     return result;
 }

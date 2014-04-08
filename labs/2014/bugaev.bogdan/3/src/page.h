@@ -3,6 +3,7 @@
 
 #include "exception.h"
 #include "config.h"
+#include "defs.h"
 #include <functional>
 #include <algorithm>
 #include <cassert>
@@ -79,6 +80,10 @@ public:
         assert(canWrite(str));
         for (size_t i = 0; i < str.size(); ++i) {
             write(str[i]);
+        }
+        int d = LEN - str.size();
+        while (d--) {
+            write<char>(0);
         }
         return *this;
     }

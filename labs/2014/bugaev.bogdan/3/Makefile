@@ -15,7 +15,7 @@ DS = $(SOURCES:.cpp=.d)
 INIT = init
 INITOBJECTS = path.o config.o init.o
 FORMAT = format
-FORMATOBJECTS = path.o config.o page.o file.o format.o
+FORMATOBJECTS = path.o config.o page.o file.o format.o header.o
 MKDIR = mkdir
 MKDIROBJECTS = path.o config.o page.o file.o header.o mkdir.o
 LS = ls

@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "page.h"
 #include "file.h"
+#include "defs.h"
 
 
 int main(int argc, char **argv)
@@ -81,7 +82,8 @@ int main(int argc, char **argv)
         PageWriter writer(page2);
         writer.write(0).write(-1).write(-1);
         writer.step<int>().write(time(0));
-        writer.write<int>(path.list().back().size()).writeString(path.list().back());
+        writer.write<int>(LEN/*path.list().back().size()*/).writeString(path.list().back());
+        //writer.step<char>(LEN - (int) path.list().back().size()); // !!!
 
         PageWriter(page2).step<int>().write(getFirstFileNumber(page));
         PageWriter(page).write(firstPage);

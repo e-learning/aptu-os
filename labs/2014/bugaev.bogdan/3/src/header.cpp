@@ -47,7 +47,7 @@ int pushFreePageNumber(Config const &config, int pageNumber)
     int cnt = reader.step<int>().read<int>();
     if (cnt == 0) return -1;
 
-    int pos = cnt;
+    int pos = cnt + 2;
     int here = (config.pageSize - 2 * sizeof(int)) / sizeof(int);
 
     if (pos < here) {
