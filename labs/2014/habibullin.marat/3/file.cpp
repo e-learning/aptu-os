@@ -4,9 +4,10 @@
 
 using std::ifstream;
 using std::ofstream;
+using std::string;
 
-File::File(size_t block_size, const std::string &ext_path): blocks_(block_size) {
-    blocks_.head.SetName(Utils::GetPathTail(ext_path));
+File::File(size_t block_size, string const& ext_path, string const& name): blocks_(block_size) {
+    blocks_.head.SetName(name);
     blocks_.head.SetLastModTime(Utils::FileModTime(ext_path));
 
     ifstream ifs(ext_path);

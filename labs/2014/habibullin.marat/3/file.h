@@ -10,7 +10,7 @@ using std::string;
 
 class File {
 public:
-    File(size_t block_size, const std::string & ext_path);
+    File(size_t block_size, string const& ext_path, string const& name);
     File(size_t block_size, string const& root, size_t beg_ptr) : blocks_(block_size) {
         blocks_.Read(root, beg_ptr);
     }

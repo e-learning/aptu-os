@@ -24,11 +24,11 @@ bool FSManager::Format(const string &root) {
 }
 
 bool FSManager::Import(string const& root, string const& host_file, string const& fs_file) {
-    size_t destdir_ptr = TryFindEntry(root, fs_file);
+    size_t destdir_ptr = TryFindEntry(root, Utils::PathWithNoFileName(fs_file));
     if(destdir_ptr == Utils::SizeTMax()) {
         return false;
     }
-    File file(memmanager_.block_size, host_file);
+    File file(memmanager_.block_size, host_file, Utils::GetPathTail(fs_file));
     size_t size_blocks = file.SizeInBlocks();
     if(size_blocks > memmanager_.FreeSpace()) {
         return false;
@@ -41,7 +41,7 @@ bool FSManager::Import(string const& root, string const& host_file, string const
         memmanager_.FreeLastAllocated();
         return false;
     }
-    TraverseUpdatingSize(root, fs_file, file.SizeInBlocks());
+    TraverseUpdatingSize(root, Utils::PathWithNoFileName(fs_file), file.SizeInBlocks());
     return true;
 }
 
