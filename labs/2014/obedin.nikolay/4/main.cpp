@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <climits>
 using namespace std;
 
 typedef uint16_t ushort;
