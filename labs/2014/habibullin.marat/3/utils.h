@@ -73,6 +73,12 @@ public:
         return path.substr(0, delim_pos);
     }
 
+    static string PathWithNoHead(string const& path) {
+        string pathcpy = path;
+        CutPathHead(pathcpy);
+        return pathcpy;
+    }
+
     static string GetPathTail(string const& path) {
         size_t delim_pos = path.find_last_of('/');
         if(delim_pos == string::npos) {

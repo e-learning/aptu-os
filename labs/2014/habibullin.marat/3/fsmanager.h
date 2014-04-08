@@ -30,7 +30,7 @@ private:
     size_t CreateEmptyDir(string const& root, string const& name);
     void PrintDirInfo(Dir& dir);
     void PrintFileInfo(File& file);
-    size_t CopyFile(string const& root, size_t src_ptr, string const& destdir_path);
+    size_t CopyFile(string const& root, size_t src_ptr, string const& destdir_path, string const& name);
 
     MemManager memmanager_;
 

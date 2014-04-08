@@ -19,8 +19,8 @@ File::File(size_t block_size, string const& ext_path, string const& name): block
     blocks_.head.SetSize(blocks_.Size());
 }
 
-File::File(size_t block_size, File& other): blocks_(block_size) {
-    blocks_.head.SetName(other.Name());
+File::File(size_t block_size, File& other, string const& new_file_name): blocks_(block_size) {
+    blocks_.head.SetName(new_file_name);
     blocks_.head.SetLastModTime(Utils::CurrentDatetime());
     blocks_.head.SetSize(other.SizeInBlocks());
 

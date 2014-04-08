@@ -144,47 +144,96 @@ bool FSManager::Rm(const std::string &root, string path) {
 bool FSManager::Copy(const string &root, string src, string dest) {
     src = Utils::NormalizePath(src);
     dest = Utils::NormalizePath(dest);
-    if(Utils::IsParentDir(dest, src)) {
+    if(Utils::IsParentDir(dest, src) || src == dest) {
         return false;
     }
     size_t srcptr = TryFindEntry(root, src);
-    size_t destptr = TryFindEntry(root, dest);
+    size_t predestptr = TryFindEntry(root, Utils::PathWithNoFileName(dest));
     if(srcptr == Utils::SizeTMax() ||
-       destptr == Utils::SizeTMax() ||
-       srcptr == destptr) {
+       predestptr == Utils::SizeTMax()) {
         return false;
     }
-    Dir dest_dir(memmanager_.block_size, root, destptr);
-    if(dest_dir.TryFindEntry(Utils::GetPathTail(src)) != Utils::SizeTMax()) {
-        return false;
-    }
-    vector<SearchPath> paths;
-    if(Dir::IsDir(root, srcptr)) {
-        Dir srcdir(memmanager_.block_size, root, srcptr);
-        paths = srcdir.CollectPaths(memmanager_.block_size, root);
+    if(File::IsFile(root, srcptr)) {
+        size_t copied_blocks = CopyFile(root, srcptr, Utils::PathWithNoFileName(dest), Utils::GetPathTail(dest));
+        if(copied_blocks == 0) {
+            return false;
+        }
+        TraverseUpdatingSize(root, Utils::PathWithNoFileName(dest), copied_blocks);
     }
     else {
-        SearchPath sp = { Utils::GetPathTail(src), srcptr };
-        paths.push_back(sp);
-    }
-    for(size_t i = 0; i != paths.size(); ++i) {
-        if(Dir::IsDir(root, paths[i].tail_ptr)) {
-            Mkdir(root, dest + '/' + paths[i].path);
+        Mkdir(root, dest);
+        size_t destptr = TryFindEntry(root, dest);
+        Dir dest_dir(memmanager_.block_size, root, destptr);
+        if(dest_dir.TryFindEntry(Utils::GetPathTail(src)) != Utils::SizeTMax()) {
+            return false;
         }
-        else {
-            string file_path_prefix = dest == ROOT_NAME ? dest : dest + '/';
-            file_path_prefix += paths[i].path;
-            file_path_prefix = Utils::PathWithNoFileName(file_path_prefix);
-            Mkdir(root, file_path_prefix);
-            size_t copied_blocks = CopyFile(root, paths[i].tail_ptr, file_path_prefix);
-            if(copied_blocks == 0) {
-                return false;
+        Dir srcdir(memmanager_.block_size, root, srcptr);
+        vector<SearchPath> paths = srcdir.CollectPaths(memmanager_.block_size, root);
+        for(size_t i = 0; i != paths.size(); ++i) {
+            if(Dir::IsDir(root, paths[i].tail_ptr)) {
+                Mkdir(root, dest + Utils::PathWithNoHead(paths[i].path));
             }
-            TraverseUpdatingSize(root, file_path_prefix, copied_blocks);
+            else {
+                string file_path_prefix = dest == ROOT_NAME ? dest : dest + '/';
+                file_path_prefix += Utils::PathWithNoHead(paths[i].path);
+                file_path_prefix = Utils::PathWithNoFileName(file_path_prefix);
+                file_path_prefix = Utils::NormalizePath(file_path_prefix);
+                Mkdir(root, file_path_prefix);
+                size_t copied_blocks = CopyFile(root, paths[i].tail_ptr, file_path_prefix, Utils::GetPathTail(paths[i].path));
+                if(copied_blocks == 0) {
+                    return false;
+                }
+                TraverseUpdatingSize(root, file_path_prefix, copied_blocks);
+            }
         }
     }
     return true;
 }
+
+//bool FSManager::Copy(const string &root, string src, string dest) {
+//    src = Utils::NormalizePath(src);
+//    dest = Utils::NormalizePath(dest);
+//    if(Utils::IsParentDir(dest, src)) {
+//        return false;
+//    }
+//    size_t srcptr = TryFindEntry(root, src);
+//    size_t destptr = TryFindEntry(root, dest);
+//    if(srcptr == Utils::SizeTMax() ||
+//       destptr == Utils::SizeTMax() ||
+//       srcptr == destptr) {
+//        return false;
+//    }
+//    Dir dest_dir(memmanager_.block_size, root, destptr);
+//    if(dest_dir.TryFindEntry(Utils::GetPathTail(src)) != Utils::SizeTMax()) {
+//        return false;
+//    }
+//    vector<SearchPath> paths;
+//    if(Dir::IsDir(root, srcptr)) {
+//        Dir srcdir(memmanager_.block_size, root, srcptr);
+//        paths = srcdir.CollectPaths(memmanager_.block_size, root);
+//    }
+//    else {
+//        SearchPath sp = { Utils::GetPathTail(src), srcptr };
+//        paths.push_back(sp);
+//    }
+//    for(size_t i = 0; i != paths.size(); ++i) {
+//        if(Dir::IsDir(root, paths[i].tail_ptr)) {
+//            Mkdir(root, dest + '/' + paths[i].path);
+//        }
+//        else {
+//            string file_path_prefix = dest == ROOT_NAME ? dest : dest + '/';
+//            file_path_prefix += paths[i].path;
+//            file_path_prefix = Utils::PathWithNoFileName(file_path_prefix);
+//            Mkdir(root, file_path_prefix);
+//            size_t copied_blocks = CopyFile(root, paths[i].tail_ptr, file_path_prefix);
+//            if(copied_blocks == 0) {
+//                return false;
+//            }
+//            TraverseUpdatingSize(root, file_path_prefix, copied_blocks);
+//        }
+//    }
+//    return true;
+//}
 
 bool FSManager::Move(const std::string &root, const std::string &src, const std::string &dest) {
     if(src == dest) {
@@ -193,6 +242,11 @@ bool FSManager::Move(const std::string &root, const std::string &src, const std:
     if(Utils::ComparePathsNesting(src, dest) < 0) {
         return false;
     }
+//    string destcpy = Utils::NormalizePath(dest);
+//    size_t destptr = TryFindEntry(root, dest);
+//    if(destptr != Utils::SizeTMax()) {
+//        destcpy = dest + '/' + Utils::GetPathTail(src);
+//    }
     return Copy(root, src, dest) && Rm(root, src);
 }
 
@@ -293,10 +347,10 @@ void FSManager::PrintFileInfo(File& file) {
     std::cout << std::endl;
 }
 
-size_t FSManager::CopyFile(string const& root, size_t src_ptr, string const& destdir_path) {
-    size_t destdir_ptr = TryFindEntry(root, destdir_path);
+size_t FSManager::CopyFile(string const& root, size_t src_ptr, string const& destdir_path, string const& new_file_name) {
+    size_t destdir_ptr = TryFindEntry(root, Utils::NormalizePath(destdir_path));
     File file_to_copy(memmanager_.block_size, root, src_ptr);
-    File new_file(memmanager_.block_size, file_to_copy);
+    File new_file(memmanager_.block_size, file_to_copy, new_file_name);
     size_t size_blocks = new_file.SizeInBlocks();
     if(size_blocks > memmanager_.FreeSpace()) {
         return 0;

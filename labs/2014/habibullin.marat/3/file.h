@@ -14,7 +14,7 @@ public:
     File(size_t block_size, string const& root, size_t beg_ptr) : blocks_(block_size) {
         blocks_.Read(root, beg_ptr);
     }
-    File(size_t block_size, File& other);
+    File(size_t block_size, File& other, string const& new_file_name);
 
     size_t SizeInBlocks() { return blocks_.Size(); }
     bool Write(string const& root, std::vector<size_t> block_ptrs) {
