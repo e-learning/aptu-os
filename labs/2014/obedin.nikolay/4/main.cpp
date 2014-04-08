@@ -83,7 +83,7 @@ int allocate(ushort size)
     t = { t.start, allocated_end, size, false };
     t.write();
 
-    allocated_bytes += size;
+    allocated_bytes  += size;
     allocated_blocks += 1;
 
     return t.start + tag::overhead;
@@ -97,25 +97,21 @@ int deallocate(ushort ptr)
         return -1;
 
     ushort start = t.start;
-    ushort end = t.end;
+    ushort end   = t.end;
 
-    // 1. Check previous block
     tag p;
     p.end = t.start - tag::overhead;
     if (p.read(true) && p.free)
         start = p.start;
 
-    // 2. Check next block
     tag n;
     n.start = t.end;
     if (n.read() && n.free)
         end = n.end;
 
-    // 3. Fix stats
     allocated_bytes  -= t.size;
     allocated_blocks -= 1;
 
-    // 4. Write tags
     ushort size = end - start - 2*tag::overhead;
     t = { start, end, size, true };
     t.write();
@@ -146,9 +142,9 @@ void print_info()
         t.start = t.end;
         t.read();
     }
-    cout << "allocated blocks: " << allocated_blocks << endl;
-    cout << "allocated bytes:  " << allocated_bytes << endl;
-    cout << "max to allocate:  " << max_alloc << endl;
+    cout << allocated_blocks << " "
+         << allocated_bytes << " "
+         << max_alloc << endl;
 }
 
 void prepare()
@@ -183,7 +179,7 @@ int main(int argc, const char *argv[])
             ushort size;
             cin >> size;
             int ptr = allocate(size);
-            ptr == -1 ? cout << "-" : cout << "+" << ptr;
+            ptr == -1 ? cout << "- " : cout << "+ " << ptr;
             cout << endl;
         } else if (cmd.compare("free") == 0) {
             ushort ptr;
