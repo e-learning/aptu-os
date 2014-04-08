@@ -147,6 +147,16 @@ public:
         }
         return path1.empty() ? -1 : 1 ;
     }
+
+    static string NormalizePath(string const& path) {
+        string normalized = path;
+        if(normalized != "/") {
+            if(normalized.at(normalized.size() - 1) == '/') {
+                normalized = normalized.substr(0, normalized.size() - 1);
+            }
+        }
+        return normalized;
+    }
 };
 
 #endif // UTILS_H

@@ -55,7 +55,8 @@ bool FSManager::Export(const string &root, const string &fs_file, const string &
     return true;
 }
 
-bool FSManager::Mkdir(const string &root, const string &path) {
+bool FSManager::Mkdir(const string &root, string path) {
+    path = Utils::NormalizePath(path);
     if(path == ROOT_NAME || path.find(ROOT_NAME) == string::npos) {
         return false;
     }
@@ -84,7 +85,8 @@ bool FSManager::Mkdir(const string &root, const string &path) {
     return TryAddEntry(root, last_dir, de);
 }
 
-bool FSManager::Ls(const std::string& root, const std::string& path) {
+bool FSManager::Ls(const std::string& root, string path) {
+    path = Utils::NormalizePath(path);
     size_t ptr = TryFindEntry(root, path);
     if(ptr == Utils::SizeTMax()) {
         return false;
@@ -101,7 +103,8 @@ bool FSManager::Ls(const std::string& root, const std::string& path) {
     return false;
 }
 
-bool FSManager::Rm(const std::string &root, const std::string &path) {
+bool FSManager::Rm(const std::string &root, string path) {
+    path = Utils::NormalizePath(path);
     if(path == ROOT_NAME) {
         return false;
     }
@@ -138,7 +141,9 @@ bool FSManager::Rm(const std::string &root, const std::string &path) {
     return true;
 }
 
-bool FSManager::Copy(const std::string &root, const std::string &src, const std::string &dest) {
+bool FSManager::Copy(const string &root, string src, string dest) {
+    src = Utils::NormalizePath(src);
+    dest = Utils::NormalizePath(dest);
     if(Utils::IsParentDir(dest, src)) {
         return false;
     }

@@ -14,10 +14,10 @@ public:
     bool Format(string const& root);
     bool Import(string const& root, string const& host_file, string const& fs_file);
     bool Export(string const& root, string const& fs_file, string const& host_file);
-    bool Mkdir(string const& root, string const& path);
-    bool Ls(string const& root, string const& path);
-    bool Rm(string const& root, string const& path);
-    bool Copy(string const& root, string const& src, string const& dest);
+    bool Mkdir(string const& root, string path);
+    bool Ls(string const& root, string path);
+    bool Rm(string const& root, string path);
+    bool Copy(string const& root, string src, string dest);
     bool Move(string const& root, string const& src, string const& dest);
 
     void Close(string const& root) { memmanager_.Dump(root); }
