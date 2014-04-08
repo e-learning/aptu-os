@@ -101,8 +101,8 @@ int deallocate(ushort ptr)
     ushort end   = t.end;
 
     tag p;
-    p.end = t.start - tag::overhead;
-    if (p.read(true) && p.free)
+    p.end = t.start;
+    if (p.read(false) && p.free)
         start = p.start;
 
     tag n;
