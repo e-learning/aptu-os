@@ -1,0 +1,6 @@
+g++ -c main.cpp
+g++ -c -fPIC ps.cpp -o ps.o  
+ps.cpp: В функции «void command_ps()»:
+ps.cpp:26:51: предупреждение: format «%s» expects argument of type «char*», but argument 4 has type «char (*)[256]» [-Wformat]
+gcc -shared -o ps.so ps.o  
+g++ main.o -o shell -ldl -Wl,-rpath,.
