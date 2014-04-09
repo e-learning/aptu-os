@@ -28,7 +28,6 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    Page page;
     try {
         int currentPage = 0;
         int i = headerSize + 1;
@@ -45,6 +44,7 @@ int main(int argc, char **argv)
                 writer.write(i++);
             }
             
+            page.unload();
             ++currentPage;
         }
 

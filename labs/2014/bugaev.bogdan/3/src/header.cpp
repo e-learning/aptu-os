@@ -34,6 +34,7 @@ int popFreePageNumber(Config const &config)
     PageWriter writer(page);
     writer.step<int>().write(cnt - 1);
 
+    page.unload();
     return result;
 }
 
@@ -69,6 +70,7 @@ int pushFreePageNumber(Config const &config, int pageNumber)
     PageWriter writer(page);
     writer.step<int>().write(cnt + 1);
 
+    page.unload();
     return 0;
 }
 
