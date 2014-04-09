@@ -72,7 +72,7 @@ private:
             usedBlocks.begin(), usedBlocks.end(), [](char const & f) { return f == 0; });
     }
 
-    bool exists(Path const &path);
+
 
     void remove_file(Directory &dir, File &file);
 
@@ -86,16 +86,29 @@ private:
 
     void copy_file_to(File const &file, const string &destination);
 
-    bool isDirectory(Path const &path);
-
-    bool isFile(Path const &path);
-
     void move_file_to(File const &file, Directory *parentDir, const string &destination);
 
     void move_file(File const &file,
                    Directory *parentDir,
                    Directory &targetDirectory,
                    string const &newName);
+
+    bool exists(Path const &path) {
+        Directory *d = root.findLastDirectory(path);
+        return d == nullptr ? false
+                : d->existsFile(path.getFileName()) || d->existsDir(path.getFileName());
+    }
+
+    bool isDirectory(Path const &path) {
+        Directory *d = root.findLastDirectory(path);
+        return d == nullptr ? false : d->existsDir(path.getFileName());
+    }
+
+    bool isFile(Path const &path) {
+        Directory *d = root.findLastDirectory(path);
+        return d == nullptr ? false : d->existsFile(path.getFileName());
+    }
+
 };
 
 #endif //__FileSystem_Hpp_

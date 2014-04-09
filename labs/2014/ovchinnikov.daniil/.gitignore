@@ -1,4 +1,8 @@
 *.o
 *.pro*
 
+build*/
+
 1/shell
+fs/
+

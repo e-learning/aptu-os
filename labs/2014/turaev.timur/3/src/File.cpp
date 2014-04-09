@@ -19,29 +19,28 @@ string File::get_info() const
     return ss.str();
 }
 
-void File::load(ifstream &s)
+void File::load(ifstream &s, string const& location)
 {
-    s >> name;
-    s >> size;
-    s >> modified_time;
-    int size_in_blocks = 0;
-    s >> size_in_blocks;
-    blocks.assign(size_in_blocks, 0);
-    for (int i = 0; i < size_in_blocks; ++i) {
-        s >> blocks[i];
+    size_t fileBlock;
+    s.read(reinterpret_cast<char *>(&fileBlock), sizeof(fileBlock));
+    addUsedBlock(fileBlock);
+
+    ifstream fileStream(utils::pathAppend(location, std::to_string(fileBlock)), std::ios_base::binary);
+
+    size_t nextBlock = utils::readMetadata(this, fileStream);
+    while(nextBlock != 0) {
+        blocks.push_back(nextBlock);
+        ifstream in(utils::pathAppend(location, std::to_string(nextBlock)), std::ios_base::binary);
+        nextBlock = utils::readNextBlockNumber(in);
     }
 }
 
 void File::save(ofstream &s) const
 {
-    s << name << " ";
-    s << size << " ";
-    s << modified_time << " ";
-    s << blocks.size() << " ";
-    for (size_t i = 0; i < blocks.size(); ++i) {
-        s << blocks[i] << " ";
-    }
-    s << endl;
+    if (blocks.size() < 1)
+        return;
+    size_t firstBlock = blocks[0];
+    s.write(reinterpret_cast<const char *>(&firstBlock), sizeof(firstBlock));
 }
 
 void File::addUsedBlock(size_t block)
