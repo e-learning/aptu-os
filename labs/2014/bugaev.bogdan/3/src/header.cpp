@@ -47,12 +47,12 @@ int pushFreePageNumber(Config const &config, int pageNumber)
     int cnt = reader.step<int>().read<int>();
     if (cnt == 0) return -1;
 
-    int pos = cnt + 2;
+    int pos = cnt/* + 2*/;
     int here = (config.pageSize - 2 * sizeof(int)) / sizeof(int);
 
     if (pos < here) {
         PageWriter writer(page);
-        writer.step<int>(pos).write(pageNumber);
+        writer.step<int>(pos + 2).write(pageNumber); // !!! + 2 !!!
     } else {
         pos -= here;
         int capacity = config.pageSize / sizeof(int);

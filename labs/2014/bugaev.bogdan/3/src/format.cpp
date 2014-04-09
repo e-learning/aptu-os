@@ -6,6 +6,9 @@
 #include "file.h"
 #include "page.h"
 
+//#include <vector>
+//#include "header.h"
+
 
 int main(int argc, char **argv)
 {
@@ -45,11 +48,26 @@ int main(int argc, char **argv)
             ++currentPage;
         }
 
-        createDir(config, currentPage, "/");
+        createDir(config, headerSize, "/");
     } catch (PageException const &e) {
         std::cerr << e.message() << std::endl;
         return EXIT_FAILURE;
     }
+
+    //std::vector<int> v;
+    //for (int i = 0; i < 5; ++i) {
+    //    int p = popFreePageNumber(config);
+    //    v.push_back(p);
+    //    std::cout << "1: " << p << std::endl;
+    //}
+    //for (int i = 0; i < 3; ++i) {
+    //    pushFreePageNumber(config, v.back());
+    //    v.pop_back();
+    //}
+    //for (int i = 0; i < 5; ++i) {
+    //    int p = popFreePageNumber(config);
+    //    std::cout << "2: " << p << std::endl;
+    //}
 
     return 0;
 }
