@@ -23,8 +23,9 @@ void Dir::readAboutSelf(std::fstream & fs)
 void Dir::readSelf(Root & root)
 {
     size_t nextblockNumber = startblock_;
+
     while (nextblockNumber != LAST_BLOCK) {
-        //blocks_.push_back(nextblockNumber);
+        blocks_.push_back(nextblockNumber);
         std::fstream dirfs ((root.get_root() + "/" + number_to_string(nextblockNumber)).c_str(),
                             std::fstream::in | std::fstream::out | std::fstream::binary);
         size_t recordsCount = read_number_from_bytes(dirfs, BYTES_FOR_RECORDS_COUNT);
@@ -46,7 +47,7 @@ void Dir::readSelf(Root & root)
         }
         nextblockNumber = read_number_from_bytes(dirfs, BYTES_FOR_BLOCKNUMBER);
         if (nextblockNumber != LAST_BLOCK) {
-            blocks_.push_back(nextblockNumber);
+            //blocks_.push_back(nextblockNumber);
         }
         dirfs.close();
     }

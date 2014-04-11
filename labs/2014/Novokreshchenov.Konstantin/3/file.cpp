@@ -103,7 +103,7 @@ void File::writeSelf (Root & root, Bitmap & bitmap)
                           std::fstream::in | std::fstream::out | std::fstream::binary);
     bitmap.set_blockBusy(startblock_, root);
     std::vector<size_t>::iterator myblockIt = blocks_.begin();
-    size_t nextfreeblocknumber = *myblockIt;
+    size_t nextfreeblocknumber = startblock_;
     size_t writeSize = 0;
     while (true) {
         if (size_ - writeSize > root.get_blockSize() - BYTES_FOR_BLOCKNUMBER) {
