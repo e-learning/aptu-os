@@ -19,13 +19,12 @@ void File::readAboutSelf(std::fstream & fs)
     time_ = read_number_from_bytes(fs, BYTES_FOR_TIME);
     startblock_ = read_number_from_bytes(fs, BYTES_FOR_BLOCKNUMBER);
     blocks_.clear();
-    //blocks_.push_back(startblock_);
+    blocks_.push_back(startblock_);
 }
 
 void File::readSelf(Root & root)
 {
     delete buf_;
-    blocks_.push_back(startblock_);
     std::fstream blockfs ((root.get_root() + "/" + number_to_string(startblock_)).c_str(),
                           std::fstream::in | std::fstream::out | std::fstream::binary);
     buf_ = new char[size_];
@@ -64,7 +63,6 @@ size_t File::read_hostfile(std::string const & hostfile)
     buf_ = new char[filesize];
     hostfs.read(buf_, filesize);
     hostfs.close();
-    blocks_.push_back(startblock_);
 
     return SUCCESS;
 }
@@ -76,7 +74,6 @@ void File::read_fsfile(Root & root, File & file)
     buf_ = new char[file.size_];
     size_ = file.size_;
     std::copy (file.buf_, file.buf_ + file.size_, buf_);
-    blocks_.push_back(startblock_);
 }
 
 void File::write_hostfile (std::string const & hostfile)

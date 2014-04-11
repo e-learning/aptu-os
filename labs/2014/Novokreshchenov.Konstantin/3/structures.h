@@ -45,7 +45,7 @@ public:
     File(std::string const & name, size_t size, size_t time, size_t startblock) :
         name_(name), size_(size), time_(time), startblock_(startblock), buf_(NULL)
     {
-        //blocks_.push_back(startblock_);
+        blocks_.push_back(startblock_);
     }
 
     File (File const & fr):
@@ -93,7 +93,7 @@ public:
     Dir(std::string const & name, size_t size, size_t time, size_t startblock):
         name_(name), size_(size), time_(time), startblock_(startblock)
     {
-        //blocks_.push_back(startblock_);
+        blocks_.push_back(startblock_);
     }
 
     Dir(Dir const & dir):
@@ -107,6 +107,7 @@ public:
         size_ = dir.size_;
         time_ = dir.time_;
         startblock_ = dir.startblock_;
+        blocks_ = dir.blocks_;
         filerecords_ = dir.filerecords_;
         dirrecords_ = dir.dirrecords_;
 

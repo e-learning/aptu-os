@@ -107,6 +107,7 @@ public:
         size_ = dir.size_;
         time_ = dir.time_;
         startblock_ = dir.startblock_;
+        blocks_ = dir.blocks_;
         filerecords_ = dir.filerecords_;
         dirrecords_ = dir.dirrecords_;
 
