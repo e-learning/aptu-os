@@ -53,6 +53,15 @@ $(OBJECTS): $(OUTDIR)/%.o : %.cpp
 
 clean:
 	rm -rf $(OUTDIR)
+	rm -rf $(INIT)
+	rm -rf $(FORMAT)
+	rm -rf $(IMPORT)
+	rm -rf $(EXPORT)
+	rm -rf $(LS)
+	rm -rf $(COPY)
+	rm -rf $(MOVE)
+	rm -rf $(RM)
+	rm -rf $(MKDIR)
 
 
 .PHONY: clean

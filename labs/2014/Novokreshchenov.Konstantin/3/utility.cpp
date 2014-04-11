@@ -2,7 +2,7 @@
 #include "utility.h"
 #include <sstream>
 #include <ctime>
-
+#include <climits>
 size_t get_filerest (std::fstream & fs)
 {
     size_t curpos = fs.tellg();
@@ -18,7 +18,7 @@ size_t get_filesize_by_name (std::string const & filename)
     std::fstream filefs (filename.c_str(),
                          std::fstream::in | std::fstream::out | std::fstream::binary);
     if (filefs.fail()) {
-        return 0;
+        return INT_MAX;
     }
     filefs.seekg(0, filefs.end);
     size_t filesize = filefs.tellg();
