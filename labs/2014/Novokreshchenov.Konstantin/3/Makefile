@@ -3,15 +3,15 @@ CXXFLAGS = -Wall -pedantic -std=c++0x
 
 OUTDIR = bin
 
-INIT = $(OUTDIR)/init
-FORMAT = $(OUTDIR)/format
-IMPORT = $(OUTDIR)/import
-EXPORT = $(OUTDIR)/export
-LS = $(OUTDIR)/ls
-COPY = $(OUTDIR)/copy
-MOVE = $(OUTDIR)/move
-RM = $(OUTDIR)/rm
-MKDIR = $(OUTDIR)/mkdir
+INIT = init
+FORMAT = format
+IMPORT = import
+EXPORT = export
+LS = ls
+COPY = copy
+MOVE = move
+RM = rm
+MKDIR = mkdir
 
 SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:%.cpp=$(OUTDIR)/%.o)
