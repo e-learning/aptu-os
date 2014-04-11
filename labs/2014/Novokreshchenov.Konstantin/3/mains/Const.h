@@ -1,6 +1,8 @@
 #ifndef CONST_H
 #define CONST_H
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <cstddef>
 #include <string>
 #include <cmath>

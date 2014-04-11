@@ -161,18 +161,18 @@ void Dir::deleteSelf(Root & root, Bitmap & bitmap)
         dirrecords_[i].deleteSelf(root, bitmap);
     }
 
-    size_t nextblockNumber = startblock_;
-    while (nextblockNumber != LAST_BLOCK) {
-        std::fstream blockfs ((root.get_root() + "/" + number_to_string(nextblockNumber)).c_str(),
+    size_t currentBlockNumber = startblock_;
+    while (currentBlockNumber != LAST_BLOCK) {
+        std::fstream blockfs ((root.get_root() + "/" + number_to_string(currentBlockNumber)).c_str(),
                               std::fstream::in | std::fstream::out | std::fstream::binary);
         blockfs.seekg(get_filerest(blockfs) - BYTES_FOR_BLOCKNUMBER, blockfs.beg);
-        size_t bufNumber = read_number_from_bytes(blockfs, BYTES_FOR_BLOCKNUMBER);
+        size_t nextBlockNumber = read_number_from_bytes(blockfs, BYTES_FOR_BLOCKNUMBER);
         blockfs.close();
-        blockfs.open ((root.get_root() + "/" + number_to_string(nextblockNumber)).c_str(),
+        blockfs.open ((root.get_root() + "/" + number_to_string(currentBlockNumber)).c_str(),
                       std::fstream::in | std::fstream::out | std::fstream::binary | std::fstream::trunc);
         blockfs.close();
-        bitmap.set_blockFree(nextblockNumber, root);
-        nextblockNumber = bufNumber;
+        bitmap.set_blockFree(currentBlockNumber, root);
+        currentBlockNumber = nextBlockNumber;
     }
 }
 
@@ -233,13 +233,17 @@ size_t Dir::add_dirrecord_by_name(std::string const & dirname, Root & root, Bitm
 void Dir::remove_file(Root & root, Bitmap & bitmap, size_t filenumber)
 {
     get_file(filenumber).deleteSelf(root, bitmap);
-    filerecords_.erase(filerecords_.begin() + filenumber, filerecords_.begin() + filenumber + 1);
+    filerecords_.erase(filerecords_.begin() + filenumber);
+    //filerecords_.erase(std::remove(filerecords_.begin(), filerecords_.end(), filenumber), filerecords_.end());
+    //filerecords_.erase(filerecords_.begin() + filenumber);//, filerecords_.begin() + filenumber + 1);
 }
 
 void Dir::remove_subdir(Root & root, Bitmap & bitmap, size_t dirnumber)
 {
     get_subdir(dirnumber).deleteSelf(root, bitmap);
-    dirrecords_.erase(dirrecords_.begin() + dirnumber, dirrecords_.begin() + dirnumber + 1);
+    dirrecords_.erase(dirrecords_.begin() + dirnumber);
+    //dirrecords_.erase(std::remove(dirrecords_.begin(), dirrecords_.end(), dirnumber), dirrecords_.end());
+    //dirrecords_.erase(dirrecords_.begin() + dirnumber);//, dirrecords_.begin() + dirnumber + 1);
 }
 
 size_t Dir::find_file_by_name(std::string const & filename)

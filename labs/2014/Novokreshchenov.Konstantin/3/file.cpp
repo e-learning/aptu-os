@@ -24,7 +24,7 @@ void File::readAboutSelf(std::fstream & fs)
 
 void File::readSelf(Root & root)
 {
-    delete buf_;
+    delete[] buf_;
     std::fstream blockfs ((root.get_root() + "/" + number_to_string(startblock_)).c_str(),
                           std::fstream::in | std::fstream::out | std::fstream::binary);
     buf_ = new char[size_];
@@ -59,7 +59,7 @@ size_t File::read_hostfile(std::string const & hostfile)
     if (hostfs.fail()) {
         return ERROR_INCORRECT_PATH;
     }
-    delete buf_;
+    delete[] buf_;
     buf_ = new char[filesize];
     hostfs.read(buf_, filesize);
     hostfs.close();
@@ -70,7 +70,7 @@ size_t File::read_hostfile(std::string const & hostfile)
 void File::read_fsfile(Root & root, File & file)
 {
     file.readSelf(root);
-    delete buf_;
+    delete[] buf_;
     buf_ = new char[file.size_];
     size_ = file.size_;
     std::copy (file.buf_, file.buf_ + file.size_, buf_);
@@ -137,18 +137,18 @@ void File::writeSelf (Root & root, Bitmap & bitmap)
 
 void File::deleteSelf(Root & root, Bitmap & bitmap)
 {
-    size_t nextblockNumber = startblock_;
-    while (nextblockNumber != LAST_BLOCK) {
-        bitmap.set_blockFree(nextblockNumber, root);
-        std::fstream blockfs ((root.get_root() + "/" + number_to_string(nextblockNumber)).c_str(),
+    size_t currentblockNumber = startblock_;
+    while (currentblockNumber != LAST_BLOCK) {
+        std::fstream blockfs ((root.get_root() + "/" + number_to_string(currentblockNumber)).c_str(),
                               std::fstream::in | std::fstream::out | std::fstream::binary);
         blockfs.seekg((int)BYTES_FOR_BLOCKNUMBER * (-1), blockfs.end);
-        size_t oldBlockNumer = nextblockNumber;
-        nextblockNumber = read_number_from_bytes(blockfs, BYTES_FOR_BLOCKNUMBER);
+        size_t nextblockNumber = read_number_from_bytes(blockfs, BYTES_FOR_BLOCKNUMBER);
         blockfs.close();
-        blockfs.open((root.get_root() + "/" + number_to_string(oldBlockNumer)).c_str(),
+        blockfs.open((root.get_root() + "/" + number_to_string(currentblockNumber)).c_str(),
                                       std::fstream::in | std::fstream::out | std::fstream::binary | std::fstream::trunc);
         blockfs.close();
+        bitmap.set_blockFree(currentblockNumber, root);
+        currentblockNumber = nextblockNumber;
     }
 }
 

@@ -7,12 +7,14 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <list>
 
 class Root;
 class Bitmap;
 class FileRecord;
 class Dir;
 
+typedef std::list<size_t>::iterator BlockIt;
 
 class Bitmap
 {
@@ -52,14 +54,31 @@ public:
         name_(fr.name_), size_(fr.size_), time_(fr.time_), startblock_(fr.startblock_), blocks_(fr.blocks_), buf_(NULL)
     {
         if (fr.buf_ != NULL) {
-            delete buf_;
+            delete[] buf_;
             buf_ = new char[size_];
             std::copy(fr.buf_, fr.buf_ + fr.size_, buf_);
         }
     }
 
+    File & operator= (File const & fr)
+    {
+        name_ = fr.name_;
+        size_ = fr.size_;
+        time_ = fr.time_;
+        startblock_ = fr.startblock_;
+        blocks_ = fr.blocks_;
+        buf_ = NULL;
+        if (fr.buf_ != NULL) {
+            delete buf_;
+            buf_ = new char[size_];
+            std::copy(fr.buf_, fr.buf_ + fr.size_, buf_);
+        }
+
+        return *this;
+    }
+
     ~File()
-    { delete buf_; }
+    { delete[] buf_; }
 
     size_t get_sizeInBlocks()
     { return blocks_.size(); }

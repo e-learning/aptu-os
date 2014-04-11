@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
         return pathResult;
     }
     if (vpath.size() < 1) {
-        format(rootpath);
+        init_fileSystem(rootpath);
         return SUCCESS;
     }
 
