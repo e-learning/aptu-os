@@ -181,7 +181,7 @@ namespace Spaghetti
     {
       File file = findFile(dst, false);
 
-      std::ofstream ofs(src, std::ios::binary | std::ios::in);
+      std::ofstream ofs(src, std::ios::binary | std::ios::trunc);
       assert(ofs);
 
       read(file, ofs);
