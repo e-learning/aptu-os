@@ -10,11 +10,9 @@
 
 int main(int argc, char* argv[])
 {
-    if (argc < 2) {
-        std::cout << "Few arguments! Use: allocator <blocksize>" << std::endl;
-        return ERROR;
-    }
-    size_t memorySize = atoi (argv[1]);
+    std::string strMemorySize = "";
+    std::getline(std::cin, strMemorySize);
+    size_t memorySize = atoi(strMemorySize.c_str());
     Parser parser;
     MemoryManager memoryManager (memorySize);
 
@@ -28,4 +26,5 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+
 
