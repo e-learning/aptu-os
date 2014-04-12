@@ -482,7 +482,7 @@ namespace Spaghetti
                 current = getById(current.next);
               if (*it != current.name)
                 {
-                  assert(current.isDirectory && create);
+                  assert(create);
                   File newDir = createFile(*it);
                   current.next = newDir.id = getFreeBlock();
                   newDir.prev = current.id;
@@ -490,6 +490,8 @@ namespace Spaghetti
                   write(newDir);
                   current = newDir;
                 }
+              else
+                assert(current.isDirectory);
             }
         }
       return current;
