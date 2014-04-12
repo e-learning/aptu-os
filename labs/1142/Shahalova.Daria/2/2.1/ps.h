@@ -9,7 +9,7 @@
 using namespace std;
 
 extern "C"{
-    void command_ps();
+    void command_ps(string &sbuf);
 }
 
 #endif

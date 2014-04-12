@@ -1,6 +1,11 @@
 #include "ps.h"
+#include <iostream>
+#include <sstream>
+#include <iomanip>
 
-void command_ps()
+using namespace std;
+
+void command_ps(string &sbuf)
 {
     DIR *dir_p;
     struct dirent *dir_entry_p;
@@ -8,10 +13,11 @@ void command_ps()
     FILE* stat_file;
     int pid;
     char comm[256];
+    stringstream ss;
 
-    printf("%6s %51s\n", "PID", "Имя процесса");
-    printf("***********************************************\n");
     dir_p = opendir("/proc/");// открываем каталог /proc/
+    ss << setw(6) << "PID" << setw(52) << "Имя процесса" << endl;
+    ss << "***********************************************" << endl;
     while((dir_entry_p = readdir(dir_p)) != NULL) {// Reading /proc/ entries
         if(strspn(dir_entry_p->d_name, "0123456789") == strlen(dir_entry_p->d_name)) {// проверяем является ли имя каталога числом, т.е. PID процесса 
             strcpy(dir_name, "/proc/");
@@ -24,7 +30,8 @@ void command_ps()
                 return;
             }
             fscanf(stat_file, "%d %s", &pid, &comm);
-            printf("%6d %40s\n", pid, comm);
+            ss << setw(6) << pid << setw(41) << comm << endl;
+            sbuf = ss.str();
             fclose(stat_file);
         }
     }

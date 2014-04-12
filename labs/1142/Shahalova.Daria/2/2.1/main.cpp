@@ -10,9 +10,8 @@
 #include <sys/wait.h>
 #include <vector>
 #include <dlfcn.h>
+#include "ps.h"
 using namespace std;
-
-void (*command_ps)(void);
 
 int parse_command(string input_str, string &command, string &args)
 {
@@ -203,43 +202,9 @@ void sigint_handler(int s){
    cout << "Перехвачена комбинация Ctrl-c" << endl;
 }
 
-int load_ps_library(void* ps_library)
-{
-    ps_library = dlopen("ps.so", RTLD_LAZY);
-    if (ps_library == NULL)
-    {
-        const char *dlsym_error = dlerror();
-        cout << " Ошибка при загрузке динамической библиотеки " << dlsym_error << endl;
-        return -1;
-    }
-    else
-    {
-        command_ps = (void (*)(void)) dlsym(ps_library, "command_ps");
-        const char *dlsym_error = dlerror();
-        if (dlsym_error) {
-            cerr << "Ошибка при загрузке функции 'command_ps': " << dlsym_error << endl;
-            dlclose(ps_library);
-            return -1;
-        }
-        return 0;
-    }
-}
-
-void close_ps_library(void* ps_library)
-{
-    if(ps_library)
-        dlclose(ps_library);
-}
-
 int main(int argc, char** argv)
 {
-    void* ps_library = NULL;
     string input_str, command, args;
-    
-    if(load_ps_library(ps_library) == -1)
-    {
-        exit(-1);
-    }
     
     signal (SIGINT, sigint_handler);
     
@@ -257,7 +222,9 @@ int main(int argc, char** argv)
             
             if(command.compare("ps") == 0)
             {
-                command_ps();
+                string sbuf;
+                command_ps(sbuf);
+                cout << sbuf;
                 continue;
             }
             
@@ -288,6 +255,5 @@ int main(int argc, char** argv)
         }
     }
     
-    close_ps_library(ps_library);
     return 0;
 }

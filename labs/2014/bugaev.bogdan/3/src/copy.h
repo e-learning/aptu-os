@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "page.h"
 #include "file.h"
+#include "defs.h"
 
 
 #include "rm.h"
@@ -106,7 +107,7 @@ int copyFile(Config const &config, int number, bool first = true)
 }
 
 
-int copy_main(int argc, char **argv)
+int copy_main(int argc, char **argv, bool espiga = true)
 {
     Config config;
 
@@ -133,6 +134,14 @@ int copy_main(int argc, char **argv)
             }
         }
 
+        bool dirFlag = false;
+        {
+            Page page;
+            page.load(config, parent);
+            dirFlag = isDir(page);
+            page.unload();
+        }
+
         int firstPage = copyFile(config, parent);
         if (firstPage == -2) {
             std::cerr << "No free space" << std::endl;
@@ -140,7 +149,15 @@ int copy_main(int argc, char **argv)
         }
 
         {
+            // !!! {
+            Path const &tmpPath = path;
             Path path(argv[3]);
+
+            if (espiga && dirFlag) {
+                path = Path(path.concat(tmpPath.list().back()));
+            }
+            // !!! }
+
             int currentFile = getHeaderSize(config);
             for (size_t i = 0; i + 1 < path.list().size(); ++i) {
                 currentFile = findFileNumber(config, currentFile, path.list()[i]);
@@ -171,7 +188,7 @@ int copy_main(int argc, char **argv)
 
             PageWriter writer(page2);
             writer.step<int>(4).write(time(0));
-            writer.write<int>(path.list().back().size()).writeString(path.list().back());
+            writer.write<int>(LEN/*path.list().back().size()*/).writeString(path.list().back()); //.step<char>(LEN - (int) path.list().back().size()); // !!!
 
             PageWriter(page2).step<int>().write(getFirstFileNumber(page));
             PageWriter(page).write(firstPage);

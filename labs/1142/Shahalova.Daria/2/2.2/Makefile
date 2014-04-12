@@ -1,11 +1,11 @@
-shell: main.o ps.so
+shell: main.o libps.so
 	g++ main.o -o shell -ldl -Wl,-rpath,.
 
 main.o: main.cpp
 	g++ -c main.cpp
 	
-ps.so: ps.o
-	gcc -shared -o ps.so ps.o  
+libps.so: ps.o
+	gcc -shared -o libps.so ps.o  
 	
 ps.o: ps.cpp ps.h
 	g++ -c -fPIC ps.cpp -o ps.o  

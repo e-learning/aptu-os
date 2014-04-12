@@ -74,6 +74,7 @@ int main(int argc, char **argv)
                 --fileSize;
             }
             currentFile = PageReader(page).read<int>();
+            page.unload();
         }
 
     } catch (Exception const &e) {
