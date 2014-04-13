@@ -18,10 +18,6 @@ struct Block {
     Block(): free(true),pointer(0), next(0) {
     }
 
-    ~Block() {
-        delete next;
-    }
-
     size_t data_size() const {
         return (next ? next->pointer : n) - data_pointer();
     }
@@ -38,7 +34,7 @@ int allocate(Block * root, const size_t bytes) {
 
     if (root->free && bytes <= root->data_size()) {
         root->free = false;
-        if (root->data_pointer() + bytes + sizeof(Block) < n) {
+        if (root->data_pointer() + bytes + sizeof(Block) < (root->next ? root->next->pointer : n)) {
             Block * b = new Block();
             b->pointer = root->pointer + sizeof(Block) + bytes;
             b->next = root->next;
@@ -77,10 +73,23 @@ int free(Block * current, const size_t data_pointer) {
 }
 
 void loopThrough(const Block & start, const function<void (const Block &)> action){
-    action(start);
-    for (const Block * current = & start; current->next; current = current->next) {
-       action(*current);
+    const Block *current = &start;
+    while (true) {
+        action(*current);
+        if (current->next) {
+            current = current->next;
+        } else {
+            break;
+        }
     }
+}
+
+void recursiveDelete(Block * b) {
+    if (!b->next) {
+        return;
+    }
+    recursiveDelete(b->next);
+    delete b;
 }
 
 int main()
@@ -126,17 +135,18 @@ int main()
                  << max_block_size_available << endl;
         } else if (action == "map") {
             loopThrough(*root, [](const Block & b) {
-                for (size_t i = 0; i< sizeof(Block); i++) {
+                for (size_t i = 0; i < sizeof(Block); i++) {
                     cout << 'm';
                 }
-                for (size_t i = 0; i < b.data_size();i++) {
+                for (size_t i = 0; i < b.data_size(); i++) {
                     cout << (b.free ? 'f' : 'u');
                 }
             });
             cout << endl;
         }
     }
-    delete root;
+
+    recursiveDelete(root);
     return 0;
 }
 
