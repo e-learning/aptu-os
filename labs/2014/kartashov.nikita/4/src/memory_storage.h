@@ -2,11 +2,8 @@
 #define MEMORY_STORAGE_H
 
 #include <string>
-#include <iostream>
 
 #include "block.h"
-
-using namespace std;
 
 using std::string;
 
@@ -59,13 +56,18 @@ public:
 
 	int free(int offset)
 	{
-		if (offset <= HEADER_SIZE)
+		if (offset < HEADER_SIZE)
 			return FAIL;
 		
 		int current_offset = 0;
 		block* current = m_first_block;
 		while (true) 
 		{
+#ifdef DEBUG
+			std::cout << "co " << current_offset << std::endl;
+			std::cout << "hs " << HEADER_SIZE << std::endl;
+			std::cout << "of " << offset << std::endl;
+#endif
 			if (!current->is_free() && current_offset + HEADER_SIZE == offset)
 			{
 				current->free();
