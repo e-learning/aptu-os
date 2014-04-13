@@ -24,6 +24,17 @@ public:
 		m_first_block(new block(m_size - HEADER_SIZE)),
 		m_chunk(new char[m_size]) {}
 
+	~memory_storage() 
+	{
+		block* current = m_first_block;
+		while(current != NO_BLOCK)
+		{
+			block* ptr = current;
+			current = current->next();
+			delete ptr;
+		}
+	}
+
 	int allocate(int size)
 	{
 		if (size <= 0)
