@@ -20,23 +20,16 @@ public:
 
 	int available() {return is_free() ? m_size + HEADER_SIZE : 0;}
 	bool is_free() {return m_size > 0;}
-	int allocate() 
+	void allocate() 
 	{
-		int result = SUCCESS;
 		if (m_size > 0)
 			m_size *= -1;
-		else
-			result = FAIL;
-		return result;
 	}
-	int free() 
+
+	void free() 
 	{
-		int result = SUCCESS;
 		if (m_size < 0)
 			m_size *= -1;
-		else
-			result = FAIL;
-		return result;
 	}
 	int real_size() {return abs(m_size);}
 	void merge()
