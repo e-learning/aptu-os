@@ -7,6 +7,8 @@ const int INT_SIZE = 4;
 const int HEADER_SIZE = 3 * INT_SIZE;
 block* NO_BLOCK = 0;
 const int MIN_BLOCK_SIZE = HEADER_SIZE + 1;
+const int FAIL = -1;
+const int SUCCESS = 0;
 
 class block
 {
@@ -18,8 +20,24 @@ public:
 
 	int available() {return is_free() ? m_size + HEADER_SIZE : 0;}
 	bool is_free() {return m_size > 0;}
-	void allocate() {m_size *= -1;}
-	void free() {allocate();} // xDDDDDDD
+	int allocate() 
+	{
+		int result = SUCCESS;
+		if (m_size > 0)
+			m_size *= -1;
+		else
+			result = FAIL;
+		return result;
+	}
+	int free() 
+	{
+		int result = SUCCESS;
+		if (m_size < 0)
+			m_size *= -1;
+		else
+			result = FAIL;
+		return result;
+	}
 	int real_size() {return abs(m_size);}
 	void merge()
 	{

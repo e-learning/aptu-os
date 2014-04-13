@@ -10,9 +10,6 @@ using namespace std;
 
 using std::string;
 
-const int FAIL = -1;
-const int SUCCESS = 0;
-
 struct memory_info
 {
 	memory_info() : allocated_blocks(0), allocated_memory(0), maximum_allocatable(0) {}
@@ -32,6 +29,8 @@ public:
 
 	int allocate(int size)
 	{
+		if (size <= 0)
+			return FAIL;
 		block* current = m_first_block;
 		int offset = 0;
 		while (true)
@@ -60,6 +59,9 @@ public:
 
 	int free(int offset)
 	{
+		if (offset <= HEADER_SIZE)
+			return FAIL;
+		
 		int current_offset = 0;
 		block* current = m_first_block;
 		while (true) 
@@ -73,7 +75,7 @@ public:
 			}
 			if (current->next() == NO_BLOCK)
 				return FAIL;
-			offset += HEADER_SIZE + current->real_size();
+			current_offset += HEADER_SIZE + current->real_size();
 			current = current->next();			
 		}
 	}
