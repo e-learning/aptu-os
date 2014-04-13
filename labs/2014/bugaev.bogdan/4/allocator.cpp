@@ -102,7 +102,7 @@ int memAlloc(int const s)
 
     Header *header = getHeader(block);
 
-    if (header->size < ss * 1.1) {
+    if (header->size < ss + (int) sizeof(int)) {
         setPrev(header->next, header->prev);
         setNext(header->prev, header->next);
         return block + HEADER_SIZE;
