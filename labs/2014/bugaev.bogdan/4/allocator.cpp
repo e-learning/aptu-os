@@ -165,7 +165,7 @@ bool memFree(int p)
 void printStats()
 {
     int maxBlock = 0;
-    int allocated = size;
+    int allocated = size - blockCount * HEADER_SIZE;
     int b = start;
     while (b != UNDEFINED) {
         int s = getHeader(b)->size;
@@ -179,31 +179,35 @@ void printStats()
 }
 
 
+void printBlock(Header const *h, int &p, char symbol)
+{
+    for (int i = 0; i < HEADER_SIZE; ++i) {
+        std::cout << 'm';
+        ++p;
+    }
+    for (int i = HEADER_SIZE; i < h->size; ++i) {
+        std::cout << symbol;
+        ++p;
+    }
+}
+
+
 void printMap()
 {
     int b = start;
     int p = start;
     while (b != UNDEFINED) {
-        for (int i = 0; p < b; ++i) {
-            //std::cout << ((i < HEADER_SIZE) ? 'm' : 'u');
-            std::cout << 'u';
-            ++p;
-        }
-        for (int i = 0; i < HEADER_SIZE; ++i) {
-            std::cout << 'm';
-            ++p;
+        while (p < b) {
+            Header *h = getHeader(p);
+            printBlock(h, p, 'u');
         }
         Header *h = getHeader(b);
-        for (int i = HEADER_SIZE; i < h->size; ++i) {
-            std::cout << 'f';;
-            ++p;
-        }
+        printBlock(h, p, 'f');
         b = h->next;
     }
-    for (int i = 0; p < size; ++i) {
-        //std::cout << ((i < HEADER_SIZE) ? 'm' : 'u');
-        std::cout << 'u';
-        ++p;
+    while (p < size) {
+        Header *h = getHeader(p);
+        printBlock(h, p, 'u');
     }
     std::cout << std::endl;
 }
