@@ -124,6 +124,22 @@ bool intersects(int b1, int b2)
 }
 
 
+void tryToMerge(int &l, int &r)
+{
+    if (l == UNDEFINED || r == UNDEFINED)
+        return;
+    Header *hl = getHeader(l);
+    Header *hr = getHeader(r);
+    if (l + hl->size != r)
+        return;
+    setNext(l, hr->next);
+    setPrev(hr->next, l);
+    setSize(l, hl->size + hr->size);
+    r = l;
+    --blockCount;
+}
+
+
 bool memFree(int p)
 {
     p -= HEADER_SIZE;
@@ -157,6 +173,9 @@ bool memFree(int p)
     setPrev(r, p);
 
     --blockCount;
+
+    tryToMerge(l, p);
+    tryToMerge(p, r);
 
     return true;
 }
