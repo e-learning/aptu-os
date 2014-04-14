@@ -70,10 +70,10 @@ struct Memory {
         }
         
         size_t free_size = N-cur-sizeof(ServiceBlock);
-        if( free_size >= S) {
+        ServiceBlock* curSB = getServiceBlock(cur);
         
-            ServiceBlock* curSB = getServiceBlock(cur);
-            
+        if( curSB->is_free  && free_size >= S) {
+        
             curSB->is_free = 0;     
             curSB->size = S;
             
