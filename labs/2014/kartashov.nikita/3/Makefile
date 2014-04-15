@@ -1,5 +1,5 @@
-CC = clang++
-CFLAGS = -Wall -O2 -ggdb -Wextra -pedantic -std=c++11
+CC = g++
+CFLAGS = -Wall -ggdb -Wextra -pedantic -std=c++11
 
 SOURCEDIR = src/utils
 SOURCES = $(wildcard $(SOURCEDIR)/*.cpp)
