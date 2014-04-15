@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <map>
 
 struct header {
   int size;
@@ -52,6 +53,20 @@ public:
   }
 
   bool free(int p) {
+    bool f = false;
+    int first = 0;
+    for (auto i = allocated.begin(); i != allocated.end(); ++i) {
+      if (i->second == p) {
+        first = i->first;
+        f = true;
+        break;
+      }      
+    }
+
+    if (f == false) {
+      return false;
+    }
+
     p -= HEADER_SIZE;
     if (p < 0 || p >= mem_size) {
       return false;
@@ -90,6 +105,7 @@ public:
     merge(l, p);
     merge(p, r);
 
+    allocated.erase(first);
     return true;
   }
 
@@ -110,17 +126,20 @@ public:
     if (header->size < ss + (int) sizeof(int)) {
       set_prev(header->next, header->prev);
       set_next(header->prev, header->next);
+      allocated[s] = block + HEADER_SIZE;
       return block + HEADER_SIZE;
     }
 
     int bb = block + header->size - ss;
     set_header(bb, ss);
     set_size(block, header->size - ss);
+    allocated[s] = bb + HEADER_SIZE;
     return bb + HEADER_SIZE;
   }
 
 private:
   static const int HEADER_SIZE = sizeof(header);
+  std::map<int, int> allocated;
   int mem_size = 0;
   char *ptr = 0;
   int start = 0;
