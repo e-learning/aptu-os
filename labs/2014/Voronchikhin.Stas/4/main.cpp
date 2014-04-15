@@ -17,19 +17,21 @@ int main(int argc, char **argv) {
 	while (true) {
 		cin >> s;
 		if (s == "ALLOC") {
-			int size;
+			size_t size;
 			cin >> size;
 			all->alloc(size);
 		} else if (s == "FREE") {
-			int place;
+			size_t place;
 			cin >> place;
-			all->free(place);
+			try {
+				all->free(place);
+			} catch (...) {
+				cout << '-' << std::endl;
+			}
 		} else if (s == "INFO") {
 			all->info();
 		} else if (s == "MAP") {
 			all->map();
-		} else if (s == "PRINT") {
-			all->print();
 		}
 	}
 	cout.flush();

@@ -6,100 +6,150 @@
  */
 #include "allocator.h"
 #include <iostream>
-
+#include <algorithm>
 using namespace std;
 
-Allocator::Allocator(int size) {
-	memory.resize(size);
-	std::fill(memory.begin(), memory.end(), 0);
+Allocator::Allocator(size_t size) {
+	memory = new unsigned char[size];
+	memory_size = size;
+	Block* block = get_block(0);
+	block->is_free = true;
+	block->offset = 0;
+	block->size = memory_size;
 }
 
-void Allocator::alloc(int size) {
-	if (size > 0) {
-		for (size_t i = 0; i < memory.size(); ++i) {
-			if (memory[i] == 0) {
-				size_t j = 1;
-				for (; j <= size; ++j && j < memory.size() - i) {
-					if (memory[i + j] != 0)
-						break;
-				}
-				if (--j == size) {
-					memory[i] = -size;
-					for (int j = 1; j <= size; ++j) {
-						memory[i + j] = 1;
-					}
-					cout << "+ " << i << std::endl;
-					return;
-				}
-			} else if (memory[i] < 0) {
-				i += -memory[i];
+void Allocator::alloc(size_t size) {
+	for (Block * i = get_block(0); i; i = get_next(i)) {
+		if (i->is_free && i->usr_memory_size() >= size) {
+			if (i->usr_memory_size() - size < sizeof(Block)) {
+				i->is_free = false;
+				cout << '+' << i->offset + sizeof(Block) << std::endl;
+				return;
+			} else {
+				Block * next = get_block(i->usr_memory_offset() + size);
+				next->prev = i->offset;
+				next->offset = i->usr_memory_offset() + size;
+				next->size = i->size - (next->offset - i->offset);
+				next->is_free = true;
+				i->is_free = false;
+				i->size = next->offset - i->offset;
+				cout << '+' << i->offset + sizeof(Block) << std::endl;
+				return;
 			}
 		}
 	}
-	cout << "-" << std::endl;
-
+	cout << '-' << std::endl;
 }
 
-void Allocator::free(int place) {
-	if (memory[place] < 0) {
-		int size = -memory[place];
-		for (int i = 0; i <= size; ++i) {
-			memory[place + i] = 0;
+void Allocator::free(size_t offset) {
+	offset -= sizeof(Block);
+	Block * block = get_block(offset);
+	block->is_free = true;
+	if (has_prev(block) && has_next(block) && get_prev(block)->is_free
+			&& get_next(block)->is_free) {
+		if (has_next(get_next(block))) {
+			get_next(get_next(block))->prev = get_prev(block)->offset;
 		}
-		cout << "+" << std::endl;
-	} else {
-		cout << "-" << std::endl;
+		get_prev(block)->size += (block->size + get_next(block)->size);
+	} else if (has_prev(block) && get_prev(block)->is_free) {
+		if (has_next(block)) {
+			get_next(block)->prev = get_prev(block)->offset;
+		}
+		get_prev(block)->size += block->size;
+	} else if (has_next(block) && get_next(block)->is_free) {
+		if (has_next(get_next(block))) {
+			get_next(get_next(block))->prev = block->offset;
+		}
+		block->size += get_next(block)->size;
+		block->is_free = true;
 	}
+
+	cout << '+' << std::endl;
 }
 
 void Allocator::info() {
-	int max = 1;
-	int sum = 0;
-	int current_chunk = 0;
-	size_t counter = 0;
-	for (size_t i = 0; i < memory.size(); ++i) {
-		if (memory[i] < 0) {
-			int size = -memory[i];
-			sum += size;
-			++counter;
-			if (current_chunk > max) {
-				max = current_chunk;
-			}
-			current_chunk = 0;
-			i += size;
+	int usr_blocks = 0;
+	int usr_mem = 0;
+	size_t max_size = 0;
+
+	for (Block * i = get_block(0); i; i = get_next(i)) {
+		if (i->is_free) {
+			max_size = std::max(max_size, i->usr_memory_size());
 		} else {
-			++current_chunk;
+			++usr_blocks;
+			usr_mem += i->usr_memory_size();
 		}
-
 	}
 
-	if (current_chunk > max) {
-		max = current_chunk;
-	}
-
-	cout << counter << " " << sum << " " << max - 1 << std::endl;
+	std::cout << usr_blocks << " " << usr_mem << " " << max_size << std::endl;
 }
 
 void Allocator::map() {
-	for (size_t i = 0; i < memory.size(); ++i) {
-		if (memory[i] > 0) {
-			cout << "u";
-			continue;
+	for (Block * i = get_block(0); i; i = get_next(i)) {
+		for (unsigned int j = 0; j < sizeof(Block); ++j) {
+			std::cout << 'm';
 		}
-		if (memory[i] < 0) {
-			cout << "m";
-			continue;
-		}
-		cout << "f";
-	}
 
-	cout << endl;
+		if (i->is_free) {
+			for (size_t j = 0; j < i->usr_memory_size(); ++j) {
+				std::cout << 'f';
+			}
+		} else {
+			for (size_t j = 0; j < i->usr_memory_size(); ++j) {
+				std::cout << 'u';
+			}
+		}
+	}
+	std::cout << std::endl;
 }
 
-void Allocator::print() {
-	for (size_t i = 0; i < memory.size(); ++i) {
-		cout << memory[i] << " ";
+Block* Allocator::get_block(size_t offset) {
+
+	return reinterpret_cast<Block *>(memory + offset);
+}
+
+Block* Allocator::get_next(Block* b) {
+	if (b->offset + b->size < memory_size) {
+		return get_block(b->offset + b->size);
+	} else {
+		return 0;
 	}
-	cout << std::endl;
+}
+
+Block* Allocator::get_prev(Block* curr) {
+	if (curr->offset != 0) {
+		return get_block(curr->prev);
+	} else {
+		return 0;
+	}
+}
+
+bool Allocator::has_next(Block* b) {
+	if (b->offset + b->size < memory_size) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool Allocator::has_prev(Block* b) {
+	if (b->offset != 0) {
+		return 1;
+	} else {
+		return 0;
+	}
+
+}
+
+size_t Block::usr_memory_size() {
+	return size - sizeof(Block);
+}
+
+size_t Block::usr_memory_offset() {
+	return offset + sizeof(Block);
+}
+
+Block* get_block(size_t offset, size_t ptr) {
+	return reinterpret_cast<Block *>(ptr + offset);
 }
 
