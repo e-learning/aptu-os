@@ -21,7 +21,7 @@ int main()
     while (true) {
         string command = "";
         cin >> command;
-        if(command == "alloc") {
+        if(command == "ALLOC") {
             size_t bytes = 0;
             cin >> bytes;
             if(bytes < 0) {
@@ -31,12 +31,12 @@ int main()
             int result = allocator.allocate(root, bytes);
             (result < 0 ? cout << "-" : cout<< "+ "<< result) << endl;
 
-        } else if (command == "free") {
+        } else if (command == "FREE") {
             size_t ptr = 0;
             cin >> ptr;
             cout<< (allocator.free_block(root, ptr) ? '-' : '+') << endl;
 
-        } else if (command == "info") {
+        } else if (command == "INFO") {
             size_t blocks_count = 0;
             size_t total_memory_alloc = 0;
             size_t max_block_size_available = 0;
@@ -47,7 +47,7 @@ int main()
                     << max_block_size_available << endl;
 
 
-        } else if (command == "map") {
+        } else if (command == "MAP") {
             allocator.print_map(*root);
             cout<<endl;
 
