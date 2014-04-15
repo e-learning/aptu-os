@@ -79,7 +79,7 @@ void MemoryAllocator::print_map(Block &block) {
     Block* cur = &block;
     while(true) {
 
-        for(size_t i = 0; i < cur->data_size(); ++i) {
+        for(size_t i = 0; i < sizeof(Block); ++i) {
             std::cout<< 'm';
         }
         for(size_t i = 0; i < cur->data_size(); ++i) {
