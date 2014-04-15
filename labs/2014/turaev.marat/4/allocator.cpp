@@ -41,23 +41,28 @@ public:
 
   void print_info() {
     int maxBlock = 0;
-    int allocated = mem_size - blockCount * HEADER_SIZE;
+    // int allocated = mem_size - blockCount * HEADER_SIZE;
+    int allocat = 0;
+
+    for (auto i = allocated.begin(); i != allocated.end(); ++i) {
+      allocat += i->second;      
+    }
+
     int b = start;
     while (b != -1) {
       int s = get_header(b)->size;
-      allocated -= s;
+      // allocated -= s;
       maxBlock = std::max(maxBlock, s - HEADER_SIZE - (b == start) * HEADER_SIZE);
       b = get_header(b)->next;
     }
-    std::cout << blockCount << ' ' << allocated << ' ' << maxBlock << std::endl;
+    std::cout << blockCount << ' ' << allocat << ' ' << maxBlock << std::endl;
   }
 
   bool free(int p) {
+    int p1 = p;
     bool f = false;
-    int first = 0;
     for (auto i = allocated.begin(); i != allocated.end(); ++i) {
-      if (i->second == p) {
-        first = i->first;
+      if (i->first == p) {
         f = true;
         break;
       }      
@@ -105,7 +110,7 @@ public:
     merge(l, p);
     merge(p, r);
 
-    allocated.erase(first);
+    allocated.erase(p1);
     return true;
   }
 
@@ -126,14 +131,14 @@ public:
     if (header->size < ss + (int) sizeof(int)) {
       set_prev(header->next, header->prev);
       set_next(header->prev, header->next);
-      allocated[s] = block + HEADER_SIZE;
+      allocated[block + HEADER_SIZE] = s;
       return block + HEADER_SIZE;
     }
 
     int bb = block + header->size - ss;
     set_header(bb, ss);
     set_size(block, header->size - ss);
-    allocated[s] = bb + HEADER_SIZE;
+    allocated[bb + HEADER_SIZE] = s;
     return bb + HEADER_SIZE;
   }
 
@@ -204,7 +209,7 @@ private:
     set_prev(hr->next, l);
     set_size(l, hl->size + hr->size);
     r = l;
-    --blockCount;
+    // --blockCount;
   }
 
   void print_block(header const *h, int &p, char symbol) {
