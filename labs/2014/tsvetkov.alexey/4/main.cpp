@@ -52,6 +52,7 @@ int main() {
 
   while (std::cin.good()) {
     read_and_exec();
+    std::cout << std::endl;
   }
   return 0;
 }
@@ -63,16 +64,13 @@ void read_and_exec() {
   if (cmd == "ALLOC") {
     std::cin >> s;
     alloc_m(s);
-    std::cout << std::endl;
   } else if (cmd == "FREE") {
     std::cin >> p;
     free_m(p);
   } else if (cmd == "INFO") {
     info();
-    std::cout << std::endl;
   } else if (cmd == "MAP") {
     map();
-    std::cout << std::endl;
   } else {
     std::cerr << "unknown command: " << cmd << std::endl; 
   }
@@ -108,7 +106,6 @@ void alloc_m(msize_t s) {
   msize_t end_offset = begin_offset + BI_SIZE + begin1.size; 
   msize_t bs1 = begin1.size - s;
 
-  std::cout << bs1 << " " << user_size(bs1) << std::endl;
   write_info(begin_offset, 
              {true, user_size(bs1), begin1.neib});
   
@@ -142,6 +139,26 @@ void unite(msize_t o1, msize_t o2) {
 }
 
 void free_m(msize_t p) {
+  msize_t offset = 0;
+  BlockInfo bi = read_info(offset);
+
+  while (true) {
+    if (offset + BI_SIZE == p && !bi.is_free) {
+      break;
+    }
+
+    msize_t end_offset = offset + BI_SIZE + bi.size;
+    bi = read_info(end_offset);
+
+    if (bi.is_end()) {
+      std::cout << '-';
+      return;
+    }
+
+    offset = bi.neib;
+    bi = read_info(offset);
+  }
+
   msize_t begin_offset = p - BI_SIZE;
   BlockInfo begin1 = read_info(begin_offset);
   
@@ -151,6 +168,7 @@ void free_m(msize_t p) {
   if (!begin1.is_free) {
     COUNT--;
     USER_SIZE-=begin1.size;
+    std::cout << '+';
   }
 
   begin1.is_free = true;
