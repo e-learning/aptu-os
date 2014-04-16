@@ -55,9 +55,10 @@ struct memory{
 
     int free(int p){
         Block *cur_block = top;
+        int offset = HEAD_SIZE;
         while (cur_block != NULL){
-            if (cur_block -> size == -p){
-                cur_block ->size = p;
+            if (offset == p){
+                cur_block ->size *= -1;
                 if((cur_block->next != NULL) && (cur_block->next->size >= 0)){
                     cur_block->size +=  cur_block->next->size + HEAD_SIZE;
 
@@ -73,10 +74,10 @@ struct memory{
                     cur_block->next = cur_block->next->next;
                     if(cur_block->next != NULL)
                         cur_block->next->prev = cur_block->next->prev->prev;
-
                 }
                 return p;
             }
+            offset += abs(cur_block->size) + HEAD_SIZE;
             cur_block  = cur_block ->next;
         }
         return -1;
