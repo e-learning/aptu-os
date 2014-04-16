@@ -206,7 +206,7 @@ void File::open(){
 		Link block_num = entry.fst_block;
 		size_t size_to_read = entry.size;
 		file_data = new char[size_to_read];
-		for (;block_num != 0; block_num = fsinfo.getnext(block_num)){
+		for (;block_num != 0 && size_to_read > 0; block_num = fsinfo.getnext(block_num)){
 			fstream block((fsinfo.root_path()+"/"+to_string(block_num)).c_str(),
 						  std::ios::binary|std::ios::out|std::ios::in);
 			if (!block){
@@ -261,20 +261,21 @@ void  File::add(dir_entry & f){
 
 
 void File::write(){
-	Link block_num = entry.fst_block;
-	size_t written_size = 0;
-	while(block_num != 0){
-		fstream block(fsinfo.root_path() + "/" + to_string(block_num),
-					  std::ios::in| std::ios::out|std::ios::binary);
-		if (!block){
-			throw BadRootPathException();
+	if (dirty){
+		Link block_num = entry.fst_block;
+		size_t written_size = 0;
+		while(block_num != 0){
+			fstream block(fsinfo.root_path() + "/" + to_string(block_num),
+						  std::ios::in| std::ios::out|std::ios::binary);
+			if (!block){
+				throw BadRootPathException();
+			}
+			block.write(file_data + written_size, fsinfo.block_size);
+			written_size += fsinfo.block_size;
+			block_num = fsinfo.getnext(block_num);
 		}
-		block.write(file_data + written_size, fsinfo.block_size);
-		written_size += fsinfo.block_size;
-		block_num = fsinfo.getnext(block_num);
+		dirty = false;
 	}
-	dirty = false;
-	
 }
 
 

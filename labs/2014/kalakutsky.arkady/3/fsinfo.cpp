@@ -32,17 +32,20 @@ FSInfo::FSInfo(const char* path):
 	for (size_t read_block_links = 0; 
 		 read_block_links!= block_count; 
 		 ++read_block_links){
-		if (block.tellg() == block_size){
+		if (block.tellg() > block_size - sizeof(Link)){
 			block.close();
 			block.open((root_path+"/"+to_string(++cur_block)).c_str());
 			if (!block){
 				throw BadRootPathException();
 			}
 		}
+		
 		b_read(block, links_table[read_block_links]);
 	}
 	
 }
+
+
 
 void FSInfo::close(){
 	if (dirty){
@@ -57,7 +60,7 @@ void FSInfo::close(){
 		b_write(block, root_entry);
 		size_t cur_block = 0;
 		for (size_t i = 0; i < block_count; i++){
-			if (block.tellp() == block_size){
+			if (block.tellp() > block_size - sizeof(Link)){
 				block.close();
 				block.open((root_path()+"/"+to_string(++cur_block)).c_str());
 				if (!block){
