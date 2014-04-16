@@ -33,13 +33,10 @@ struct memory{
         if(no_blocks == 0)
             return 0;
 
-        bool fl = false;
         Block *cur_block = top;
         while( cur_block != NULL) {
 
             if((cur_block->is_free()) && (cur_block->size  - in_size  - HEAD_SIZE >= 0)){
-                fl = true;
-
                 Block * free_block = new Block(cur_block->size - in_size - HEAD_SIZE);
 
                 cur_block->size = -1*(in_size);
@@ -50,7 +47,7 @@ struct memory{
                 cur_block->next = free_block;
                 return offset += HEAD_SIZE;
             }
-            offset += abs(cur_block->size);
+            offset += abs(cur_block->size) + HEAD_SIZE;
             cur_block = cur_block -> next;
         }
         return 0;
@@ -61,14 +58,14 @@ struct memory{
         while (cur_block != NULL){
             if (cur_block -> size == -p){
                 cur_block ->size = p;
-                if((cur_block->next != NULL) && (cur_block->next->size > 0)){
+                if((cur_block->next != NULL) && (cur_block->next->size >= 0)){
                     cur_block->size +=  cur_block->next->size + HEAD_SIZE;
 
                     cur_block->next = cur_block->next->next;
                     if(cur_block->next != NULL)
                         cur_block->next->prev = cur_block->next->prev->prev;
                 }
-                if((cur_block->prev != NULL) && (cur_block->prev->size > 0)){
+                if((cur_block->prev != NULL) && (cur_block->prev->size >= 0)){
                     int size_m = cur_block->size + cur_block->prev->size + HEAD_SIZE;
                     cur_block = cur_block->prev;
 
@@ -100,7 +97,7 @@ struct memory{
         }
         rez.push_back(count);
         rez.push_back(size);
-        rez.push_back(max - HEAD_SIZE - 1 > 0 ? max - HEAD_SIZE  - 1: 0 );
+        rez.push_back(max - HEAD_SIZE > 0 ? max - HEAD_SIZE : 0 );
         return rez;
     }
     void map(){
