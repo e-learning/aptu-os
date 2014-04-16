@@ -39,16 +39,39 @@ int main(int argc, char** argv){
 		dst_path.push_back(&root);
 		open_path(dst_path, fsinfo, argv[3]);
 		if (dst_path.back()->exists()){
-			throw AlreadyExistsException();
+			if (dst_path.back()->type() != filetype::DIR){
+				throw AlreadyExistsException();
+			}else{
+				dst_path.push_back(
+					new File(fsinfo, dst_path.back(),
+							 src_path.back()->name().c_str())
+					);
+				if (dst_path.back()->exists()){
+					throw AlreadyExistsException();
+				}
+			}
 		}
-		
+		if (src_path.back()->type() == filetype::DIR){
+			if (src_path.size() < dst_path.size()){
+				bool inner = true;
+
+				for (size_t i = 0 ; i < src_path.size(); i++){
+					if (src_path[i]->name() != dst_path[i]->name()){
+						inner = false;
+					}						
+				}
+				if (inner){
+					throw InnerPutException();
+				}
+			}
+		}
 		src_path.back()->copy_to(dst_path.back());
 		
 		while (src_path.size() > 1){
 			src_path.back()->write();
 			src_path.pop_back();
 		}
-
+		
 		while (dst_path.size() > 1){
 			dst_path.back()->write();
 			dst_path.pop_back();

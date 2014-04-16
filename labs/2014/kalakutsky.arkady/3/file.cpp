@@ -52,6 +52,7 @@ void parse_path(std::list<string>& path_names, const char* path){
 				for (size_t j = 0; j < MAXNAMESIZE; ++j){
 					buf[j] = 0;
 				}
+				buf_pos = 0;
 			}
 		}
 	}
@@ -169,6 +170,7 @@ void File::copy_to(File* dst){
 }
 
 void File::copy_entry_to(dir_entry& entry, File* dst){
+	dst->entry.busy = entry.busy;
 	dst->entry.size = entry.size;
 	dst->entry.fst_block = entry.fst_block;
 	dst->entry.lst_block = entry.lst_block;

@@ -25,6 +25,11 @@ class FileNotFoundException: public FSException{
   FileNotFoundException():FSException("File not found."){}
 };
 
+class InnerPutException: public FSException{
+  public:
+  InnerPutException():FSException("Cannot put into subdirectory of itself."){}
+};
+
 class BadRootPathException: public FSException{
   public:
   BadRootPathException():FSException("Bad root path. Can't read blocks."){}
