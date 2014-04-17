@@ -141,13 +141,14 @@ void File::rem(dir_entry& entry){
 
 void File::copy_to(File* dst){
 	copy_entry_to(entry, dst);
+	dst->entry.busy = false;
 
 	open();
 	dst->file_data = new char[size()];
 	for (size_t i = 0; i < size(); i++){
 		dst->file_data[i] = file_data[i];
 	}
-	
+
 	dst->create(entry.type);
 	dst->dirty = true;
 
