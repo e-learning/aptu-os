@@ -38,6 +38,7 @@ int main(int argc, char** argv){
 		vector <File*> dst_path;
 		dst_path.push_back(&root);
 		open_path(dst_path, fsinfo, argv[3]);
+
 		if (dst_path.back()->exists()){
 			if (dst_path.back()->type() != filetype::DIR){
 				throw AlreadyExistsException();
@@ -51,6 +52,7 @@ int main(int argc, char** argv){
 				}
 			}
 		}
+
 		if (src_path.back()->type() == filetype::DIR){
 			if (src_path.size() < dst_path.size()){
 				bool inner = true;
@@ -65,6 +67,7 @@ int main(int argc, char** argv){
 				}
 			}
 		}
+
 		src_path.back()->copy_to(dst_path.back());
 		
 		while (src_path.size() > 1){

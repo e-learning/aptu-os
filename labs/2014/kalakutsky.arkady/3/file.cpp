@@ -145,17 +145,19 @@ void File::copy_to(File* dst){
 
 	open();
 	dst->file_data = new char[size()];
+	dst->opened = true;
 	for (size_t i = 0; i < size(); i++){
 		dst->file_data[i] = file_data[i];
 	}
-
+	
 	dst->create(entry.type);
 	dst->dirty = true;
 
 	dst->write();
 	if (type() == filetype::DIR){
 		dir_entry* dir_data = reinterpret_cast<dir_entry*> (file_data);
-		dir_entry* dst_dir_data =reinterpret_cast<dir_entry*> (dst->file_data);
+		void * tmp_pnt = dst->file_data;
+		dir_entry* dst_dir_data =reinterpret_cast<dir_entry*> (tmp_pnt);
 		for (size_t i = 0; i < entry.size / sizeof(dir_entry); ++i){
 			if (dir_data[i].busy){
 				File f(fsinfo, this, dir_data[i]);
@@ -204,7 +206,7 @@ void File::del(){
 
 
 void File::open(){
-	if (! opened){
+	if (!opened){
 		opened = true;
 		Link block_num = entry.fst_block;
 		size_t size_to_read = entry.size;
