@@ -5,40 +5,40 @@
 #include <iostream>
 
 
-int main(int argc, char* argv[])
+int cpmain(int argc, char* argv[])
 {
-    if (argc < 4) {
+	if (argc < 4) {
 		print_error(ERROR_FEW_ARGS);
-        return ERROR_FEW_ARGS;
-    }
-    std::string rootpath = argv[1];
-    std::string sourcePath = argv[2];
-    std::string destPath = argv[3];
+		return ERROR_FEW_ARGS;
+	}
+	std::string rootpath = argv[1];
+	std::string sourcePath = argv[2];
+	std::string destPath = argv[3];
 
-    std::vector<std::string> vpathSrc;
-    std::vector<std::string> vpathDst;
+	std::vector<std::string> vpathSrc;
+	std::vector<std::string> vpathDst;
 
-    //checker
+	//checker
 	size_t pathResultSrc = get_path(sourcePath, vpathSrc);
-    if ((vpathSrc.size() <  1) || (pathResultSrc != SUCCESS)) {
+	if ((vpathSrc.size() <  1) || (pathResultSrc != SUCCESS)) {
 		print_error(pathResultSrc);
 		return pathResultSrc;
-    }
+	}
 	size_t pathResultDst = get_path(destPath, vpathDst);
-    if (pathResultDst != SUCCESS) {
-        print_error(pathResultDst);
-        return pathResultDst;
-    }
-    if (src_isPartOf_dst(vpathSrc, vpathDst)) {
-        print_error(ERROR_INCORRECT_PATH);
-        return ERROR_INCORRECT_PATH;
-    }
-    //end of checker
+	if (pathResultDst != SUCCESS) {
+		print_error(pathResultDst);
+		return pathResultDst;
+	}
+	if (src_isPartOf_dst(vpathSrc, vpathDst)) {
+		print_error(ERROR_INCORRECT_PATH);
+		return ERROR_INCORRECT_PATH;
+	}
+	//end of checker
 
-    Root* root = new Root(rootpath);
-    Bitmap* bitmap = new Bitmap(root);
-    Dir * rootDir = root->get_rootDir();
-    rootDir->readSelf(root);
+	Root* root = new Root(rootpath);
+	Bitmap* bitmap = new Bitmap(root);
+	Dir * rootDir = root->get_rootDir();
+	rootDir->readSelf(root);
 
 	size_t result;
 
@@ -59,7 +59,11 @@ int main(int argc, char* argv[])
 	std::string recordName = vpathSrc[vpathSrc.size() - 1];
 	Dir * srcDir = parentSrcDir->find_dir_by_name(recordName);
 	if (srcDir != NULL) {
-		result = move_dir_to_dest(root, bitmap, rootDir, parentSrcDir, recordName, vpathDst);
+		if (srcDir->get_size() > root->get_freeSpace()) {
+			print_error(ERROR_NOT_ENOUGH_SPACE);
+			return ERROR_NOT_ENOUGH_SPACE;
+		}
+		result = copy_dir_to_dest(root, bitmap, rootDir, parentSrcDir, recordName, vpathDst);
 	}
 	else {
 		File * file = parentSrcDir->find_file_by_name(recordName);
@@ -67,7 +71,11 @@ int main(int argc, char* argv[])
 			print_error(ERROR_INCORRECT_PATH);
 			return ERROR_INCORRECT_PATH;
 		}
-		result = move_file_to_dest(root, bitmap, rootDir, parentSrcDir, recordName, vpathDst);
+		if (file->get_size() > root->get_freeSpace()) {
+			print_error(ERROR_NOT_ENOUGH_SPACE);
+			return ERROR_NOT_ENOUGH_SPACE;
+		}
+		result = copy_file_to_dest(root, bitmap, rootDir, parentSrcDir, recordName, vpathDst);
 	}
 
 	if (result != SUCCESS) {
@@ -75,5 +83,5 @@ int main(int argc, char* argv[])
 		return result;
 	}
 	SaveFS(root, bitmap, rootDir);
-    return SUCCESS;
+	return SUCCESS;
 }

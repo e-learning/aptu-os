@@ -1,8 +1,20 @@
+
+
 #include "Const.h"
-#include "utility.h"
+#include "structures.h"
 #include <sstream>
 #include <ctime>
 #include <climits>
+
+bool isFileExist(std::string const & filename)
+{
+    std::fstream filefs (filename.c_str(),
+                         std::fstream::in | std::fstream::out | std::fstream::binary);
+    bool isExist = ! filefs.fail();
+    filefs.close();
+    return isExist;
+}
+
 size_t get_filerest (std::fstream & fs)
 {
     size_t curpos = fs.tellg();
@@ -17,9 +29,6 @@ size_t get_filesize_by_name (std::string const & filename)
 {
     std::fstream filefs (filename.c_str(),
                          std::fstream::in | std::fstream::out | std::fstream::binary);
-    if (filefs.fail()) {
-        return INT_MAX;
-    }
     filefs.seekg(0, filefs.end);
     size_t filesize = filefs.tellg();
     filefs.close();
@@ -55,6 +64,24 @@ bool src_isPartOf_dst (std::vector<std::string> const & vpathSrc, std::vector<st
         }
     }
     return true;
+}
+
+bool checkRecordExist(Dir * parentDir, vecStrIt current, vecStrIt end)
+{
+    if (current == end) {
+        return true;
+    }
+    if (current == end - 1) {
+        File * file = parentDir->find_file_by_name(*current);
+        if (file != NULL) {
+            return true;
+        }
+    }
+    Dir* subdir = parentDir->find_dir_by_name(*current);
+    if (subdir != NULL) {
+        checkRecordExist(subdir, current + 1, end);
+    }
+    return false;
 }
 
 void print_error (size_t errorCode)

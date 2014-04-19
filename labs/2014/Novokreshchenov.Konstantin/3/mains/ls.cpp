@@ -17,23 +17,23 @@ int main(int argc, char* argv[])
     std::string filepath = argv[2];
 
     std::vector<std::string> vpath;
-
     size_t pathResult = get_path(filepath, vpath);
     if (pathResult != SUCCESS) {
         print_error(pathResult);
         return pathResult;
     }
 
-    Root root(rootpath);
-    Bitmap bitmap (root.get_bitmapCount());
-    Dir & rootDir = root.get_rootDir();
-    rootDir.readSelf(root);
+    Root* root = new Root(rootpath);
+    Bitmap* bitmap = new Bitmap(root);
+    Dir * rootDir = root->get_rootDir();
+    rootDir->readSelf(root);
 
-    size_t result = print_ls (root, bitmap, rootDir, vpath.begin(), vpath.end());
+    size_t result = print_ls (rootDir, vpath.begin(), vpath.end());
     if (result != SUCCESS) {
         print_error(result);
         return result;
     }
+    SaveFS(root, bitmap, rootDir);
 
     return SUCCESS;
 }

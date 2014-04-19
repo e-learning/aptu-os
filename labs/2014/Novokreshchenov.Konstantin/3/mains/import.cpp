@@ -17,10 +17,9 @@ int main(int argc, char* argv[])
     std::string hostfile = argv[2];
     std::string fsfile = argv[3];
 
-    Root root(rootpath);
-    if (root.get_freeSpace() < get_filesize_by_name(hostfile) + root.get_blockSize()) {
-        print_error(ERROR_NOT_ENOUGH_SPACE);
-        return ERROR_NOT_ENOUGH_SPACE;
+    if (!isFileExist(hostfile)) {
+        print_error(ERROR_INCORRECT_PATH);
+        return ERROR_INCORRECT_PATH;
     }
     std::vector<std::string> vpath;
     size_t result = get_path(fsfile, vpath);
@@ -29,16 +28,22 @@ int main(int argc, char* argv[])
         return result;
     }
 
-    Bitmap bitmap(root.get_bitmapCount());
-    Dir & rootDir = root.get_rootDir();
-    rootDir.readSelf(root);
+    Root* root = new Root(rootpath);
+    if (root->get_freeSpace() < get_filesize_by_name(hostfile) + root->get_blockSize()) {
+        print_error(ERROR_NOT_ENOUGH_SPACE);
+        return ERROR_NOT_ENOUGH_SPACE;
+    }
+
+    Bitmap* bitmap = new Bitmap(root);
+    Dir* rootDir = root->get_rootDir();
+    rootDir->readSelf(root);
+
     result = import (root, bitmap, rootDir, vpath.begin(), vpath.end() - 1, hostfile);
     if (result != SUCCESS) {
         print_error(result);
         return result;
     }
-    rootDir.writeSelf(root, bitmap);
-    root.writeSelf();
+    SaveFS(root, bitmap, rootDir);
 
     return SUCCESS;
 }

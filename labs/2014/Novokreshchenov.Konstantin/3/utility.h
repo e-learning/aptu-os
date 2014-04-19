@@ -1,12 +1,18 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
+#include "reader.h"
+#include "writer.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 
+class Dir;
+typedef std::vector<std::string>::iterator vecStrIt;
 
+bool isFileExist(std::string const & filename);
+bool checkRecordExist(Dir * rootDir, vecStrIt current, vecStrIt end);
 size_t get_filerest (std::fstream & fs);
 size_t get_filesize_by_name (std::string const & filename);
 size_t get_path(std::string const & filepath, std::vector<std::string> & vpath);

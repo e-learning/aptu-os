@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
     }
     std::string rootpath = argv[1];
     std::string record = argv[2];
-
+ 
     std::vector<std::string> vpath;
     size_t pathResult = get_path(record, vpath);
     if (pathResult != SUCCESS) {
@@ -27,18 +27,17 @@ int main(int argc, char* argv[])
         return SUCCESS;
     }
 
-    Root root(rootpath);
-    Bitmap bitmap (root.get_bitmapCount());
-    Dir & rootDir = root.get_rootDir();
-    rootDir.readSelf(root);
+    Root* root = new Root(rootpath);
+    Bitmap* bitmap = new Bitmap(root);
+    Dir* rootDir = root->get_rootDir();
+    rootDir->readSelf(root);
 
     size_t result = delete_rm (root, bitmap, rootDir, vpath.begin(), vpath.end() - 1);
     if (result != SUCCESS) {
         print_error(result);
         return result;
     }
-    rootDir.writeSelf(root, bitmap);
-    root.writeSelf();
+    SaveFS(root, bitmap, rootDir);
 
     return SUCCESS;
 }
