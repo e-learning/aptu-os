@@ -8,9 +8,9 @@ int main(int argc, char* argv[])
         print_error(ERROR_FEW_ARGS);
         return ERROR_FEW_ARGS;
     }
-    std::string root = argv[1];
+    std::string rootpath = argv[1];
 
-    size_t result = init_fileSystem(root);
+    size_t result = init_fileSystem(rootpath);
     if (result != SUCCESS) {
         print_error(result);
         return result;

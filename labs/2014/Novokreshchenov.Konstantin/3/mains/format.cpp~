@@ -2,7 +2,7 @@
 #include "command.h"
 #include <iostream>
 
-int main(int argc, char* argv[])
+int fmain(int argc, char* argv[])
 {
     if (argc < 2) {
         print_error(ERROR_FEW_ARGS);

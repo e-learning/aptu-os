@@ -14,20 +14,31 @@ class Bitmap;
 class FileRecord;
 class Dir;
 
-typedef std::list<size_t>::iterator BlockIt;
+typedef std::vector<size_t>::iterator BlockIt;
 
 class Bitmap
 {
     size_t bitmapCount_;
+    size_t freeBlocksCount_;
+    size_t blocksCount_;
+    char* bitmapBuf_;
+
 
 public:
-    Bitmap(size_t bitmapCount) : bitmapCount_(bitmapCount)
-    {}
+    Bitmap ();
+    Bitmap (Root * root);
+    Bitmap (Bitmap const & bitmap);
+    Bitmap & operator= (Bitmap const & bitmap);
+    ~Bitmap();
 
-    void initWriteSelf(Root & root);
-    size_t get_nextfreeblock(Root & root);
-    void set_blockBusy (size_t blockNumber, Root & root);
-    void set_blockFree (size_t blockNumber, Root & root);
+    void initSelf(Root * root);
+    void readSelf(Root * root);
+    void writeSelf(Root * root);
+    size_t get_nextFreeBlock();
+    size_t get_freeBlocksCount();
+    void set_blockFree(size_t blockNumber);
+    void set_blockBusy(size_t blockNumber);
+    bool hasFreeBlocksCount(size_t requiredBlocksCount);
 };
 
 class File
@@ -40,58 +51,26 @@ public:
     std::vector<size_t> blocks_;
     char* buf_;
 
-    File():
-        name_(""), size_(0), time_(0), startblock_(LAST_BLOCK), buf_(NULL)
-    {}
+    File();
+    File(std::string const & name, size_t size, size_t time, size_t startblock);
+    File (File const & fr);
+    File & operator= (File const & fr);
+    ~File();
 
-    File(std::string const & name, size_t size, size_t time, size_t startblock) :
-        name_(name), size_(size), time_(time), startblock_(startblock), buf_(NULL)
-    {
-        blocks_.push_back(startblock_);
-    }
-
-    File (File const & fr):
-        name_(fr.name_), size_(fr.size_), time_(fr.time_), startblock_(fr.startblock_), blocks_(fr.blocks_), buf_(NULL)
-    {
-        if (fr.buf_ != NULL) {
-            delete[] buf_;
-            buf_ = new char[size_];
-            std::copy(fr.buf_, fr.buf_ + fr.size_, buf_);
-        }
-    }
-
-    File & operator= (File const & fr)
-    {
-        name_ = fr.name_;
-        size_ = fr.size_;
-        time_ = fr.time_;
-        startblock_ = fr.startblock_;
-        blocks_ = fr.blocks_;
-        buf_ = NULL;
-        if (fr.buf_ != NULL) {
-            delete buf_;
-            buf_ = new char[size_];
-            std::copy(fr.buf_, fr.buf_ + fr.size_, buf_);
-        }
-
-        return *this;
-    }
-
-    ~File()
-    { delete[] buf_; }
-
-    size_t get_sizeInBlocks()
-    { return blocks_.size(); }
-
+    size_t get_size();
+    size_t get_sizeInBlocks();
     void readAboutSelf(std::fstream & fs);
-    void readSelf(Root & root);
-    size_t read_hostfile(std::string const & hostfile);
-    void read_fsfile (Root & root, File & file);
+    void readSelf(Root * root);
+    void read_hostfile(std::string const & hostfile);
+    void read_fsfile (File * file);
+	void clearBuf();
     void write_hostfile (std::string const & hostfile);
     void writeAboutSelf(std::fstream & fs);
-    void writeSelf(Root & root, Bitmap & bitmap);
-    void deleteSelf(Root & root, Bitmap & bitmap);
+    void writeSelf(Root * root, Bitmap * bitmap);
+	size_t get_nextBlockForWrite(BlockIt & it, Bitmap * bitmap);
+    void deleteSelf(Root * root, Bitmap * bitmap);
     void printInfo();
+
 };
 
 class Dir
@@ -102,118 +81,74 @@ public:
     size_t time_;
     size_t startblock_;
     std::vector<size_t> blocks_;
-    std::vector<File> filerecords_;
-    std::vector<Dir> dirrecords_;
+    std::vector<File*> filerecords_;
+    std::vector<Dir*> dirrecords_;
 
-    Dir ():
-        name_(""), size_(0), time_(0), startblock_(LAST_BLOCK)
-    {}
+    Dir ();
+    Dir(std::string const & name, size_t size, size_t time, size_t startblock);
 
-    Dir(std::string const & name, size_t size, size_t time, size_t startblock):
-        name_(name), size_(size), time_(time), startblock_(startblock)
-    {
-        blocks_.push_back(startblock_);
-    }
+    Dir(Dir const & dir);
 
-    Dir(Dir const & dir):
-        name_(dir.name_), size_(dir.size_), time_(dir.time_), startblock_(dir.startblock_),
-        blocks_(dir.blocks_), filerecords_(dir.filerecords_), dirrecords_(dir.dirrecords_)
-    {}
+    Dir & operator= (Dir const & dir);
 
-    Dir & operator= (Dir const & dir)
-    {
-        name_ = dir.name_;
-        size_ = dir.size_;
-        time_ = dir.time_;
-        startblock_ = dir.startblock_;
-        blocks_ = dir.blocks_;
-        filerecords_ = dir.filerecords_;
-        dirrecords_ = dir.dirrecords_;
+    ~Dir();
 
-        return *this;
-    }
-
-    ~Dir()
-    {}
-
-    size_t get_recordsCount() const
-    { return dirrecords_.size() + filerecords_.size(); }
-
-    size_t get_sizeInBlocks()
-    { return blocks_.size(); }
+    size_t get_recordsCount() const;
+    size_t get_sizeInBlocks();
 
     size_t get_size();
     void readAboutSelf(std::fstream & fs);
-    void readSelf(Root & root);
+    void readSelf(Root * root);
     void writeAboutSelf(std::fstream & fs);
-    void writeSelf(Root & root, Bitmap & bitmap);
-    void deleteSelf(Root & root, Bitmap & bitmap);
+    void writeSelf(Root * root, Bitmap * bitmap);
+    size_t get_nextBlockForWrite(BlockIt & it, Bitmap * bitmap);
+    void deleteSelf(Root * root, Bitmap * bitmap);
 
-    void add_filerecord (File & fr);
-    void add_dirrecord (Dir & dir);
-    void copy_filerecord (Root & root, Bitmap & bitmap, File & fr);
-    void copy_dirrecord (Root & root, Bitmap & bitmap, Dir & dir);
-    size_t add_filerecord_by_name(std::string const & filename, Root & root, Bitmap & bitmap);
-    size_t add_dirrecord_by_name(std::string const & dirname, Root & root, Bitmap & bitmap);
-    void refresh_file (File & fr);
-    void refresh_dir (Dir & dir);
-    void remove_file(Root & root, Bitmap & bitmap, size_t filenumber);
-    void remove_subdir(Root & root, Bitmap & bitmap, size_t dirnumber);
-    size_t find_file_by_name (std::string const & filename);
-    size_t find_dir_by_name (std::string const & dirname);
-    Dir & get_subdir(size_t dirnumber);
-    File & get_file (size_t filenumber);
-    void create_subdir_by_name (Root & root, Bitmap & bitmap, std::string const & subdirName);
-    Dir & get_lastdir();
+    void add_filerecord (File * fr);
+    void add_dirrecord (Dir * dir);
+    void copy_filerecord (Bitmap * bitmap, File * fr);
+    void copy_dirrecord (Bitmap * bitmap, Dir * dir);
+    void remove_file(std::string const & filename);
+    void remove_subdir(std::string const & dirname);
+    File* find_file_by_name (std::string const & filename);
+    Dir* find_dir_by_name (std::string const & dirname);
     void printInfo();
+	void copy_records(Dir * srcDir);
+	void copy_newrecords(Root * root, Bitmap * bitmap, Dir * srcDir);
 };
 
 class Root
 {
-    std::string root_;
+    std::string rootpath_;
     size_t freeBlocksCount_;
     size_t blockSize_;
     size_t bitmapCount_;
     size_t blocksCount_;
-    Dir rootDir_;
+    Dir* rootDir_;
 
     void initSelf();
 
 public:
 
-    Root (std::string root, size_t freeBlocksCount, size_t blockSize, size_t bitmapCount, size_t blocksCount, Dir rootDir);
+    Root (std::string root,
+          size_t freeBlocksCount,
+          size_t blockSize,
+          size_t bitmapCount,
+          size_t blocksCount,
+          Dir* rootDir);
 
-    Root (std::string const & root): root_(root)
-    { initSelf(); }
+    Root (std::string const & rootpath);
+    ~Root();
 
-    ~Root()
-    {}
-
-    std::string const & get_root() const
-    { return root_; }
-
-    size_t get_freeBlockscount() const
-    { return freeBlocksCount_; }
-
-    size_t get_blockSize() const
-    { return blockSize_; }
-
-    size_t get_bitmapCount() const
-    { return bitmapCount_; }
-
-    size_t get_blocksCount() const
-    { return blocksCount_; }
-
-    size_t get_freeSpace() const
-    { return freeBlocksCount_ * (blockSize_ - BYTES_FOR_BLOCKNUMBER); }
-
-    size_t get_rootRecordStartBlock() const
-    { return bitmapCount_ + 1; }
-
-    Dir & get_rootDir ()
-    { return rootDir_; }
-
-    void refresh_freeBlocksCount (int diff);
+    std::string const & get_rootpath() const;
+    size_t get_freeBlocksCount() const;
+    size_t get_blockSize() const;
+    size_t get_bitmapCount() const;
+    size_t get_blocksCount() const;
+    size_t get_freeSpace() const;
+    size_t get_rootRecordStartBlock() const;
+    Dir * get_rootDir ();
+    void refresh_freeBlocksCount (size_t freeBlocksCount);
     void writeSelf();
     void writeRootDir(Bitmap & bitmap);
 };

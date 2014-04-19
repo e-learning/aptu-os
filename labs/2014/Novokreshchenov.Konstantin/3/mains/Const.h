@@ -7,6 +7,8 @@
 #include <string>
 #include <cmath>
 
+#include <fstream>
+
 static const std::string CONFIG = "config";
 
 static const size_t BITS_PER_BYTE = 8;

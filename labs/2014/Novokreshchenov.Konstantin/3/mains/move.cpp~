@@ -5,7 +5,7 @@
 #include <iostream>
 
 
-int main(int argc, char* argv[])
+int mvmain(int argc, char* argv[])
 {
     if (argc < 4) {
 		print_error(ERROR_FEW_ARGS);
