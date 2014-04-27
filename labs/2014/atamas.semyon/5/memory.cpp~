@@ -72,7 +72,7 @@ int get_linear_adress(uint32_t logicalAdress, Selector selector, vector<Descript
 	Descriptor descriptor;
 	if(selector.DT == Selector::GDT){
 		if(selector.index == 0){
-			cout << "INVALID";
+			cerr << "INVALID";
 			exit(0);
 		}
 		descriptor = GDT[selector.index];
@@ -81,12 +81,12 @@ int get_linear_adress(uint32_t logicalAdress, Selector selector, vector<Descript
 	}
 
 	if(!descriptor.present){
-		cout << "INVALID";
+		cerr << "INVALID";
 		exit(0);
 	}
 
 	if(logicalAdress > descriptor.segment_limit){
-		cout << "INVALID";
+		cerr << "INVALID";
 		exit(0);
 	}
 
@@ -95,7 +95,7 @@ int get_linear_adress(uint32_t logicalAdress, Selector selector, vector<Descript
 
 int get_physical_adress(LinearAdress linear_adress, vector<uint64_t> & pd, vector<uint64_t> & pt){
 	if( (linear_adress.page & 0x1) == 0 || ((linear_adress.page_dir & 0x1) == 0)){
-		cout << "INVALID";
+		cerr << "INVALID";
 		exit(0);
 	}
 	return (pt[linear_adress.page] & ~0xFFF) + linear_adress.off;
