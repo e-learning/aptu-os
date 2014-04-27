@@ -94,7 +94,7 @@ int get_linear_adress(uint32_t logicalAdress, Selector selector, vector<Descript
 }
 
 int get_physical_adress(LinearAdress linear_adress, vector<uint64_t> & pd, vector<uint64_t> & pt){
-	if( (linear_adress.page & 0x1) == 0 || ((linear_adress.page_dir & 0x1) == 0)){
+	if( (pd[linear_adress.page_dir] & 0x1) == 0 || ((pt[linear_adress.page] & 0x1) == 0)){
 		cout << "INVALID";
 		exit(0);
 	}
