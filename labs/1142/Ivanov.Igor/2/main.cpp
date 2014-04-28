@@ -5,7 +5,7 @@ int main(void)
 	Ps* MMf;
 	void *lib=dlopen("./libps.so",RTLD_LAZY);
 	if(!lib) return 1;
-	Ps* (*MainPs)(void)=(Ps* (*)())dlsym(lib,"GetPs");
+	int (*MainPs)(Ps*)=(int (*)(Ps*))dlsym(lib,"GetPs");
 	if(MainPs==NULL) cout<<"Trable"<<endl;
 
 	string command,argument;
@@ -41,9 +41,9 @@ int main(void)
 		if(command=="ps")
 		{
 			Ps* PrintPs=new Ps[1000];
-			PrintPs=MainPs();
-			//for(int i=0; i<100; i++)
-			cout<< PrintPs[1].Name <<" "<<endl;
+			int Size=MainPs(PrintPs);
+			for(int i=0; i<Size; i++)
+			cout<< PrintPs[i].Name <<" "<< PrintPs[i].Id << endl;
 		}
 		if(command=="kill")
 		{

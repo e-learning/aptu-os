@@ -1,10 +1,9 @@
 #include "pslib.h"
 
-extern "C" {Ps* GetPs()
+extern "C" {int GetPs(Ps* MassPs)
 {
 	DIR *Dir = opendir("/proc");
-	if(!Dir) return NULL;
-	Ps* MassPs=new Ps[1000];
+	if(!Dir) return 0;
 	int Count;
 	struct dirent *entry;
 
@@ -15,7 +14,7 @@ extern "C" {Ps* GetPs()
 
 		string InfName="/proc/"+string(entry->d_name)+"/comm";
 		FILE *Inf=fopen(InfName.c_str(),"r");
-		if(Inf==NULL) return NULL;
+		if(Inf==NULL) return 0;
 
 		fgets(buf,50,Inf);
 		MassPs[Count].Name=buf;
@@ -24,6 +23,6 @@ extern "C" {Ps* GetPs()
 		fclose(Inf);
 	}
 	closedir(Dir);
-	return MassPs;
+	return Count;
 }
 }

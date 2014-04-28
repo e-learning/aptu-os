@@ -1,3 +1,3 @@
 #include "stdafx.h"
 
-extern "C" {Ps* GetPs();}
+extern "C" {int GetPs(Ps*);}
