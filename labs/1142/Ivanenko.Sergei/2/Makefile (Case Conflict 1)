@@ -1,7 +1,7 @@
 run: version2
 	./a.out 
 version1: 2.o libps.so
-	g++ 2.o -L. -lps -wl,-rpath,.
+	g++ 2.o -L. -lps -Wl,-rpath,.
 version2: 1.o libps.so
 	g++ 1.o -ldl
 1.o: 1.cpp
