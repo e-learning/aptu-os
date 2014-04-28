@@ -1,10 +1,14 @@
-sh1: main pslib sh2
-	g++ main.o -L. -lps -o shell1 -Wl,-rpath,.
-sh2: main pslib
-	g++ mainldl.o -L. -ldl -o shell2 -Wl,-rpath,.
-main: main.cpp
-	g++ -c main.cpp -o main.o
-pslib:
-	g++ -shared ps.cpp -o libps.so
-clean:
-	rm -rf *.so
+sh2: main2.o libps.so
+	g++ main2.o -L. -ldl
+main2.o: main2.cpp
+	gcc -o main2.o -c main2.cpp
+sh1: main.o libps.so
+	g++ main.o -L. -lps -Wl,-rpath,.
+main.o: main.cpp
+	gcc -o main.o -c main.cpp
+ps.o: ps.h ps.cpp
+	gcc -o ps.o -c ps.cpp
+libps.so: ps.o
+	gcc -shared -o libps.so ps.o
+clear:
+	rm *.o
