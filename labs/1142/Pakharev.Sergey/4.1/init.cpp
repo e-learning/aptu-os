@@ -13,13 +13,12 @@ string SetBlockName(int i,string path);
 int main(int argc, char **argv)
 {
 	const int min_size = 1024;
-	//const int bit_int_byte = 8;
-	const int max_mem = 50*1024;
+	const int max_mem = 50000*1024;
 	if (argc!=2)
-		{
-			printf("Critical error001: Count of parameters!=2");
-			return 1;
-		}
+	{
+		printf("Critical error001: Count of parameters!=2");
+		return 1;
+	}
 	string cfg_name("/config");
 	string path_to_cfg(argv[1]);
 	char buf[10];
@@ -27,7 +26,6 @@ int main(int argc, char **argv)
 	int block_count;
 	FILE* configfile;
 	configfile = fopen((path_to_cfg+cfg_name).c_str(),"r");
-	//puts((path_to_cfg+cfg_name).c_str());
 	if (configfile!=NULL)
 	{
 		if (fgets (buf , 10 , configfile) != NULL)
@@ -35,16 +33,12 @@ int main(int argc, char **argv)
 			block_size = chr_to_int(buf,10);
 			if (block_size<min_size)
 				perror("Size of blocks <1024");
-			//printf("%i\n\r",block_size);
-			//cout<<buf;
 		}
 		if (fgets (buf , 10 , configfile) != NULL)
 		{
 			block_count = chr_to_int(buf,10);
 			if (block_size*block_count>max_mem)
 				perror("Memory from File system over 50M");
-			//printf("%i\n\r",block_count);
-			//cout<<buf;
 		}
 		fclose(configfile);
 	}
