@@ -1,0 +1,7 @@
+CXX = g++
+CXXFLAGS = -c
+
+
+all: shell.o
+	$(CXX) $(CXXFLAGS) shell.o -o shell
+
