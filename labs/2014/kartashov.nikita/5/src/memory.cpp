@@ -109,7 +109,7 @@ std::string memory::physical_address(std::string const& input)
 		return "INVALID";
 
 	ulong linear_address = (base(descriptor) << 32) | offset;
-	ulong dir = bits(linear_address, 22, 32) >> 22;
+	ulong dir = bits(linear_address, 22, 32);
 	ulong table_entry = bits(linear_address, 12, 22);
 	ulong result_low = linear_address & nbits(12);
 

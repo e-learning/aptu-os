@@ -211,7 +211,8 @@ void alloc_merge_blocks(mem_control_block_t *mcb)
     while(current_mcb->prev != NULL && current_mcb->prev->is_available)
     {
         current_mcb->prev->next = current_mcb->next;
-        current_mcb->next->prev = current_mcb->prev;
+        if(current_mcb->next)
+            current_mcb->next->prev = current_mcb->prev;
         current_mcb->prev->size += current_mcb->size + sizeof(mem_control_block_t);
         tmp = current_mcb;
         current_mcb = current_mcb->prev;
