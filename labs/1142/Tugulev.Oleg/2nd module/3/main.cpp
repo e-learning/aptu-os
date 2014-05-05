@@ -4,6 +4,42 @@
 #include <cstdlib>
  using namespace std;
 
+int FreeSpace(char* mem,int size,int *amount)
+{
+  int length=0,max_length=0,ptr=0,tmp_ptr=0;
+  bool flag=true;
+  for (int i=0;i<size;i++)
+    {
+      if (mem[i]=='0')
+	length++;
+       	  if (flag)
+	    {
+	      tmp_ptr=i;
+	      flag=false;
+	    }
+	  if ((length>max_length)&&(mem[i]!='0'))
+	    {
+	      max_length=length;
+	      ptr=tmp_ptr;
+	      length=0;
+	      tmp_ptr=0;
+	      flag=true;
+	    }
+	  if((length<=max_length)&&(mem[i]!='0'))
+	    {
+	      flag=true;
+	      length=0;
+	    tmp_ptr=0;
+	    }
+    } 
+  if ((max_length==0)&&(length!=0))
+    *amount=length;
+  else
+    *amount=max_length;
+  return ptr;
+}
+
+
 int main ()
 {
 string inp;
@@ -14,14 +50,23 @@ bool run=true;
 int curr_pos=0;
 int block=0;
 
-cout << "size of memory"<<endl;
-getline(cin,inp);
-size_mem=atoi(inp.c_str());
-
-
+while (run)
+   {
+     cout << "size of memory (100-10000)"<<endl;
+     getline(cin,inp);
+     size_mem=atoi(inp.c_str());
+     if ((size_mem<100)||(size_mem>10000))
+       {
+	 cout << "select correct size!"<<endl;
+	 size_mem=0;
+       }
+     else
+       run=false;
+   }
+ run=true;
 char *mem=new char[size_mem];
 for (int i=0;i<size_mem;i++)
-	mem[i]=0;
+	mem[i]='0';
 
 free_mem=size_mem-curr_pos;
 
@@ -46,6 +91,7 @@ switch(inp[0])
 						   break;
 					   }
 					   mem[curr_pos]=atoi(mem_len.c_str());
+					   cout <<"+ "<<curr_pos<<endl;
 					   curr_pos++;
 					   block++;
 					   for (int i=curr_pos;i<curr_pos+atoi(mem_len.c_str());i++)
@@ -70,15 +116,17 @@ switch(inp[0])
 			   }
 		   case 'i':
 			   {
-                if(inp.compare(0,4,"info")==0)
-                {
-                        cout <<"user blocks "<<endl<<block<<endl;
-						cout <<" user memory "<<endl<<user_mem<<endl;
-						cout <<" avaliable memory "<<endl<<free_mem<<endl;
-						break;
-                }
+			     if(inp.compare(0,4,"info")==0)
+			       {
+				 cout <<"user blocks "<<endl<<block<<endl;
+				 cout <<" user memory "<<endl<<user_mem<<endl;
+				 int test;
+				 int f_m=FreeSpace(mem,size_mem,&test);
+				 cout <<" avaliable memory "<<endl<<test<<endl;
+				 break;
+			       }
 			   }
-		   case 'm':
+                   case 'm':
 			{
 				if (inp.compare(0,3,"map")==0)
 				{
@@ -86,7 +134,7 @@ switch(inp[0])
 					{
 						switch(mem[i])
 						{
-							        case 0:
+							        case '0':
 										{
 											cout << "F|" ;
 											break;
