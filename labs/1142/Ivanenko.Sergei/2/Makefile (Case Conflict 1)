@@ -1,17 +1,24 @@
 run: version2
 	./a.out 
+   
 version1: 2.o libps.so
-	g++ 2.o -L. -lps -wl,-rpath,.
+	g++ 2.o -L. -lps -Wl,-rpath,.
+   
 version2: 1.o libps.so
 	g++ 1.o -ldl
+   
 1.o: 1.cpp
 	gcc -o 1.o -c 1.cpp
+   
 2.o: 2.cpp
 	gcc -o 2.o -c 2.cpp
+   
 ps.o: ps.h ps.cpp
 	gcc -o ps.o -c ps.cpp
+   
 libps.so: ps.o
 	gcc -shared -o libps.so ps.o
+   
 clear:
 	rm *.o
 clearfull: clear
