@@ -123,7 +123,7 @@ void Translate(size_t log_addr_sel, size_t log_addr_offs, vector<size_t>& gdt, v
 
 int main() {
 
-    std::freopen("../VirtMemTranslator/test3", "r", stdin);
+//    std::freopen("../VirtMemTranslator/test4", "r", stdin);
 
     size_t log_addr_offs;
     cin >> hex >> log_addr_offs;
