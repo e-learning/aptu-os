@@ -2,7 +2,7 @@
 
 cur_path="$(dirname $0)"
 results=$cur_path"/results/"
-exe=$cur_path"/../comp"
+exe=$cur_path"/../memory"
 failed=0
 passed=0
 run=0
