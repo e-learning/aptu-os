@@ -6,6 +6,7 @@
 #include <fstream>
 #include <dlfcn.h>
 #include <unistd.h>
+#include "ps.h"
 using namespace std;
 
 void Commands();

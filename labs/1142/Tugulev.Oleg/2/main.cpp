@@ -1,4 +1,12 @@
 #include "ps.h"
+#include <string>
+#include <iostream>
+#include <stdlib.h>
+#include <dirent.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fstream>
+#include <signal.h>
 
 void handler_function (int parameter)
 {
