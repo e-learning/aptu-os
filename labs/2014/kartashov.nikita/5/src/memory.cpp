@@ -119,6 +119,13 @@ std::string memory::physical_address(std::string const& input)
 	if (table_entry >= m_page_table.size())
 		return "INVALID";
 
+	if (!(m_page_table[table_entry] & 1) || !(m_page_directory[dir] & 1)) //Figure 4.4
+		return "INVALID";
+
+	if (m_page_directory[dir] & (1 << 7))
+		if (bits(m_page_directory[dir], 17, 21))
+			return "INVALID";
+
 	ulong result_high = bits(m_page_table[table_entry], 12, 32) << 12;
 	ulong result = result_high + result_low;
 	if (result > nbits(32))
