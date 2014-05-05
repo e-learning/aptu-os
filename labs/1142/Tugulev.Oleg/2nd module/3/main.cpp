@@ -39,6 +39,15 @@ int FreeSpace(char* mem,int size,int *amount)
   return ptr;
 }
 
+int FreeMem(int adr,char* mem)
+{
+  int size=mem[adr]+1;
+  if ((mem[adr]=='0')||(mem[adr]=='*'))
+    return -1;
+  for (int i=adr;i<adr+size;i++)
+    mem[i]='0';
+  return size;
+}
 
 int main ()
 {
@@ -66,10 +75,8 @@ while (run)
  run=true;
 char *mem=new char[size_mem];
 for (int i=0;i<size_mem;i++)
-	mem[i]='0';
-
-free_mem=size_mem-curr_pos;
-
+  mem[i]='0';
+curr_pos=FreeSpace(mem,size_mem,&free_mem);
 while(run)
 {
 cout << ">";
@@ -83,7 +90,7 @@ switch(inp[0])
             if (inp.compare(0,5,"alloc")==0)
                      {
 					   size_t pos=inp.find(" ");
-                       string mem_len=inp.substr(pos+1,inp.length()-pos);
+					   string mem_len=inp.substr(pos+1,inp.length()-pos);
 					   
 					   if ((atoi(mem_len.c_str()))>=free_mem)
 					   {
@@ -93,13 +100,14 @@ switch(inp[0])
 					   mem[curr_pos]=atoi(mem_len.c_str());
 					   cout <<"+ "<<curr_pos<<endl;
 					   curr_pos++;
-					   block++;
+				  	   block++;
 					   for (int i=curr_pos;i<curr_pos+atoi(mem_len.c_str());i++)
 					   {
 						   mem[i]='*';
 					   }
-					   curr_pos+=atoi(mem_len.c_str());
-					   free_mem=size_mem-curr_pos;
+					   curr_pos=FreeSpace(mem,size_mem,&free_mem);
+					   //curr_pos+=atoi(mem_len.c_str());
+					   //free_mem=size_mem-curr_pos;
 					   user_mem+=atoi(mem_len.c_str());
 					   break;
                      }
@@ -120,12 +128,30 @@ switch(inp[0])
 			       {
 				 cout <<"user blocks "<<endl<<block<<endl;
 				 cout <<" user memory "<<endl<<user_mem<<endl;
-				 int test;
-				 int f_m=FreeSpace(mem,size_mem,&test);
-				 cout <<" avaliable memory "<<endl<<test<<endl;
+				 curr_pos=FreeSpace(mem,size_mem,&free_mem);
+				 cout <<" avaliable memory "<<endl<<free_mem<<endl;
 				 break;
 			       }
 			   }
+                   case 'f':
+		     {
+		       if (inp.compare(0,4,"free")==0)
+			 {
+			   size_t adr=inp.find(" ");
+			   string blk_len=inp.substr(adr+1,inp.length()-adr);
+			   int res=FreeMem(atoi(blk_len.c_str()),mem);
+			 if (res==-1)
+			   cout<<"-"<<endl;
+			 else
+			   {
+			   cout<<"+"<<endl;
+			   block--;
+			   user_mem-=res;
+			   curr_pos=FreeSpace(mem,size_mem,&free_mem);
+			   }
+			 break;
+		         }
+		     }
                    case 'm':
 			{
 				if (inp.compare(0,3,"map")==0)
