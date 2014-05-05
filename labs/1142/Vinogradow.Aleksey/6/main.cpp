@@ -77,7 +77,7 @@ int my_free(int zn){
 		i+=2;
 	}
 	
-	if ((zn + 2) == N)adress_start=0; 
+	if ((zn + i) == N)adress_start=0; 
 	
 	memory[zn + 1]=0;
 	memory[zn + 0]=0;
@@ -250,7 +250,7 @@ int main(void){
 						j+=2;
 					}
 					
-					if ((i + 2) == N)adress_start=0; 
+					if ((i + j) == N)adress_start=0; 
 					cout<<"Адрес:"<<i<<" Диапазон памяти:"<<adress_start<<"-"<<adress_end<<"("<<adress_end-adress_start<<")"<<endl;
 				}
 				i+=2;
