@@ -27,7 +27,7 @@ Table read_table (){
 
 void assert (bool cond){
     if (!cond){
-        cout<<"INVALID"<<std::endl;
+        cout<<"INVALID";
         exit(0);
     }
 }
@@ -116,7 +116,7 @@ int main()
     i64 lin_addr = log_to_lin(l_addr,selector,gdt,ldt);
     i64 p_addr = lin_to_phis(lin_addr,pd,pt);
 
-    cout<<"\n"<<hex<<p_addr<<std::endl;
+    cout<<hex<<p_addr;
 
     return 0;
 }
