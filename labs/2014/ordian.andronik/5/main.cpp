@@ -1,13 +1,21 @@
 #include <iostream>
 #include <vector>
-#include <string>
+#include <stdexcept>
+
 
 typedef std::vector<uint64_t> Table;
+
+struct InvalidException : public std::runtime_error
+{
+  InvalidException():
+    runtime_error("INVALID")
+  {}
+};
 
 void fail_if(bool b)
 {
   if (b)
-    throw std::string("INVALID"); 
+    throw new InvalidException(); 
 }
 
 Table read_table()
@@ -34,7 +42,7 @@ uint64_t linear(uint64_t logical,
   fail_if((selector >> 2) == 0);
 
   Table const& dt = (selector & 0x4) ? ldt : gdt;
-  size_t dt_idx = selector >> 3;
+  size_t dt_idx = (selector & 0xFFF8) >> 3;
 
   fail_if(dt_idx >= dt.size());
 
@@ -79,7 +87,8 @@ uint64_t physical(uint64_t linear,
 
 int main()
 {
-  uint64_t logical, selector;
+  uint32_t logical = 0;
+  uint16_t selector = 0;
   std::cin >> std::hex >> logical >> selector; 
   Table gdt(read_table()),
     ldt(read_table()),
@@ -92,9 +101,13 @@ int main()
       uint64_t phy = physical(lin, pd, pt);
       std::cout << std::hex << phy << std::endl;
     }
-  catch (std::string const& msg)
+  catch (InvalidException const& e)
     {
-      std::cout << msg << std::endl;
+      std::cout << e.what() << std::endl;
+    }
+  catch (...)
+    {
+      std::cout << "INVALID" << std::endl;
     }
   
   return 0;

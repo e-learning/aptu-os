@@ -8,4 +8,4 @@ $(EXE): $(SRC)
 
 .PHONY: clean
 clean:
-	rm $(EXE) *~
+	rm $(EXE)
