@@ -525,8 +525,9 @@ bool FileSystem::copyFile(FileEntry *src, const std::string &dst) {
     std::string dstFile = dst + "/" + src->name();
     FileEntry *testFE = findFile(dstFile, true);
     if(testFE) {
-        std::cout << "WARNING: Unable to copy file: file already exists" << std::endl;
-        return false;
+        remove(dstFile);
+        //std::cout << "WARNING: Unable to copy file: file already exists" << std::endl;
+        //return false;
     }
 
     FileEntry *copyFE = createFile(dstFile, true);
@@ -568,8 +569,9 @@ bool FileSystem::copyDir(Block *src, const std::string &dst) {
     std::string dstDirPath = dst + "/" + curFE->name();
     FileEntry *dstFE = findFile(dst, true);
     if(dstFE->name() == curFE->name()) {
-        std::cout << "Unable to copy: destination folder already exists" << std::endl;
-        return false;
+        remove(dst);
+        //std::cout << "Unable to copy: destination folder already exists" << std::endl;
+        //return false;
     }
     dstFE = createDir(dstDirPath);
     if(!dstFE) return false;
