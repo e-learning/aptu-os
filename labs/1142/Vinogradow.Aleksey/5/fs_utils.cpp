@@ -56,7 +56,59 @@ std::string open_dir(char * buffer, int size_block, int data_size, std::string p
 
 
 
-int search_file_in_dir(int s_type, char * buffer, int buffer_length, std::string name_f, int * file_length){
+int inf_file(char * s_type, char * buffer, int buffer_length, std::string name_f, int * file_length, char * t_year, char * t_mon, char * t_mday, char * t_hour, char * t_min, char * t_sec){
+
+	int i=0;
+
+	std::string nf;
+	int start_sector=0;
+
+	int j = name_f.length();
+
+	for ( ;j < 15; j++){
+		name_f += " ";
+	}
+
+	//while (name_f.length() < 15) name_f +=' ';
+	
+	while (buffer[i*28] != 0){
+		if (i*28 > buffer_length) return -2;
+		add_buffer(file_record, buffer, 0, i*28, 28);	
+		read_file_record(s_type,  &start_sector, file_length, &nf, t_year, t_mon, t_mday, t_hour, t_min, t_sec);
+		if ((nf == name_f)) {
+			return start_sector;
+		}
+		i++;
+	}
+	return -1;//файл не найден
+}
+
+
+
+/*void print_dir(char * buffer, int buffer_length){
+
+	int i=0;
+
+	std::string nf;
+	
+	char type=0;
+	
+	while (buffer[i*28] != 0){
+		if (i*28 > buffer_length) return -2;
+		add_buffer(file_record, buffer, 0, i*28, 28);	
+		read_file_record(&type,  &start_sector, file_length, &nf);
+		if ((type == s_type) && (nf == name_f)) {
+			return start_sector;
+		}
+		i++;
+	}
+	
+
+}*/
+
+
+
+int search_file_in_dir(int s_type, char * buffer, int buffer_length, std::string name_f, int * file_length, char mode){
 
 	int i=0;
 
@@ -76,8 +128,14 @@ int search_file_in_dir(int s_type, char * buffer, int buffer_length, std::string
 		if (i*28 > buffer_length) return -2;
 		add_buffer(file_record, buffer, 0, i*28, 28);	
 		read_file_record(&type,  &start_sector, file_length, &nf);
-		if ((type == s_type) && (nf == name_f)) {
-			return start_sector;
+		if (mode){
+			std::cout<<nf;
+			if (type == dir) std::cout<<"dir";
+			std::cout<<std::endl;
+		}else{
+			if ((type == s_type) && (nf == name_f)) {
+				return start_sector;
+			}
 		}
 		i++;
 	}
@@ -252,6 +310,39 @@ void set_current_dir_sector(int sector){
 
 int get_current_dir_sector(){
 	return current_dir_sector;
+}
+
+
+
+void read_file_record(char * type, int * start_sector, int * size_in_bytes, std::string * str, char * t_year, char * t_mon, char * t_mday, char * t_hour, char * t_min, char * t_sec){
+	
+	*type = file_record[0]; 
+	*str = "";
+	for(char i=0; i<15; i++){
+		*str+=file_record[i+1];
+	}
+
+	*start_sector = 0;
+	*start_sector = (unsigned char)file_record[16];
+	*start_sector <<=8;
+	*start_sector |= (unsigned char)file_record[17];
+
+	*size_in_bytes = 0;
+	*size_in_bytes = (unsigned char)file_record[18];
+	*size_in_bytes <<=8;
+	*size_in_bytes |= (unsigned char)file_record[19];
+	*size_in_bytes <<=8;
+	*size_in_bytes |= (unsigned char)file_record[20];
+	*size_in_bytes <<=8;
+	*size_in_bytes |= (unsigned char)file_record[21];
+
+
+	*t_year = (unsigned char)file_record[22];
+	*t_mon = (unsigned char)file_record[23];
+	*t_mday = (unsigned char)file_record[24];
+	*t_hour = (unsigned char)file_record[25];
+	*t_min = (unsigned char)file_record[26];
+	*t_sec = (unsigned char)file_record[27];
 }
 
 

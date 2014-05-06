@@ -1,7 +1,6 @@
-CXX = g++
-CXXFLAGS = -c
-
-
-all: shell.o
-	$(CXX) $(CXXFLAGS) shell.o -o shell
-
+all: boot.o	
+	ld -static -melf_i386 -Tboot.ld -nostdlib --nmagic -o boot.elf boot.o
+	objcopy -O binary boot.elf boot.bin
+	
+main: boot.s
+	as -c boot.s -o boot.o

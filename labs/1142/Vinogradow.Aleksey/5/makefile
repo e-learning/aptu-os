@@ -1,6 +1,16 @@
 run: all
 
 
+
+ls:main_ls.o fs_utils.o
+	g++ -o ls main_ls.o fs_utils.o
+
+main_ls.o:main_ls.cpp
+	g++ -o main_ls.o -c main_ls.cpp
+
+
+	
+	
 mkdir:main_mkdir.o fs_utils.o
 	g++ -o mkdir main_mkdir.o fs_utils.o
 
@@ -47,7 +57,7 @@ main_init.o: main_init.cpp
 fs_utils.o: fs_utils.cpp
 	g++ -o fs_utils.o -c fs_utils.cpp
 
-all:init format import export
+all:init format import export mkdir ls
 
 
 clear: *.o
