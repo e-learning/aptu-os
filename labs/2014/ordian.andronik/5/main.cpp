@@ -22,8 +22,8 @@ Table read_table()
 {
   size_t size;
   Table table;
-  table.reserve(size);
   std::cin >> std::dec >> size;
+  table.reserve(size);
   uint64_t entry;
   for (size_t i = 0; i != size; ++i)
     {
