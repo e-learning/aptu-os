@@ -1,7 +1,4 @@
-run: exe
-        ./a.out
-
-exe: main.o
+run:  main.o
         g++ main.o
 
 main.o: main.cpp
