@@ -20,6 +20,7 @@ _start:
         jmp .writeStringIn
 
     .writeStringOut:
+    jmp .writeStringOut
     ret
 
 _boot:
