@@ -62,9 +62,18 @@ bool OffsetInLimit(size_t log_addr_offs, size_t descriptor) {
     return log_addr_offs <= seg_limit;
 }
 
+size_t GetPageDirEntryInd(size_t lin_addr) {
+    size_t shift = 22;
+    return lin_addr >> shift;
+}
+
 size_t GetPageTabEntryInd(size_t lin_addr) {
     size_t shift = 12;
     return (lin_addr >> shift) & 0x3FF;
+}
+
+bool PresentBitPageTabDirIsSet(size_t entry) {
+    return entry & 1;
 }
 
 size_t GetOffsInPage(size_t lin_addr) {
@@ -76,7 +85,8 @@ size_t GetPageBaseAddr(vector<size_t>& page_tab, size_t page_tab_entry_ind) {
     return page_tab_entry >> 12;
 }
 
-void Translate(size_t log_addr_sel, size_t log_addr_offs, vector<size_t>& gdt, vector<size_t>& ldt, vector<size_t>& page_tab) {
+void Translate(size_t log_addr_sel, size_t log_addr_offs, vector<size_t>& gdt, vector<size_t>& ldt,
+               vector<size_t>& page_dir, vector<size_t>& page_tab) {
     size_t descrInd = GetDescriptorIndex(log_addr_sel);
     size_t descriptor;
     if(DescriptorInGDT(log_addr_sel)) {
@@ -98,7 +108,14 @@ void Translate(size_t log_addr_sel, size_t log_addr_offs, vector<size_t>& gdt, v
         return;
     }
     size_t lin_addr = GetLinAddr(descriptor, log_addr_offs);
+    size_t page_dir_entry_ind = GetPageDirEntryInd(lin_addr);
     size_t page_tab_entry_ind = GetPageTabEntryInd(lin_addr);
+    if(!PresentBitPageTabDirIsSet(page_dir[page_dir_entry_ind]) ||
+       !PresentBitPageTabDirIsSet(page_tab[page_tab_entry_ind]))
+    {
+        PrintInvalid();
+        return;
+    }
     size_t offs_in_page = GetOffsInPage(lin_addr);
     size_t page_addr = GetPageBaseAddr(page_tab, page_tab_entry_ind);
     cout << hex << (page_addr << 12) + offs_in_page << endl;
@@ -106,7 +123,7 @@ void Translate(size_t log_addr_sel, size_t log_addr_offs, vector<size_t>& gdt, v
 
 int main() {
 
-//    std::freopen("../VirtMemTranslator/test2", "r", stdin);
+//    std::freopen("../VirtMemTranslator/test4", "r", stdin);
 
     size_t log_addr_offs;
     cin >> hex >> log_addr_offs;
@@ -130,9 +147,11 @@ int main() {
     }
     size_t page_dir_size;
     cin >> dec >> page_dir_size;
+    vector<size_t> page_dir;
     for(size_t i = 0; i != page_dir_size; ++i) {
         size_t entry;
         cin >> hex >> entry;
+        page_dir.push_back(entry);
     }
     size_t page_tab_size;
     cin >> dec >> page_tab_size;
@@ -142,7 +161,7 @@ int main() {
         cin >> hex >> entry;
         page_tab.push_back(entry);
     }
-    Translate(log_addr_sel, log_addr_offs, gdt, ldt, page_tab);
+    Translate(log_addr_sel, log_addr_offs, gdt, ldt, page_dir, page_tab);
     return 0;
 }
 
