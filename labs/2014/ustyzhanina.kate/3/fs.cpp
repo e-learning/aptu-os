@@ -433,7 +433,7 @@ void FileSystem::import(string from, string to)
 
 	//write file
 	FileD m_file(to_path[to_path.size() - 1], time(0));
-	size_t first_file_block = write_out_file_to_blocks(m_file, root_dirname + "/" + from);
+	size_t first_file_block = write_out_file_to_blocks(m_file, from);
 	out_directory.files.push(make_pair(m_file.name, first_file_block));
 	fill_free_block(out_directory.blocks);
 	write_directory(out_directory, out_directory.blocks[0]);
@@ -461,7 +461,7 @@ void FileSystem::modify_file(string from, string to, bool fl)
 
 			if (fl)
 			{
-				ofstream out_f(root_dirname + "/" + to);
+				ofstream out_f(to);
 
 				for(size_t k = 0; k != cur_file.data.size(); ++k)
 					out_f.write(cur_file.data[k].first, cur_file.data[k].second);
