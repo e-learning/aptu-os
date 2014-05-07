@@ -9,6 +9,9 @@ int main(int args, char * argv[])
 {
 	try
 	{
+		if (args < 4)
+			throw runtime_error("you should enter 3 command line params");
+
 		FileSystem file(argv[1]);
 		file.export_(argv[2], argv[3]);
 	}
