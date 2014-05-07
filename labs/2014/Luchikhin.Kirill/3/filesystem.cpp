@@ -567,15 +567,12 @@ bool FileSystem::copyDir(Block *src, const std::string &dst) {
     DirIterator dit(this, src);
     FileEntry *curFE = dit.current();
     std::string dstDirPath = dst + "/" + curFE->name();
-    FileEntry *dstFE = findFile(dst, true);
-    if(dstFE->name() == curFE->name()) {
-        remove(dst);
-        //std::cout << "Unable to copy: destination folder already exists" << std::endl;
-        //return false;
+    FileEntry *dstFE = findFile(dstDirPath, true);
+    if(!dstFE) {
+		dstFE = createDir(dstDirPath);
+		if(!dstFE) return false;
     }
-    dstFE = createDir(dstDirPath);
-    if(!dstFE) return false;
-
+    
     while(dit.hasNext()) {
         curFE = dit.next();
         bool res = (curFE->attr & FA_DIR) ? copyDir(getBlock(curFE->firstBlock), dstDirPath) : copyFile(curFE, dstDirPath);
