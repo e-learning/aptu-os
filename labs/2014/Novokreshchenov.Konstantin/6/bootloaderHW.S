@@ -9,7 +9,7 @@ _start:
     .macro mWriteString str
    		leaw \str , %si
 		call .writeStringIn
-	.endm
+    .endm
 	
     .writeStringIn:
         lodsb
@@ -20,14 +20,15 @@ _start:
         jmp .writeStringIn
 
     .writeStringOut:
+        movb $0x0 , %ah
+        int  $0x16
+
         ret
 
 _boot:
     mWriteString welcome 
-
+    
     . = _start + 510
     .byte 0x55
     .byte 0xaa
-
-    jmp .
 
