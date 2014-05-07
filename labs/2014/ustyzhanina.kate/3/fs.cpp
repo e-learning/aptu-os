@@ -347,8 +347,7 @@ FileD FileSystem::read_file_from_blocks(size_t first_block)
 
 void FileSystem::format()
 {
-	read_config();
-	read_meta_data();
+	init();
 	string name = "/";
 	queue <pair<string, size_t> > list;
 	size_t dir_num = find_first_empty();
@@ -442,6 +441,7 @@ void FileSystem::import(string from, string to)
 	FileD m_file(to_path[to_path.size() - 1], time(0));
 	size_t first_file_block = write_out_file_to_blocks(m_file, from);
 	out_directory.files.push(make_pair(m_file.name, first_file_block));
+	out_directory.time = time(0);
 	fill_free_block(out_directory.blocks);
 	write_directory(out_directory, out_directory.blocks[0]);
 	write_meta();
@@ -488,6 +488,7 @@ void FileSystem::modify_file(string from, string to, bool fl)
 		throw runtime_error("no such file " + from);
 
 	from_directory.files = new_list;
+	from_directory.time = time(0);
 	fill_free_block(from_directory.blocks);
 	write_directory(from_directory, from_directory.blocks[0]);
 	write_meta();
@@ -511,6 +512,7 @@ void FileSystem::move(string  const source, string const to)
 	pair<string, size_t> new_elem = find_directory(source, true);
 	to_dir.files.push(new_elem);
 	fill_free_block(to_dir.blocks);
+	to_dir.time = time(0);
 	write_directory(to_dir, to_dir.blocks[0]);
 	rm_file(source);
 	write_meta();
@@ -586,6 +588,7 @@ void FileSystem::copy(string  source, string to)
 	}
 
 	to_dir.files.push(make_pair(new_elem.first, new_block));
+	to_dir.time = time(0);
 	fill_free_block(to_dir.blocks);
 	write_directory(to_dir, to_dir.blocks[0]);
 	write_meta();
