@@ -20,8 +20,7 @@ _start:
         jmp .writeStringIn
 
     .writeStringOut:
-    jmp .writeStringOut
-    ret
+        ret
 
 _boot:
     mWriteString welcome 
@@ -29,3 +28,6 @@ _boot:
     . = _start + 510
     .byte 0x55
     .byte 0xaa
+
+    jmp .
+
