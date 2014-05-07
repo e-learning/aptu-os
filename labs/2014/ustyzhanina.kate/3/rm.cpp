@@ -11,7 +11,7 @@ int main(int args, char * argv[])
 	try
 	{
 		if (args < 3)
-			throw runtime_error("you should enter 3 command line params");
+			throw runtime_error("you should enter 2 command line params");
 
 		FileSystem file(argv[1]);
 		file.rm_file(argv[2]);
