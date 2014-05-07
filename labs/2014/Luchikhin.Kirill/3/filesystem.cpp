@@ -522,7 +522,12 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
 //------------------------------------------------------------------
 
 bool FileSystem::copyFile(FileEntry *src, const std::string &dst) {
-    std::string dstFile = dst + "/" + src->name();
+	size_t lastSlashDst = dst.find_last_of('/');
+	std::string dstFilename = dst.substr(lastSlashDst + 1);
+	std::string dstFile;
+	if(src->filename == dstFilename) dstFile = dst;
+	else dstFile = dst + "/" + src->name();
+	//std::cout << dstFilename << " " << src->filename << " " << dstFile << std::endl;
     FileEntry *testFE = findFile(dstFile, true);
     if(testFE) {
         remove(dstFile);
