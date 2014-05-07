@@ -347,8 +347,7 @@ FileD FileSystem::read_file_from_blocks(size_t first_block)
 
 void FileSystem::format()
 {
-	read_config();
-	read_meta_data();
+	init();
 	string name = "/";
 	queue <pair<string, size_t> > list;
 	size_t dir_num = find_first_empty();
@@ -367,13 +366,7 @@ pair<string, size_t> FileSystem:: find_directory(string instr, bool up_to_end)
 
 	//root block
 	size_t block_num = meta_blocks_count;
-	string name = "/";
-
-	if (parts.size() == 2 && !up_to_end)
-	{
-		return make_pair(name, block_num);
-	}
-
+	string name = "";
 	size_t parts_size = parts.size() - 1;
 	size_t begin = 1, compare_ind;
 
@@ -435,6 +428,7 @@ void FileSystem::import(string from, string to)
 	vector <string> to_path = utils.split(to, '/');
 	DirectoryD out_directory = read_directory(find_directory(to, false).second);
 
+	cout << out_directory.name <<endl;
 	if (check_exist_file(to_path[to_path.size() - 1], out_directory.files))
 		throw runtime_error("this file " + to + " already exist in filesystem");
 
@@ -694,7 +688,7 @@ void FileSystem::ls(string path)
 
 size_t FileSystem::find_first_empty()
 {
-	size_t i = meta_blocks_count;
+	size_t i = 1;
 
 	if (meta_info[0] != 1)
 		return -1;
