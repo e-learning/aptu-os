@@ -3,31 +3,61 @@
     .globl _start;
 
 _start:
-    jmp _boot
-    welcome: .asciz "Hello, World! \n\r"
-
-    .macro mWriteString str
-   		leaw \str , %si
-		call .writeStringIn
-    .endm
-	
-    .writeStringIn:
-        lodsb
-        orb %al, %al
-        jz .writeStringOut
-        movb $0x0e, %ah
-        int $0x10
-        jmp .writeStringIn
-
-    .writeStringOut:
-        movb $0x0 , %ah
-        int  $0x16
-
-        ret
-
-_boot:
-    mWriteString welcome 
+    movb $'H',  %al
+    movb $0x0e, %ah
+    int  $0x10
     
+    movb $'e',  %al
+    movb $0x0e, %ah
+    int  $0x10
+    
+    movb $'l',  %al
+    movb $0x0e, %ah
+    int  $0x10
+    
+    movb $'l',  %al
+    movb $0x0e, %ah
+    int  $0x10
+    
+    movb $'o',  %al
+    movb $0x0e, %ah
+    int  $0x10
+    
+    movb $',',  %al
+    movb $0x0e, %ah
+    int  $0x10
+    
+    movb $' ',  %al
+    movb $0x0e, %ah
+    int  $0x10
+    
+    movb $'W',  %al
+    movb $0x0e, %ah
+    int  $0x10
+    
+    movb $'o',  %al
+    movb $0x0e, %ah
+    int  $0x10
+    
+    movb $'r',  %al
+    movb $0x0e, %ah
+    int  $0x10
+    
+    movb $'l',  %al
+    movb $0x0e, %ah
+    int  $0x10
+    
+    movb $'d',  %al
+    movb $0x0e, %ah
+    int  $0x10
+    
+    movb $'!',  %al
+    movb $0x0e, %ah
+    int  $0x10
+     
+    movb $0x0 , %ah
+    int  $0x16
+
     . = _start + 510
     .byte 0x55
     .byte 0xaa
