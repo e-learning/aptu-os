@@ -361,11 +361,13 @@ void FS::write_meta(){
     while(size != 0){
         int written = curr_block->write(meta.block_map, size);
         size -= written;
-		curr_block->save_block(_root);
         if(size != 0){
-		++ind;
+        	++ind;
         	curr_block->_descriptor.next = ind;
+    		curr_block->save_block(_root);
         	curr_block = new Block(ind, config.block_size, _root);
+        } else{
+    		curr_block->save_block(_root);
         }
     }
 }

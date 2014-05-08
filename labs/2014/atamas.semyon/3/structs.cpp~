@@ -21,7 +21,7 @@ void Block::load_block(){
     std::ifstream block_file ( path, std::ios::in | std::ios::binary);
     block_file.read((char *)&_descriptor, sizeof(BlockDescriptor));
     block_file.read(_data, _size);
-    if(block_file.fail()) throw std::runtime_error("Can't read block");
+    if(!block_file.fail()) throw std::runtime_error("Can't read block");
     block_file.close();
 }
 
