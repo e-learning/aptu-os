@@ -4,6 +4,12 @@
     .globl _start;
 
 _start:
+    movw %cs, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %ss
+    movw $0x7c00, %sp
+
     movb $'H',  %al
     movb $0x0e, %ah
     movb $0x00, %bh
