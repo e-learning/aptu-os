@@ -39,18 +39,5 @@ fs.o: fs.cpp
 structs.o: structs.cpp
 	$(CXX) $(CXXFLAGS) -c structs.cpp
 
-.PHONY: clean
 
-clean:
-	rm -f *.o
-	rm init
-	rm format
-	rm import
-	rm export
-	rm ls
-	rm copy
-	rm move
-	rm rm
-	rm mkdir
-	rm -r fs
 
