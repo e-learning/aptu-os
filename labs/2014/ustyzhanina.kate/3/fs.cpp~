@@ -347,7 +347,8 @@ FileD FileSystem::read_file_from_blocks(size_t first_block)
 
 void FileSystem::format()
 {
-	init();
+	read_config();
+	read_meta_data();
 	string name = "/";
 	queue <pair<string, size_t> > list;
 	size_t dir_num = find_first_empty();
