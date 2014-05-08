@@ -9,9 +9,12 @@
 using std::string;
 
 FS::FS(const char *root)
-    : root(root),
+    : _root(root),
       config(read_config()),
       blocks(config.block_size){
+	if(_root[_root.size() - 1] == '/'){
+		_root = _root.substr(0, _root.size() - 1);
+	}
 	if( !std::ifstream(get_block_name(0)).good() ){
 		initialized = false;
 	} else{
@@ -58,7 +61,7 @@ void FS::import(std::string host_file, std::string fs_file){
 	read_meta();
 	FileDescriptor file_d = get_file(fs_file, true, true);
 	file_d.directory = false;
-	Block * fblock = new Block(file_d.first_block, config.block_size, root);
+	Block * fblock = new Block(file_d.first_block, config.block_size, _root);
 
 	FILE * file = fopen(host_file.c_str(), "rb");
 	fseek(file, 0, SEEK_END);
@@ -80,7 +83,7 @@ void FS::fexport(std::string fs_file, std::string host_file){
 
 	FileDescriptor file = get_file(fs_file, false, true);
 	if( blocks[file.first_block] == 0 ){
-		blocks[file.first_block] = new Block(file.first_block, config.block_size, root);
+		blocks[file.first_block] = new Block(file.first_block, config.block_size, _root);
 	}
 	char * buffer = new char[file.size];
 	read_data(buffer, file.size, blocks[file.first_block]);
@@ -99,12 +102,12 @@ void FS::copy(std::string src, std::string dest){
 }
 
 void FS::copy(FileDescriptor src_file, FileDescriptor dst_fold){
-	Block * src_block = new Block(src_file.first_block, config.block_size, root);
+	Block * src_block = new Block(src_file.first_block, config.block_size, _root);
 	read_data(&src_file, sizeof(FileDescriptor), src_block);
 	char * data = new char[src_file.size];
 	read_data(data, src_file.size, src_block);
 
-	Block * dst_block = new Block(dst_fold.first_block, config.block_size, root);
+	Block * dst_block = new Block(dst_fold.first_block, config.block_size, _root);
 	for(auto it = DirIterator(*this, dst_fold); it != DirIterator(*this); ++it){
 		FileDescriptor file = *it;
 		if (std::string(file.filename) == std::string(src_file.filename) ) throw std::runtime_error("File already exist");
@@ -117,7 +120,7 @@ void FS::copy(FileDescriptor src_file, FileDescriptor dst_fold){
 	file.prev_file = -1;
 	file.next_file = -1;
 	if(dst_fold.first_child != -1){
-		Block * nb = new Block(dst_fold.first_child, config.block_size, root);
+		Block * nb = new Block(dst_fold.first_child, config.block_size, _root);
 		FileDescriptor nd;
 		read_data(&nd, sizeof(FileDescriptor), nb);
 		nd.prev_file = file.first_block;
@@ -159,7 +162,7 @@ void FS::rm(std::string path){
 }
 
 void FS::rm(FileDescriptor file){
-	Block * parent_block = new Block(file.parent_file, config.block_size, root);
+	Block * parent_block = new Block(file.parent_file, config.block_size, _root);
 	FileDescriptor parent_descriptor;
 	read_data(&parent_descriptor, sizeof(FileDescriptor), parent_block);
 	if(parent_descriptor.first_child == file.first_block){
@@ -168,7 +171,7 @@ void FS::rm(FileDescriptor file){
 	}
 
 	if(file.prev_file != -1){
-		Block * left_file_block = new Block(file.prev_file, config.block_size, root);
+		Block * left_file_block = new Block(file.prev_file, config.block_size, _root);
 		FileDescriptor left_file_descriptor;
 		read_data(&left_file_descriptor, sizeof(FileDescriptor), left_file_block);
 		left_file_descriptor.next_file = file.next_file;
@@ -176,7 +179,7 @@ void FS::rm(FileDescriptor file){
 	}
 
 	if(file.next_file != -1){
-		Block * right_file_block = new Block(file.next_file, config.block_size, root);
+		Block * right_file_block = new Block(file.next_file, config.block_size, _root);
 		FileDescriptor right_file_descriptor;
 		read_data(&right_file_descriptor, sizeof(FileDescriptor), right_file_block);
 		right_file_descriptor.prev_file = file.prev_file;
@@ -184,7 +187,7 @@ void FS::rm(FileDescriptor file){
 	}
 
 
-	Block * curr_block = new Block(file.first_block, config.block_size, root);
+	Block * curr_block = new Block(file.first_block, config.block_size, _root);
 	if(file.directory){
 		for(auto it = DirIterator(*this, file); it != DirIterator(*this); ++it){
 			FileDescriptor file = *it;
@@ -197,7 +200,7 @@ void FS::rm(FileDescriptor file){
 			size -= curr_block->_descriptor.data_written;
 			free_block(curr_block->get_index());
 			if(size > 0){
-				curr_block = new Block(curr_block->_descriptor.next, config.block_size, root);
+				curr_block = new Block(curr_block->_descriptor.next, config.block_size, _root);
 			}
 		}
 	}
@@ -212,9 +215,9 @@ void FS::mkdir(std::string path){
 void FS::move(std::string src, std::string dst){
 	read_meta();
 	FileDescriptor f_src = get_file(src, false, true);
-	Block * src_block = new Block(f_src.first_block, config.block_size, root);
+	Block * src_block = new Block(f_src.first_block, config.block_size, _root);
 
-	Block * parent_block = new Block(f_src.parent_file, config.block_size, root);
+	Block * parent_block = new Block(f_src.parent_file, config.block_size, _root);
 	FileDescriptor parent_descriptor;
 	read_data(&parent_descriptor, sizeof(FileDescriptor), parent_block);
 	if(parent_descriptor.first_child == f_src.first_block){
@@ -223,7 +226,7 @@ void FS::move(std::string src, std::string dst){
 	}
 
 	FileDescriptor f_dst = get_file(dst, false, false);
-	Block * dst_block = new Block(f_dst.first_block, config.block_size, root);
+	Block * dst_block = new Block(f_dst.first_block, config.block_size, _root);
 
 	f_src.parent_file = f_dst.first_block;
 	if( f_dst.first_child == -1){
@@ -231,7 +234,7 @@ void FS::move(std::string src, std::string dst){
 		f_src.next_file = -1;
 		f_src.prev_file = -1;
 	} else{
-		Block * child_block = new Block(f_dst.first_child, config.block_size, root);
+		Block * child_block = new Block(f_dst.first_child, config.block_size, _root);
 		f_dst.first_child = f_src.first_block;
 		FileDescriptor child_d;
 		read_data(&child_d, sizeof(FileDescriptor), child_block);
@@ -257,7 +260,7 @@ FileDescriptor FS::get_file(std::string path, bool create, bool file_available){
 	path.erase(0, 1);
 
 	FileDescriptor curr_dir;
-	Block * curr_dir_block = new Block(meta.root_block, config.block_size, root);
+	Block * curr_dir_block = new Block(meta.root_block, config.block_size, _root);
 	read_data(&curr_dir, sizeof(curr_dir), curr_dir_block);
 
 	while(path.size() != 0){
@@ -270,7 +273,7 @@ FileDescriptor FS::get_file(std::string path, bool create, bool file_available){
 			if(std::string(file.filename) == dir_name){
 				found = true;
 				if(!file.directory){
-					if(file_available && pos == (int)path.size() - 1){
+					if(file_available && pos == path.size() - 1){
 						return file;
 					}else{
 						throw std::runtime_error("File in path");
@@ -289,7 +292,7 @@ FileDescriptor FS::get_file(std::string path, bool create, bool file_available){
 				if( curr_dir.first_child == -1 ){
 					curr_dir.first_child = dir.first_block;
 				} else{
-					Block * neighbour_file_block = new Block(curr_dir.first_child, config.block_size, root);
+					Block * neighbour_file_block = new Block(curr_dir.first_child, config.block_size, _root);
 					curr_dir.first_child = dir.first_block;
 					FileDescriptor neighbour_file_descriptor;
 					read_data(&neighbour_file_descriptor, sizeof(FileDescriptor), neighbour_file_block);
@@ -307,7 +310,7 @@ FileDescriptor FS::get_file(std::string path, bool create, bool file_available){
 			}
 		}
 
-		curr_dir_block = new Block(curr_dir.first_block, config.block_size, root);
+		curr_dir_block = new Block(curr_dir.first_block, config.block_size, _root);
 		path.erase(0, pos + 1);
 	}
 	write_meta();
@@ -317,7 +320,7 @@ FileDescriptor FS::get_file(std::string path, bool create, bool file_available){
 Config FS::read_config() {
     Config config;
     std::ifstream config_file;
-    config_file.open(string(root) + "/config");
+    config_file.open(string(_root) + "/config");
     if ( !config_file.good()) {
         throw std::runtime_error("Can't open config file");
     }
@@ -344,7 +347,7 @@ void FS::free_block(int n){
 }
 
 std::string FS::get_block_name(int block_id){
-    return string(root) +"/"+ std::to_string(block_id);
+    return string(_root) +"/"+ std::to_string(block_id);
 }
 
 void FS::write_meta(){
@@ -358,10 +361,10 @@ void FS::write_meta(){
     while(size != 0){
         int written = curr_block->write(meta.block_map, size);
         size -= written;
-		curr_block->save_block(root);
+		curr_block->save_block(_root);
         if(size != 0){
         	curr_block->_descriptor.next = ind + 1;
-        	curr_block = new Block(ind, config.block_size, root);
+        	curr_block = new Block(ind, config.block_size, _root);
         }
     }
 }
@@ -382,7 +385,7 @@ void FS::read_data(void * data, int size, Block * curr_block){
 		size -= readen;
 		dt += readen;
 	    if(size != 0){
-			curr_block = new Block(curr_block->_descriptor.next, config.block_size, root);
+			curr_block = new Block(curr_block->_descriptor.next, config.block_size, _root);
 	    }
 	}
 }
@@ -400,10 +403,10 @@ void FS::write_data(void * data, int size, Block * first_block = 0){
         if(size != 0){
 			last_block = get_free_block();
 			curr_block->_descriptor.next = last_block->get_index();
-			curr_block->save_block(root);
+			curr_block->save_block(_root);
 			curr_block = last_block;
         } else{
-        	curr_block->save_block(root);
+        	curr_block->save_block(_root);
         }
     }
 }
@@ -424,7 +427,7 @@ DirIterator::DirIterator(FS & fs, FileDescriptor dir):
 _fs(fs){
 	if(dir.first_child != -1){
 		p = new FileDescriptor;
-		Block * block = _fs.get_block(dir.first_child, _fs.root);
+		Block * block = _fs.get_block(dir.first_child, _fs._root);
 		block->reopen();
 		_fs.read_data(p, sizeof(FileDescriptor), block);
 	} else{
@@ -434,7 +437,7 @@ _fs(fs){
 
 DirIterator& DirIterator::operator++(){
 	if(p->next_file != -1){
-		Block * block = _fs.get_block(p->next_file, _fs.root);
+		Block * block = _fs.get_block(p->next_file, _fs._root);
 		block->reopen();
 		_fs.read_data(p, sizeof(FileDescriptor), block );
 		return *this;
@@ -450,7 +453,7 @@ void FS::update_descriptor(FileDescriptor & fd, Block * block){
 		block->move_to_begin();
 		block->write(&fd, sizeof(fd));
 		block->_descriptor.data_written = written;
-		block->save_block(root);
+		block->save_block(_root);
 	} else{
 		block->write(&fd, sizeof(fd));
 	}

@@ -34,7 +34,7 @@ private:
     Meta meta;
     FileDescriptor root_descriptor;
     bool initialized;
-    std::string root;
+    std::string _root;
     const Config config;
     std::vector<Block *> blocks;
     std::string get_block_name(int block_id);

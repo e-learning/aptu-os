@@ -1,6 +1,6 @@
 #include "structs.h"
 #include <algorithm>
-
+#include <fstream>
 
 Block::Block(int index, int size):
 _index(index){
@@ -18,10 +18,11 @@ _root(root){
 
 void Block::load_block(){
     const char * path = (_root +  "/" + std::to_string(_index)).c_str();
-    FILE *blockFile = fopen( path, "rb");
-    if(!fread(&_descriptor, sizeof(BlockDescriptor), 1, blockFile)) throw std::runtime_error("Can't read block");
-    if(!fread(_data, sizeof(char), _size, blockFile)) throw std::runtime_error("Can't read block");
-    fclose(blockFile);
+    std::ifstream block_file ( path, std::ios::in | std::ios::binary);
+    block_file.read((char *)&_descriptor, sizeof(BlockDescriptor));
+    block_file.read(_data, _size);
+    if(!block_file) throw std::runtime_error("Can't read block");
+    block_file.close();
 }
 
 int Block::write(void * data, int size){
@@ -44,9 +45,9 @@ bool Block::full(){
 
 void Block::save_block(std::string root){
     const char * path = (root + "/" + std::to_string(_index)).c_str();
-    FILE *blockFile = fopen(path, "wb");
-    fwrite(&_descriptor, sizeof(BlockDescriptor), 1, blockFile);
-    fwrite(_data, sizeof(char), _size, blockFile);
-    fclose(blockFile);
+    std::ofstream block_file (path, std::ios::out|std::ios::binary);
+    block_file.write((char*)&_descriptor, sizeof(_descriptor));
+    block_file.write(_data,_size);
+    block_file.close();
 }
 
