@@ -274,7 +274,7 @@ size_t FileSystem::write_file_to_blocks(FileD file_m)
 		ofstream f_i(utils.path_append(root_dirname, to_string(current_block)));
 		f_i.write((char *)&next_empty, sizeof(size_t));
 		f_i.write(file_m.data[i].first, file_m.data[i].second);
-		fill_free_file(file, size - sizeof(size_t) - file_m.data[i].second);
+		fill_free_file(f_i, size - sizeof(size_t) - file_m.data[i].second);
 	}
 
 	return first_block;
@@ -515,7 +515,6 @@ void FileSystem::modify_file(string from, string to, bool fl)
 	vector <string> from_path = utils.split(from, '/');
 	string to_name = from_path[from_path.size() - 1];
 	queue <pair<string, size_t> > temp = from_directory.files;
-	queue <pair<string, size_t> > new_list;
 	size_t list_size = temp.size();
 	bool find = false;
 
@@ -534,20 +533,15 @@ void FileSystem::modify_file(string from, string to, bool fl)
 					out_f.write(cur_file.data[k].first, cur_file.data[k].second);
 			}
 
-			fill_free_block(cur_file.blocks);
-			temp.pop();
+			break;
 		}
-		else
-		{
-			new_list.push(temp.front());
-			temp.pop();
-		}
+
+		temp.pop();
 	}
 
 	if (!find)
 		throw runtime_error("no such file " + from);
 
-	from_directory.files = new_list;
 	from_directory.time = time(0);
 	fill_free_block(from_directory.blocks);
 	write_directory(from_directory, from_directory.blocks[0]);
