@@ -262,7 +262,7 @@ size_t FileSystem::write_file_to_blocks(FileD file_m)
 	file.write((char *)&next_empty, sizeof(size_t));
 	fill_free_file(file, size - sizeof(size_t) * 3 - sizeof(time_t)  - 10);
 
-    cout << file_m.data.size() << " " <<file_m.data[0].second;
+
 	for (int i = 0; i != file_m.data.size(); ++i)
 	{
 		current_block = alloc_block();
@@ -273,9 +273,7 @@ size_t FileSystem::write_file_to_blocks(FileD file_m)
 			next_empty = find_first_empty();
 
 		ofstream f_i(utils.path_append(root_dirname, to_string(current_block)));
-		f_i.write((char *)&next_empty, sizeof(size_t));
-        for(int k = 0; k != file_m.data[i].second; ++k)
-            cout << file_m.data[i].first[i];
+		f_i.write((char *)&next_empty, sizeof(size_t));        
         f_i.write(file_m.data[i].first, file_m.data[i].second);
         //fill_free_file(f_i, size - sizeof(size_t) - file_m.data[i].second);
 	}
@@ -338,8 +336,7 @@ FileD FileSystem::read_file_from_blocks(size_t first_block)
 		next_block != 0 ? buf_size = size - sizeof(size_t) : buf_size = data_size;
 		char * buf  = new char[buf_size];
         in_i.read(buf, buf_size);
-        for (int i = 0 ; i!= buf_size;++i)
-            cout << buf[i];
+
         my_data.push_back(make_pair(buf, buf_size));
 		data_size -= buf_size;
 	}
@@ -519,7 +516,7 @@ void FileSystem::export_(string from, string to)
     FileD cur_file = read_file_from_blocks(find_directory(from, true).second);
     ofstream out_f(to);
 
-    cout << cur_file.name<<endl;
+
     for(size_t k = 0; k != cur_file.data.size(); ++k)
         out_f.write(cur_file.data[k].first, cur_file.data[k].second);
 
