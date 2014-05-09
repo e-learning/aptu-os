@@ -274,7 +274,7 @@ size_t FileSystem::write_file_to_blocks(FileD file_m)
 		ofstream f_i(utils.path_append(root_dirname, to_string(current_block)));
 		f_i.write((char *)&next_empty, sizeof(size_t));
 		f_i.write(file_m.data[i].first, file_m.data[i].second);
-		fill_free_file(file, size - sizeof(size_t) - file_m.data[i].second);
+		fill_free_file(f_i, size - sizeof(size_t) - file_m.data[i].second);
 	}
 
 	return first_block;
@@ -294,6 +294,7 @@ void FileSystem::fill_free_block(vector <size_t> blocks)
 	for (int i = 0; i != blocks.size(); ++i)
 	{
 		meta_info[blocks[i]] = 0;
+		++free_blocks_count;
 		ofstream file(utils.path_append(root_dirname, to_string(blocks[i])));
 		fill_free_file(file, size);
 	}
@@ -347,8 +348,7 @@ FileD FileSystem::read_file_from_blocks(size_t first_block)
 
 void FileSystem::format()
 {
-	read_config();
-	read_meta_data();
+	init();
 	string name = "/";
 	queue <pair<string, size_t> > list;
 	size_t dir_num = find_first_empty();
@@ -368,8 +368,15 @@ pair<string, size_t> FileSystem:: find_directory(string instr, bool up_to_end)
 	//root block
 	size_t block_num = meta_blocks_count;
 	string name = "/";
+	DirectoryD dir = read_directory(block_num);
 
-	if (parts.size() == 2 && !up_to_end)
+	if (dir.name != "/")
+	{
+		size_t temp = -1;
+		return make_pair(name, temp);
+	}
+
+	if (parts.size() == 1)
 	{
 		return make_pair(name, block_num);
 	}
@@ -413,6 +420,58 @@ pair<string, size_t> FileSystem:: find_directory(string instr, bool up_to_end)
 
 	return make_pair(name, block_num);
 }
+pair<string, size_t> FileSystem:: find_directory_not(string instr, bool up_to_end)
+{
+	vector <string> parts  = utils.split(instr, '/');
+
+	if(parts.size() < 1 || parts[0] != "")
+		throw runtime_error("Path" + instr + " should start with / - root directory");
+
+	//root block
+	size_t block_num = meta_blocks_count;
+	string name = "/";
+	size_t parts_size = parts.size() - 1;
+	size_t begin = 1, compare_ind;
+
+	if (up_to_end)
+	{
+		begin  = 0;
+	}
+
+	for(int k = begin; k != parts_size; ++k)
+	{
+		if (up_to_end)
+			compare_ind = k + 1;
+		else
+			compare_ind = k;
+
+		bool find = false;
+		DirectoryD dir = read_directory(block_num);
+		queue<pair<string, size_t> > temp = dir.files;
+		size_t list_size = temp.size();
+
+		for(int i = 0; i != list_size; ++i)
+		{
+			if(temp.front().first == parts[compare_ind])
+			{
+				block_num = temp.front().second;
+				name = temp.front().first;
+				find  = true;
+				break;
+			}
+
+			temp.pop();
+		}
+
+		if (!find)
+		{
+			block_num = -1;
+			return make_pair(name, block_num);
+		}
+	}
+
+	return make_pair(name, block_num);
+}
 bool FileSystem::check_exist_file(string in_file, queue<pair<string, size_t> > cur_list)
 {
 	size_t list_size  = cur_list.size();
@@ -452,70 +511,173 @@ void FileSystem::modify_file(string from, string to, bool fl)
 {
 	read_config();
 	read_meta_data();
-	DirectoryD from_directory = read_directory(find_directory(from, false).second);
-	vector <string> from_path = utils.split(from, '/');
-	string to_name = from_path[from_path.size() - 1];
-	queue <pair<string, size_t> > temp = from_directory.files;
-	queue <pair<string, size_t> > new_list;
-	size_t list_size = temp.size();
-	bool find = false;
+    FileD cur_file = read_file_from_blocks(find_directory(from, true).second);
+    ofstream out_f(to);
 
-	for(int i = 0; i != list_size; ++i)
-	{
-		if(temp.front().first == to_name)
-		{
-			find = true;
-			FileD cur_file = read_file_from_blocks(temp.front().second);
+    for(size_t k = 0; k != cur_file.data.size(); ++k)
+        out_f.write(cur_file.data[k].first, cur_file.data[k].second);
 
-			if (fl)
-			{
-				ofstream out_f(to);
-
-				for(size_t k = 0; k != cur_file.data.size(); ++k)
-					out_f.write(cur_file.data[k].first, cur_file.data[k].second);
-			}
-
-			fill_free_block(cur_file.blocks);
-			temp.pop();
-		}
-		else
-		{
-			new_list.push(temp.front());
-			temp.pop();
-		}
-	}
-
-	if (!find)
-		throw runtime_error("no such file " + from);
-
-	from_directory.files = new_list;
-	from_directory.time = time(0);
-	fill_free_block(from_directory.blocks);
-	write_directory(from_directory, from_directory.blocks[0]);
-	write_meta();
+    write_meta();
 }
 
 void FileSystem::export_(string from, string to)
 {
 	modify_file(from, to, true);
 }
-
-void FileSystem::rm_file(string const from)
+queue <pair<string, size_t> > delete_elem(string elem, queue <pair<string, size_t> > list )
 {
-	modify_file(from, "" , false);
+	size_t list_size = list.size();
+	queue <pair<string, size_t> > rez_list;
+
+	for (int i = 0; i != list_size; ++i)
+	{
+		if (list.front().first != elem)
+		{
+			rez_list.push(list.front());
+		}
+
+		list.pop();
+	}
+
+	return rez_list;
+}
+void FileSystem::rm_one_file(DirectoryD source)
+{
+	size_t list_size = source.files.size();
+	queue <pair<string, size_t> > list = source.files;
+
+	for (size_t i = 0; i != list_size; ++i)
+	{
+		ifstream in(utils.path_append(root_dirname, to_string(list.front().second)));
+		size_t ident;
+		in.read((char *)&ident, sizeof(size_t));
+		in.close();
+
+		if (ident == FILE)
+		{
+			FileD cur_file = read_file_from_blocks(list.front().second);
+			source.files = delete_elem(cur_file.name, source.files);
+			fill_free_block(cur_file.blocks);
+			fill_free_block(source.blocks);
+			//write_directory(source, source.blocks[0]);
+			list.pop();
+		}
+		else
+		{
+			DirectoryD new_source = read_directory(list.front().second);
+			fill_free_block(new_source.blocks);
+			source.files = delete_elem(new_source.name, source.files);
+			list.pop();
+			rm_one_file(new_source);
+		}
+	}
+
+	fill_free_block(source.blocks);
+}
+void FileSystem::rm_file(string from)
+{
+	read_config();
+	read_meta_data();
+
+	if (from == "/")
+		rm_one_file(read_directory(meta_blocks_count));
+	else
+	{
+		DirectoryD source = read_directory(find_directory(from, false).second);
+		pair<string, size_t> new_elem = find_directory(from, true);
+		ifstream in(utils.path_append(root_dirname, to_string(new_elem.second)));
+		size_t ident;
+		in.read((char *)&ident, sizeof(size_t));
+		in.close();
+		DirectoryD cur_dir;
+
+		if (ident == FILE)
+		{
+			FileD cur_file = read_file_from_blocks(new_elem.second);
+			source.files = delete_elem(cur_file.name, source.files);
+			fill_free_block(cur_file.blocks);
+		}
+		else
+		{
+			cur_dir = read_directory(new_elem.second);
+			source.files = delete_elem(cur_dir.name, source.files);
+			rm_one_file(cur_dir);
+		}
+
+		fill_free_block(cur_dir.blocks);
+		fill_free_block(source.blocks);
+		source.time = time(0);
+		write_directory(source, source.blocks[0]);
+	}
+
+	write_meta();
 }
 
 void FileSystem::move(string  const source, string const to)
 {
 	read_config();
 	read_meta_data();
-	DirectoryD to_dir = read_directory(find_directory(to, true).second);
 	pair<string, size_t> new_elem = find_directory(source, true);
-	to_dir.files.push(new_elem);
-	fill_free_block(to_dir.blocks);
+	DirectoryD to_dir = read_directory(find_directory(to, false).second);
+	bool find = false;
+	size_t try_to_dir = find_directory_not(to, true).second;
+
+	if (try_to_dir != -1)
+	{
+		ifstream file(utils.path_append(root_dirname, to_string(try_to_dir)));
+		size_t m_file;
+		file.read((char *)&m_file, sizeof(size_t));
+
+		if (m_file == DIR)
+		{
+			to_dir = read_directory(try_to_dir);
+			find  = true;
+		}
+	}
+
+	vector <string> to_path = utils.split(to, '/');
+
+	if (find)
+	{
+		if (check_exist_file(new_elem.first, to_dir.files))
+			throw runtime_error("this file " + to + "/" + new_elem.first + " already exist in filesystem");
+
+		to_dir.files.push(make_pair(new_elem.first, new_elem.second));
+	}
+	else
+	{
+		if (check_exist_file(to_path[to_path.size() - 1], to_dir.files))
+			throw runtime_error("this file " + to + " already exist in filesystem");
+
+		ifstream file(utils.path_append(root_dirname, to_string(new_elem.second)));
+		size_t m_file, data_size, next_block;
+		time_t time_m;
+		file.read((char *)&m_file, sizeof(size_t));
+		string file_name = utils.read_string(file);
+		file.read((char *)&time_m, sizeof(time_t));
+		file.read((char *)&data_size, sizeof(size_t));
+		file.read((char *)&next_block, sizeof(size_t));
+		file.close();
+		ofstream file_out(utils.path_append(root_dirname, to_string(new_elem.second)));
+		time_m = time(0);
+		file_name = to_path[to_path.size() - 1];
+		file_out.write((char *)&FILE, sizeof(size_t));
+		utils.write_string(file_out, file_name);
+		file_out.write((char *)&time_m, sizeof(time_t));
+		file_out.write((char *)&data_size, sizeof(size_t));
+		file_out.write((char *)&next_block, sizeof(size_t));
+		file_out.close();
+		to_dir.files.push(make_pair(to_path[to_path.size() - 1], new_elem.second));
+	}
+
 	to_dir.time = time(0);
+	fill_free_block(to_dir.blocks);
 	write_directory(to_dir, to_dir.blocks[0]);
-	rm_file(source);
+	DirectoryD source_dir  = read_directory(find_directory(source, false).second);
+	source_dir.files = delete_elem(new_elem.first , source_dir.files);
+	source_dir.time = time(0);
+	fill_free_block(source_dir.blocks);
+	write_directory(source_dir, source_dir.blocks[0]);
 	write_meta();
 }
 
@@ -536,6 +698,7 @@ void FileSystem::copy_directory(DirectoryD source, DirectoryD to)
 			FileD cur_file = read_file_from_blocks(list.front().second);
 			size_t new_block = write_file_to_blocks(cur_file);
 			to.files.push(make_pair(list.front().first, new_block));
+			fill_free_block(to.blocks);
 			write_directory(to, to.blocks[0]);
 			list.pop();
 		}
@@ -563,7 +726,24 @@ void FileSystem::copy(string  source, string to)
 	read_config();
 	read_meta_data();
 	pair<string, size_t> new_elem = find_directory(source, true);
-	DirectoryD to_dir = read_directory(find_directory(to, true).second);
+	DirectoryD to_dir = read_directory(find_directory(to, false).second);
+	bool find = false;
+	size_t try_to_dir = find_directory_not(to, true).second;
+
+	if (try_to_dir != -1)
+	{
+		ifstream file(utils.path_append(root_dirname, to_string(try_to_dir)));
+		size_t m_file;
+		file.read((char *)&m_file, sizeof(size_t));
+
+		if (m_file == DIR)
+		{
+			to_dir = read_directory(try_to_dir);
+			find  = true;
+		}
+	}
+
+	vector <string> to_path = utils.split(to, '/');
 	ifstream in(utils.path_append(root_dirname, to_string(new_elem.second)));
 	size_t ident;
 	in.read((char *)&ident, sizeof(size_t));
@@ -574,6 +754,39 @@ void FileSystem::copy(string  source, string to)
 	{
 		FileD cur_file = read_file_from_blocks(new_elem.second);
 		new_block = write_file_to_blocks(cur_file);
+
+		if (find)
+		{
+			if (check_exist_file(new_elem.first, to_dir.files))
+				throw runtime_error("this file " + to + "/" + new_elem.first + " already exist in filesystem");
+
+			to_dir.files.push(make_pair(new_elem.first, new_block));
+		}
+		else
+		{
+			if (check_exist_file(to_path[to_path.size() - 1], to_dir.files))
+				throw runtime_error("this file " + to + " already exist in filesystem");
+
+			ifstream file(utils.path_append(root_dirname, to_string(new_block)));
+			size_t m_file, data_size, next_block;
+			time_t time_m;
+			file.read((char *)&m_file, sizeof(size_t));
+			string file_name = utils.read_string(file);
+			file.read((char *)&time_m, sizeof(time_t));
+			file.read((char *)&data_size, sizeof(size_t));
+			file.read((char *)&next_block, sizeof(size_t));
+			file.close();
+			ofstream file_out(utils.path_append(root_dirname, to_string(new_block)));
+			time_m = time(0);
+			file_name = to_path[to_path.size() - 1];
+			file_out.write((char *)&FILE, sizeof(size_t));
+			utils.write_string(file_out, file_name);
+			file_out.write((char *)&time_m, sizeof(time_t));
+			file_out.write((char *)&data_size, sizeof(size_t));
+			file_out.write((char *)&next_block, sizeof(size_t));
+			file_out.close();
+			to_dir.files.push(make_pair(to_path[to_path.size() - 1], new_block));
+		}
 	}
 	else
 	{
@@ -586,16 +799,20 @@ void FileSystem::copy(string  source, string to)
 		write_directory(new_dir, new_block);
 		DirectoryD cur_dir = read_directory(new_elem.second);
 		copy_directory(cur_dir, new_dir);
+
+		if (check_exist_file(new_elem.first, to_dir.files))
+			throw runtime_error("this file " + to + "/" + new_elem.first + " already exist in filesystem");
+
+		to_dir.files.push(make_pair(new_elem.first, new_block));
 	}
 
-	to_dir.files.push(make_pair(new_elem.first, new_block));
 	to_dir.time = time(0);
 	fill_free_block(to_dir.blocks);
 	write_directory(to_dir, to_dir.blocks[0]);
 	write_meta();
 }
 
-size_t FileSystem::mk_one_dir(DirectoryD & parent_dir, string name)
+size_t FileSystem::mk_one_dir(DirectoryD parent_dir, string name)
 {
 	queue <pair<string, size_t> > list;
 	size_t first_block_new_dir = find_first_empty();
@@ -657,6 +874,11 @@ void FileSystem::ls(string path)
 	read_config();
 	read_meta_data();
 	pair <string, size_t> cur_ptr = find_directory(path, true);
+	find_directory_not(path, true);
+
+	if ((cur_ptr.second == -1)  || (find_directory_not(path, true).second == -1))
+		throw runtime_error("no such directiry or file");
+
 	ifstream in(utils.path_append(root_dirname, to_string(cur_ptr.second)));
 	size_t ident;
 	in.read((char *)&ident, sizeof(size_t));

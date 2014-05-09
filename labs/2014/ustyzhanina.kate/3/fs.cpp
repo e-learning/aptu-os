@@ -251,7 +251,7 @@ size_t FileSystem::write_file_to_blocks(FileD file_m)
 	--need_blocks;
 	size_t next_empty = 0;
 
-	if (need_blocks > 1)
+    if (file_m.data.size() != 0)
 		next_empty = find_first_empty();
 
 	ofstream file(utils.path_append(root_dirname, to_string(current_block)));
@@ -262,6 +262,7 @@ size_t FileSystem::write_file_to_blocks(FileD file_m)
 	file.write((char *)&next_empty, sizeof(size_t));
 	fill_free_file(file, size - sizeof(size_t) * 3 - sizeof(time_t)  - 10);
 
+    cout << file_m.data.size() << " " <<file_m.data[0].second;
 	for (int i = 0; i != file_m.data.size(); ++i)
 	{
 		current_block = alloc_block();
@@ -273,8 +274,10 @@ size_t FileSystem::write_file_to_blocks(FileD file_m)
 
 		ofstream f_i(utils.path_append(root_dirname, to_string(current_block)));
 		f_i.write((char *)&next_empty, sizeof(size_t));
-		f_i.write(file_m.data[i].first, file_m.data[i].second);
-		fill_free_file(f_i, size - sizeof(size_t) - file_m.data[i].second);
+        for(int k = 0; k != file_m.data[i].second; ++k)
+            cout << file_m.data[i].first[i];
+        f_i.write(file_m.data[i].first, file_m.data[i].second);
+        //fill_free_file(f_i, size - sizeof(size_t) - file_m.data[i].second);
 	}
 
 	return first_block;
@@ -320,7 +323,7 @@ FileD FileSystem::read_file_from_blocks(size_t first_block)
 	}
 
 	size_t buf_size = size - sizeof(size_t);
-	vector <pair<char *, size_t> > my_data;
+    vector <pair<char *, size_t> > my_data;
 
 	while (next_block != 0)
 	{
@@ -334,8 +337,10 @@ FileD FileSystem::read_file_from_blocks(size_t first_block)
 
 		next_block != 0 ? buf_size = size - sizeof(size_t) : buf_size = data_size;
 		char * buf  = new char[buf_size];
-		in_i.read(buf, buf_size);
-		my_data.push_back(make_pair(buf, buf_size));
+        in_i.read(buf, buf_size);
+        for (int i = 0 ; i!= buf_size;++i)
+            cout << buf[i];
+        my_data.push_back(make_pair(buf, buf_size));
 		data_size -= buf_size;
 	}
 
@@ -507,51 +512,20 @@ void FileSystem::import(string from, string to)
 	write_meta();
 }
 
-void FileSystem::modify_file(string from, string to, bool fl)
+void FileSystem::export_(string from, string to)
 {
 	read_config();
 	read_meta_data();
-	DirectoryD from_directory = read_directory(find_directory(from, false).second);
-	vector <string> from_path = utils.split(from, '/');
-	string to_name = from_path[from_path.size() - 1];
-	queue <pair<string, size_t> > temp = from_directory.files;
-	size_t list_size = temp.size();
-	bool find = false;
+    FileD cur_file = read_file_from_blocks(find_directory(from, true).second);
+    ofstream out_f(to);
 
-	for(int i = 0; i != list_size; ++i)
-	{
-		if(temp.front().first == to_name)
-		{
-			find = true;
-			FileD cur_file = read_file_from_blocks(temp.front().second);
+    cout << cur_file.name<<endl;
+    for(size_t k = 0; k != cur_file.data.size(); ++k)
+        out_f.write(cur_file.data[k].first, cur_file.data[k].second);
 
-			if (fl)
-			{
-				ofstream out_f(to);
-
-				for(size_t k = 0; k != cur_file.data.size(); ++k)
-					out_f.write(cur_file.data[k].first, cur_file.data[k].second);
-			}
-
-			break;
-		}
-
-		temp.pop();
-	}
-
-	if (!find)
-		throw runtime_error("no such file " + from);
-
-	from_directory.time = time(0);
-	fill_free_block(from_directory.blocks);
-	write_directory(from_directory, from_directory.blocks[0]);
-	write_meta();
+    write_meta();
 }
 
-void FileSystem::export_(string from, string to)
-{
-	modify_file(from, to, true);
-}
 queue <pair<string, size_t> > delete_elem(string elem, queue <pair<string, size_t> > list )
 {
 	size_t list_size = list.size();
