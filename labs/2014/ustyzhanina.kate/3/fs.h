@@ -34,23 +34,22 @@ class  FileSystem
 
 	void mkdir(string path);
 	void ls(string path);
-
+    size_t free_blocks_count;
   private:
 	Utils utils;
 
-	const size_t DIR = 1;
-	const size_t FILE = -1;
+    const  size_t DIR = 1;
+    const  size_t FILE = 2;
 
 	string root_dirname;
-	size_t free_blocks_count;
+
 	size_t all_blocks_count;
 	size_t size;
 	size_t meta_blocks_count;
 	size_t main_info_size;
 	vector <size_t> meta_info;
 
-
-
+    void rm_one_file(DirectoryD source);
 	void write_meta();
 
 	//read config file
@@ -74,6 +73,7 @@ class  FileSystem
 
 
 	pair<string, size_t>  find_directory(string instr, bool up_to_end);
+    pair<string, size_t>  find_directory_not(string instr, bool up_to_end);
 	bool check_exist_file(string in_file, queue<pair<string, size_t> > cur_list);
 
 
@@ -82,7 +82,7 @@ class  FileSystem
 
 	void copy_directory(DirectoryD source, DirectoryD to);
 
-	size_t mk_one_dir(DirectoryD & parent_dir, string name);
+    size_t mk_one_dir(DirectoryD  parent_dir, string name);
 	size_t find_first_empty();
 
 	size_t alloc_block();
