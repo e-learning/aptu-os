@@ -1,8 +1,6 @@
 CXX = g++
 CXXFLAGS = -Wall -pedantic
 
-OUTDIR = bin
-
 INIT = init
 FORMAT = format
 IMPORT = import
@@ -15,37 +13,34 @@ MKDIR = mkdir
 
 SOURCES = $(wildcard *.cpp)
 
-all: ADDDIR $(INIT) $(FORMAT) $(IMPORT) $(EXPORT) $(LS) $(COPY) $(MOVE) $(RM) $(MKDIR)
-
-ADDDIR:
-	mkdir -p $(OUTDIR)
+all: $(INIT) $(FORMAT) $(IMPORT) $(EXPORT) $(LS) $(COPY) $(MOVE) $(RM) $(MKDIR)
 
 $(INIT): filesystem.o init.cpp
-	$(CXX) $(CXXFLAGS) filesystem.o init.cpp -o $(OUTDIR)/$(INIT)
+	$(CXX) $(CXXFLAGS) filesystem.o init.cpp -o $(INIT)
 
 $(FORMAT): filesystem.o format.cpp 
-	$(CXX) $(CXXFLAGS) filesystem.o format.cpp -o $(OUTDIR)/$(FORMAT)
+	$(CXX) $(CXXFLAGS) filesystem.o format.cpp -o $(FORMAT)
 
 $(IMPORT): filesystem.o import.cpp
-	$(CXX) $(CXXFLAGS) filesystem.o import.cpp -o $(OUTDIR)/$(IMPORT)
+	$(CXX) $(CXXFLAGS) filesystem.o import.cpp -o $(IMPORT)
 
 $(EXPORT): filesystem.o export.cpp
-	$(CXX) $(CXXFLAGS) filesystem.o export.cpp -o $(OUTDIR)/$(EXPORT)
+	$(CXX) $(CXXFLAGS) filesystem.o export.cpp -o $(EXPORT)
 
 $(LS): filesystem.o ls.cpp
-	$(CXX) $(CXXFLAGS) filesystem.o ls.cpp -o $(OUTDIR)/$(LS)
+	$(CXX) $(CXXFLAGS) filesystem.o ls.cpp -o $(LS)
 
 $(COPY): filesystem.o copy.cpp
-	$(CXX) $(CXXFLAGS) filesystem.o copy.cpp -o $(OUTDIR)/$(COPY)
+	$(CXX) $(CXXFLAGS) filesystem.o copy.cpp -o $(COPY)
 
 $(MOVE): filesystem.o move.cpp
-	$(CXX) $(CXXFLAGS) filesystem.o move.cpp -o $(OUTDIR)/$(MOVE)
+	$(CXX) $(CXXFLAGS) filesystem.o move.cpp -o $(MOVE)
 
 $(RM): filesystem.o rm.cpp
-	$(CXX) $(CXXFLAGS) filesystem.o rm.cpp -o $(OUTDIR)/$(RM)
+	$(CXX) $(CXXFLAGS) filesystem.o rm.cpp -o $(RM)
 
 $(MKDIR): filesystem.o mkdir.cpp
-	$(CXX) $(CXXFLAGS) filesystem.o mkdir.cpp -o $(OUTDIR)/$(MKDIR)
+	$(CXX) $(CXXFLAGS) filesystem.o mkdir.cpp -o $(MKDIR)
 
 filesystem.o: filesystem.cpp
 	$(CXX) $(CXXFLAGS) -c filesystem.cpp

@@ -522,11 +522,17 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
 //------------------------------------------------------------------
 
 bool FileSystem::copyFile(FileEntry *src, const std::string &dst) {
-    std::string dstFile = dst + "/" + src->name();
+	size_t lastSlashDst = dst.find_last_of('/');
+	std::string dstFilename = dst.substr(lastSlashDst + 1);
+	std::string dstFile;
+	if(src->filename == dstFilename) dstFile = dst;
+	else dstFile = dst + "/" + src->name();
+	//std::cout << dstFilename << " " << src->filename << " " << dstFile << std::endl;
     FileEntry *testFE = findFile(dstFile, true);
     if(testFE) {
-        std::cout << "WARNING: Unable to copy file: file already exists" << std::endl;
-        return false;
+        remove(dstFile);
+        //std::cout << "WARNING: Unable to copy file: file already exists" << std::endl;
+        //return false;
     }
 
     FileEntry *copyFE = createFile(dstFile, true);
@@ -566,14 +572,12 @@ bool FileSystem::copyDir(Block *src, const std::string &dst) {
     DirIterator dit(this, src);
     FileEntry *curFE = dit.current();
     std::string dstDirPath = dst + "/" + curFE->name();
-    FileEntry *dstFE = findFile(dst, true);
-    if(dstFE->name() == curFE->name()) {
-        std::cout << "Unable to copy: destination folder already exists" << std::endl;
-        return false;
+    FileEntry *dstFE = findFile(dstDirPath, true);
+    if(!dstFE) {
+		dstFE = createDir(dstDirPath);
+		if(!dstFE) return false;
     }
-    dstFE = createDir(dstDirPath);
-    if(!dstFE) return false;
-
+    
     while(dit.hasNext()) {
         curFE = dit.next();
         bool res = (curFE->attr & FA_DIR) ? copyDir(getBlock(curFE->firstBlock), dstDirPath) : copyFile(curFE, dstDirPath);
