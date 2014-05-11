@@ -1,6 +1,7 @@
 #include "structs.h"
 #include <algorithm>
 #include <fstream>
+#include <iostream>
 
 Block::Block(int index, int size):
 _index(index){
@@ -19,10 +20,10 @@ _root(root){
 void Block::load_block(){
     std::string path = _root +  "/" + std::to_string(_index);
     std::ifstream block_file ( path, std::ios::in | std::ios::binary);
-    if(block_file.good()) throw std::runtime_error("Can't read block №" + std::to_string(_index));
+    if(block_file.fail()) throw std::runtime_error("Can't read block №" + std::to_string(_index));
     block_file.read((char *)&_descriptor, sizeof(BlockDescriptor));
     block_file.read(_data, _size);
-    if(!block_file.good()) throw std::runtime_error("Error while reading block №" + std::to_string(_index));
+    if(block_file.fail()) throw std::runtime_error("Error while reading block №" + std::to_string(_index));
     block_file.close();
 }
 

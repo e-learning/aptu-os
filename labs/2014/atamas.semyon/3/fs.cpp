@@ -51,8 +51,7 @@ void FS::format(){
     FileDescriptor root;
     root.set_filename("/");
     root.first_block = meta.root_block;
-    Block * root_block = 0;
-    write_data(&root, sizeof(FileDescriptor), root_block);
+    write_data(&root, sizeof(FileDescriptor), 0);
 
     write_meta();
 }
@@ -375,7 +374,7 @@ void FS::write_meta(){
         	++ind;
         	curr_block->_descriptor.next = ind;
     		curr_block->save_block(_root);
-        	curr_block = new Block(ind, config.block_size, _root);
+        	curr_block = new Block(ind, config.block_size);
         } else{
     		curr_block->save_block(_root);
         }
