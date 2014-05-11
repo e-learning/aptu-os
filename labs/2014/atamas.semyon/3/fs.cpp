@@ -59,20 +59,26 @@ void FS::format(){
 
 void FS::import(std::string host_file, std::string fs_file){
 	read_meta();
+
+	std::clog << "Reciving descriptor of fs_file" << std::endl;
 	FileDescriptor file_d = get_file(fs_file, true, true);
 	file_d.directory = false;
+	std::clog << "Reciving block of fs_file";
 	Block * fblock = new Block(file_d.first_block, config.block_size, _root);
 
+	std::clog << "Reading host_file";
 	std::ifstream file (host_file, std::ios::in | std::ios::binary);
+	if( file.fail() ) throw std::runtime_error("Can't open " + host_file);
 	file.seekg( 0, std::ios::end );
 	int fileLen = file.tellg();
 	file_d.size = fileLen;
 	file.seekg( 0, std::ios::beg);
 	char * buffer = new char[fileLen];
 	file.read(buffer, fileLen);
-	if(file.fail()) throw std::runtime_error("Can't read file");
+	if(file.fail()) throw std::runtime_error("Can't read file " + host_file);
 	file.close();
 
+	std::clog << "Writing file to fs";
 	fblock->move_to_begin();
 	write_data(&file_d, sizeof(FileDescriptor), fblock);
 	write_data(buffer, fileLen, fblock);
@@ -375,10 +381,15 @@ void FS::write_meta(){
 
 
 void FS::read_meta(){
+
+	std::clog << "Opening block with meta data" << std::endl;
 	Block * curr_block = new Block(0, config.block_size, "fs");
-	int meta_size = sizeof(meta);
-	curr_block->read(&meta, meta_size);
+
+	std::clog << "Reading meta from block" << std::endl;
+	curr_block->read(&meta, sizeof(meta));
+
 	meta.block_map = new char[meta.block_map_size];
+	std::clog << "Reading block map" << std::endl;
 	read_data(meta.block_map, meta.block_map_size, curr_block);
 }
 
