@@ -58,6 +58,7 @@ void FS::format(){
 }
 
 void FS::import(std::string host_file, std::string fs_file){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 
 	std::clog << "Reciving descriptor of fs_file" << std::endl;
@@ -86,6 +87,7 @@ void FS::import(std::string host_file, std::string fs_file){
 }
 
 void FS::fexport(std::string fs_file, std::string host_file){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 
 	FileDescriptor file = get_file(fs_file, false, true);
@@ -101,6 +103,7 @@ void FS::fexport(std::string fs_file, std::string host_file){
 
 
 void FS::copy(std::string src, std::string dest){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 	FileDescriptor src_file = get_file(src, false, true);
 	FileDescriptor dst_fold = get_file(dest, false, false);
@@ -148,6 +151,7 @@ void FS::copy(FileDescriptor src_file, FileDescriptor dst_fold){
 }
 
 void FS::ls(std::string filename){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 	FileDescriptor file = get_file(filename, false, true);
 
@@ -163,6 +167,7 @@ void FS::ls(std::string filename){
 }
 
 void FS::rm(std::string path){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 	rm(get_file(path, false, true));
 	write_meta();
@@ -215,11 +220,13 @@ void FS::rm(FileDescriptor file){
 
 
 void FS::mkdir(std::string path){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 	get_file(path, true, false);
 }
 
 void FS::move(std::string src, std::string dst){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 	FileDescriptor f_src = get_file(src, false, true);
 	Block * src_block = new Block(f_src.first_block, config.block_size, _root);
