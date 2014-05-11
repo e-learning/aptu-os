@@ -390,7 +390,7 @@ void FS::write_meta(){
 void FS::read_meta(){
 
 	std::clog << "Opening block with meta data" << std::endl;
-	Block * curr_block = new Block(0, config.block_size, "fs");
+	Block * curr_block = new Block(0, config.block_size, _root);
 
 	std::clog << "Reading meta from block" << std::endl;
 	curr_block->read(&meta, sizeof(meta));
