@@ -1,6 +1,7 @@
 #include "structs.h"
 #include <algorithm>
 #include <fstream>
+#include <iostream>
 
 Block::Block(int index, int size):
 _index(index){
@@ -17,7 +18,8 @@ _root(root){
 }
 
 void Block::load_block(){
-    const char * path = (_root +  "/" + std::to_string(_index)).c_str();
+    std::string path = _root +  "/" + std::to_string(_index);
+    std::cout << path << std::endl;
     std::ifstream block_file ( path, std::ios::in | std::ios::binary);
     block_file.read((char *)&_descriptor, sizeof(BlockDescriptor));
     block_file.read(_data, _size);
@@ -44,7 +46,7 @@ bool Block::full(){
 }
 
 void Block::save_block(std::string root){
-    const char * path = (root + "/" + std::to_string(_index)).c_str();
+    std::string path = root + "/" + std::to_string(_index);
     std::ofstream block_file (path, std::ios::out|std::ios::binary);
     block_file.write((char*)&_descriptor, sizeof(_descriptor));
     block_file.write(_data,_size);

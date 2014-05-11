@@ -63,14 +63,15 @@ void FS::import(std::string host_file, std::string fs_file){
 	file_d.directory = false;
 	Block * fblock = new Block(file_d.first_block, config.block_size, _root);
 
-	FILE * file = fopen(host_file.c_str(), "rb");
-	fseek(file, 0, SEEK_END);
-	int fileLen=ftell(file);
+	std::ifstream file (host_file, std::ios::in | std::ios::binary);
+	file.seekg( 0, std::ios::end );
+	int fileLen = file.tellg();
 	file_d.size = fileLen;
-	fseek(file, 0, SEEK_SET);
+	file.seekg( 0, std::ios::beg);
 	char * buffer = new char[fileLen];
-	if(!fread(buffer, fileLen, 1, file)) throw std::runtime_error("Can't read file");
-	fclose(file);
+	file.read(buffer, fileLen);
+	if(file.fail()) throw std::runtime_error("Can't read file");
+	file.close();
 
 	fblock->move_to_begin();
 	write_data(&file_d, sizeof(FileDescriptor), fblock);
@@ -88,8 +89,8 @@ void FS::fexport(std::string fs_file, std::string host_file){
 	char * buffer = new char[file.size];
 	read_data(buffer, file.size, blocks[file.first_block]);
 
-	FILE * File = fopen(host_file.c_str(), "wb");
-	fwrite(buffer, sizeof(char), file.size, File );
+	std::ofstream File (host_file, std::ios::out | std::ios::binary);
+	File.write(buffer, file.size);
 }
 
 
