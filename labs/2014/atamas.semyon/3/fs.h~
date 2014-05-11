@@ -13,7 +13,7 @@ class DirIterator;
 class FS {
 
 public:
-    FS(std::string root);
+    FS(const char *root);
     ~FS();
 
     void init();

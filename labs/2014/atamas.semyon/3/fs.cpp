@@ -8,7 +8,7 @@
 
 using std::string;
 
-FS::FS(const char *root)
+FS::FS(std::string root)
     : _root(root),
       config(read_config()),
       blocks(config.block_size){
@@ -58,15 +58,16 @@ void FS::format(){
 }
 
 void FS::import(std::string host_file, std::string fs_file){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 
 	std::clog << "Reciving descriptor of fs_file" << std::endl;
 	FileDescriptor file_d = get_file(fs_file, true, true);
 	file_d.directory = false;
-	std::clog << "Reciving block of fs_file";
+	std::clog << "Reciving block of fs_file" << std::endl;
 	Block * fblock = new Block(file_d.first_block, config.block_size, _root);
 
-	std::clog << "Reading host_file";
+	std::clog << "Reading host_file" << std::endl;
 	std::ifstream file (host_file, std::ios::in | std::ios::binary);
 	if( file.fail() ) throw std::runtime_error("Can't open " + host_file);
 	file.seekg( 0, std::ios::end );
@@ -78,7 +79,7 @@ void FS::import(std::string host_file, std::string fs_file){
 	if(file.fail()) throw std::runtime_error("Can't read file " + host_file);
 	file.close();
 
-	std::clog << "Writing file to fs";
+	std::clog << "Writing file to fs" << std::endl;
 	fblock->move_to_begin();
 	write_data(&file_d, sizeof(FileDescriptor), fblock);
 	write_data(buffer, fileLen, fblock);
@@ -86,6 +87,7 @@ void FS::import(std::string host_file, std::string fs_file){
 }
 
 void FS::fexport(std::string fs_file, std::string host_file){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 
 	FileDescriptor file = get_file(fs_file, false, true);
@@ -101,6 +103,7 @@ void FS::fexport(std::string fs_file, std::string host_file){
 
 
 void FS::copy(std::string src, std::string dest){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 	FileDescriptor src_file = get_file(src, false, true);
 	FileDescriptor dst_fold = get_file(dest, false, false);
@@ -148,6 +151,7 @@ void FS::copy(FileDescriptor src_file, FileDescriptor dst_fold){
 }
 
 void FS::ls(std::string filename){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 	FileDescriptor file = get_file(filename, false, true);
 
@@ -163,6 +167,7 @@ void FS::ls(std::string filename){
 }
 
 void FS::rm(std::string path){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 	rm(get_file(path, false, true));
 	write_meta();
@@ -215,11 +220,13 @@ void FS::rm(FileDescriptor file){
 
 
 void FS::mkdir(std::string path){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 	get_file(path, true, false);
 }
 
 void FS::move(std::string src, std::string dst){
+    if (!initialized) {throw "Not initialized";}
 	read_meta();
 	FileDescriptor f_src = get_file(src, false, true);
 	Block * src_block = new Block(f_src.first_block, config.block_size, _root);
@@ -280,7 +287,7 @@ FileDescriptor FS::get_file(std::string path, bool create, bool file_available){
 			if(std::string(file.filename) == dir_name){
 				found = true;
 				if(!file.directory){
-					if(file_available && pos == path.size() - 1){
+					if(file_available && pos == (int)path.size() - 1){
 						return file;
 					}else{
 						throw std::runtime_error("File in path");
@@ -354,7 +361,7 @@ void FS::free_block(int n){
 }
 
 std::string FS::get_block_name(int block_id){
-    return string(_root) +"/"+ std::to_string(block_id);
+    return _root +"/"+ std::to_string(block_id);
 }
 
 void FS::write_meta(){
