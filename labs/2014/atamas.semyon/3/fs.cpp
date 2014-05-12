@@ -94,6 +94,7 @@ void FS::fexport(std::string fs_file, std::string host_file){
 
 	std::ofstream File (host_file, std::ios::out | std::ios::binary);
 	File.write(buffer, file.size);
+    write_meta();
 }
 
 
@@ -107,6 +108,7 @@ void FS::copy(std::string src, std::string dest){
 }
 
 void FS::copy(FileDescriptor src_file, FileDescriptor dst_fold){
+    read_meta();
 	Block * src_block = new Block(src_file.first_block, config.block_size, _root);
 	read_data(&src_file, sizeof(FileDescriptor), src_block);
 	char * data = new char[src_file.size];
@@ -143,6 +145,7 @@ void FS::copy(FileDescriptor src_file, FileDescriptor dst_fold){
 			copy(f, file);
 		}
 	}
+    write_meta();
 }
 
 void FS::ls(std::string filename){
@@ -218,6 +221,7 @@ void FS::mkdir(std::string path){
     if (!initialized) {throw "Not initialized";}
 	read_meta();
 	get_file(path, true, false);
+    write_meta();
 }
 
 void FS::move(std::string src, std::string dst){
@@ -254,7 +258,8 @@ void FS::move(std::string src, std::string dst){
 	}
 	update_descriptor(f_src, src_block);
 	update_descriptor(f_dst, dst_block);
-
+    
+    write_meta();
 }
 
 FileDescriptor FS::get_file(std::string path, bool create, bool file_available){
@@ -307,7 +312,6 @@ FileDescriptor FS::get_file(std::string path, bool create, bool file_available){
 					read_data(&neighbour_file_descriptor, sizeof(FileDescriptor), neighbour_file_block);
 					dir.next_file = neighbour_file_descriptor.first_block;
 					neighbour_file_descriptor.prev_file = dir.first_block;
-					root_descriptor.first_child = dir.first_block;
 					update_descriptor(neighbour_file_descriptor, neighbour_file_block);
 				}
 				update_descriptor(curr_dir, curr_dir_block);
@@ -369,6 +373,7 @@ void FS::write_meta(){
     curr_block->write(&meta, meta_size );
     while(size != 0){
         int written = curr_block->write(meta.block_map, size);
+        if( written == 0 ) throw std::runtime_error("Some error during writing data occured");
         size -= written;
         if(size != 0){
         	++ind;
@@ -394,6 +399,7 @@ void FS::read_data(void * data, int size, Block * curr_block){
 	char * dt = (char *)data;
 	while(size != 0){
 		int readen = curr_block->read(dt, size);
+        if( readen == 0) throw std::runtime_error("Unexpected end of block №" + std::to_string(curr_block->get_index()));
 		size -= readen;
 		dt += readen;
 	    if(size != 0){
@@ -437,26 +443,31 @@ Block * FS::get_free_block(){
 
 DirIterator::DirIterator(FS & fs, FileDescriptor dir):
 _fs(fs){
-	if(dir.first_child != -1){
+    if( !dir.directory) throw std::runtime_error( "Can't iterate by file " + std::string(dir.filename));
+	if(dir.first_child > 0){
 		p = new FileDescriptor;
 		Block * block = _fs.get_block(dir.first_child, _fs._root);
 		block->reopen();
 		_fs.read_data(p, sizeof(FileDescriptor), block);
-	} else{
-		p = 0;
+	} else if( dir.first_child == -1){
+        p = 0;
+    } else{
+		throw std::runtime_error( "Bad descriptor in block №" + std::to_string(dir.first_block) );
 	}
 }
 
 DirIterator& DirIterator::operator++(){
-	if(p->next_file != -1){
+	if( p->next_file > 0 ){
 		Block * block = _fs.get_block(p->next_file, _fs._root);
 		block->reopen();
 		_fs.read_data(p, sizeof(FileDescriptor), block );
 		return *this;
-	} else{
+	} else if(p->next_file == -1){
 		p = 0;
 		return *this;
-	}
+	} else{
+        throw std::runtime_error( "Bad descriptor in block №" + std::to_string(p->first_block) );
+    }
 }
 
 void FS::update_descriptor(FileDescriptor & fd, Block * block){

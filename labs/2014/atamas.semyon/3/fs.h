@@ -32,7 +32,6 @@ private:
     void rm(FileDescriptor file);
     Config read_config();
     Meta meta;
-    FileDescriptor root_descriptor;
     bool initialized;
     std::string _root;
     const Config config;
