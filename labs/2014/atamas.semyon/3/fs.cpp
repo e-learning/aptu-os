@@ -151,18 +151,33 @@ void FS::copy(FileDescriptor src_file, FileDescriptor dst_fold, std::string dst_
 	read_data(data, src_file.size, src_block);
 
 	Block * dst_block = new Block(dst_fold.first_block, config.block_size, _root);
-	for(auto it = DirIterator(*this, dst_fold); it != DirIterator(*this); ++it){
-		FileDescriptor file = *it;
-		if (std::string(file.filename) == dst_filename ) throw std::runtime_error("File already exist");
-	}
 
 	FileDescriptor file;
-	Block * file_block = get_free_block();
+    bool found = false;
+	for(auto it = DirIterator(*this, dst_fold); it != DirIterator(*this); ++it){
+		FileDescriptor f = *it;
+		if (std::string(f.filename) == dst_filename ){
+            if( f.directory){
+                found = true;
+                dst_fold = f;
+                dst_block = new Block(dst_fold.first_block, config.block_size, _root);
+            } else{
+                throw std::runtime_error("File already exist");
+            } 
+        } 
+	}
+
+    Block * file_block = get_free_block();
 	file.first_block = file_block->get_index();
-    file.set_filename(dst_filename);
+    if(!found){
+        file.set_filename(dst_filename);
+    } else{
+        file.set_filename(src_file.filename);
+    }
 	file.parent_file = dst_fold.first_block;
 	file.prev_file = -1;
 	file.next_file = -1;
+
 	if(dst_fold.first_child != -1){
 		Block * nb = new Block(dst_fold.first_child, config.block_size, _root);
 		FileDescriptor nd;
