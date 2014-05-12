@@ -144,7 +144,7 @@ void FS::copy(std::string src, std::string dest){
 	write_meta();
 }
 
-void FS::copy(FileDescriptor src_file, FileDescriptor dst_fold, std::string dst_filename){
+void FS::copy(FileDescriptor src_file, FileDescriptor & dst_fold, std::string dst_filename){
 	Block * src_block = new Block(src_file.first_block, config.block_size, _root);
 	read_data(&src_file, sizeof(FileDescriptor), src_block);
 	char * data = new char[src_file.size];
