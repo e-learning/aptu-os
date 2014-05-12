@@ -59,25 +59,54 @@ void FS::format(){
 void FS::import(std::string host_file, std::string fs_file){
     if (!initialized) {throw "Not initialized";}
 	read_meta();
+    
+	if(fs_file[fs_file.size() - 1] == '/'){
+		fs_file = fs_file.substr(0, fs_file.size() - 1);
+	}
+    int last_match = fs_file.find_last_of("/");
+    std::string fs_file_path = fs_file.substr(0, last_match + 1);
+    std::string fs_file_name = fs_file.substr(last_match + 1);
+    
+    FileDescriptor dst_fold = get_file(fs_file_path, false, false);
+    Block * dst_block = new Block(dst_fold.first_block, config.block_size, _root);
+    for(auto it = DirIterator(*this, dst_fold); it != DirIterator(*this); ++it){
+		FileDescriptor file = *it;
+		if (std::string(file.filename) == fs_file_name ) throw std::runtime_error("File already exist");
+	}
+	FileDescriptor file;
+	file.directory = false;
+    file.set_filename(fs_file_name);
 
-	FileDescriptor file_d = get_file(fs_file, true, true);
-	file_d.directory = false;
-	Block * fblock = new Block(file_d.first_block, config.block_size, _root);
+    Block * file_block = get_free_block();
+	file.first_block = file_block->get_index();
+	file.parent_file = dst_fold.first_block;
+	file.prev_file = -1;
+	file.next_file = -1;
+	if(dst_fold.first_child != -1){
+		Block * nb = new Block(dst_fold.first_child, config.block_size, _root);
+		FileDescriptor nd;
+		read_data(&nd, sizeof(FileDescriptor), nb);
+		nd.prev_file = file.first_block;
+		update_descriptor(nd,nb);
+		file.next_file = nd.first_block;
+	}
+	dst_fold.first_child = file.first_block;
+	update_descriptor(dst_fold, dst_block);
 
-	std::ifstream file (host_file, std::ios::in | std::ios::binary);
-	if( file.fail() ) throw std::runtime_error("Can't open " + host_file);
-	file.seekg( 0, std::ios::end );
-	int fileLen = file.tellg();
-	file_d.size = fileLen;
-	file.seekg( 0, std::ios::beg);
-	char * buffer = new char[fileLen];
-	file.read(buffer, fileLen);
-	if(file.fail()) throw std::runtime_error("Can't read file " + host_file);
-	file.close();
 
-	fblock->move_to_begin();
-	write_data(&file_d, sizeof(FileDescriptor), fblock);
-	write_data(buffer, fileLen, fblock);
+	std::ifstream File (host_file, std::ios::in | std::ios::binary);
+	if( File.fail() ) throw std::runtime_error("Can't open " + host_file);
+	File.seekg( 0, std::ios::end );
+	int fileLen = File.tellg();
+	file.size = fileLen;
+	File.seekg( 0, std::ios::beg);
+	char * data = new char[fileLen];
+	File.read(data, fileLen);
+	if(File.fail()) throw std::runtime_error("Can't read file " + host_file);
+	File.close();
+
+	write_data(&file, sizeof(FileDescriptor), file_block);
+	write_data(data, fileLen, file_block);
 	write_meta();
 }
 
