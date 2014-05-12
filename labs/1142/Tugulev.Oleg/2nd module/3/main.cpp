@@ -12,7 +12,7 @@ int FreeSpace(char* mem,int size,int *amount)
     {
       if (mem[i]=='0')
 	length++;
-       	  if (flag)
+       	  if (flag==true)
 	    {
 	      tmp_ptr=i;
 	      flag=false;
@@ -25,17 +25,21 @@ int FreeSpace(char* mem,int size,int *amount)
 	      tmp_ptr=0;
 	      flag=true;
 	    }
-	  if((length<=max_length)&&(mem[i]!='0'))
+      	  if((length<=max_length)&&(mem[i]!='0'))
 	    {
 	      flag=true;
 	      length=0;
-	    tmp_ptr=0;
+	      tmp_ptr=0;
 	    }
     } 
   if ((max_length==0)&&(length!=0))
+    
     *amount=length;
+    
   else
     *amount=max_length;
+  if (flag==false)
+    ptr=tmp_ptr;
   return ptr;
 }
 
@@ -129,7 +133,8 @@ switch(inp[0])
 				 cout <<"user blocks "<<endl<<block<<endl;
 				 cout <<" user memory "<<endl<<user_mem<<endl;
 				 curr_pos=FreeSpace(mem,size_mem,&free_mem);
-				 cout <<" avaliable memory "<<endl<<free_mem<<endl;
+				 cout <<" avaliable memory "<<endl<<free_mem-1<<endl;
+				 
 				 break;
 			       }
 			   }
