@@ -131,12 +131,20 @@ void FS::copy(std::string src, std::string dest){
     if (!initialized) {throw "Not initialized";}
 	read_meta();
 	FileDescriptor src_file = get_file(src, false, true);
-	FileDescriptor dst_fold = get_file(dest, false, false);
-	copy(src_file, dst_fold);
+
+	if(dest[dest.size() - 1] == '/'){
+		dest = dest.substr(0, dest.size() - 1);
+	}
+    int last_match = dest.find_last_of("/");
+    std::string dest_path = dest.substr(0, last_match + 1);
+    std::string dest_filename = dest.substr(last_match + 1);
+
+	FileDescriptor dst_fold = get_file(dest_path, false, false);
+	copy(src_file, dst_fold, dest_filename);
 	write_meta();
 }
 
-void FS::copy(FileDescriptor src_file, FileDescriptor dst_fold){
+void FS::copy(FileDescriptor src_file, FileDescriptor dst_fold, std::string dst_filename){
 	Block * src_block = new Block(src_file.first_block, config.block_size, _root);
 	read_data(&src_file, sizeof(FileDescriptor), src_block);
 	char * data = new char[src_file.size];
@@ -145,12 +153,13 @@ void FS::copy(FileDescriptor src_file, FileDescriptor dst_fold){
 	Block * dst_block = new Block(dst_fold.first_block, config.block_size, _root);
 	for(auto it = DirIterator(*this, dst_fold); it != DirIterator(*this); ++it){
 		FileDescriptor file = *it;
-		if (std::string(file.filename) == std::string(src_file.filename) ) throw std::runtime_error("File already exist");
+		if (std::string(file.filename) == dst_filename ) throw std::runtime_error("File already exist");
 	}
 
-	FileDescriptor file(src_file);
+	FileDescriptor file;
 	Block * file_block = get_free_block();
 	file.first_block = file_block->get_index();
+    file.set_filename(dst_filename);
 	file.parent_file = dst_fold.first_block;
 	file.prev_file = -1;
 	file.next_file = -1;
@@ -170,7 +179,7 @@ void FS::copy(FileDescriptor src_file, FileDescriptor dst_fold){
 	if(src_file.directory){
 		for(auto it = DirIterator(*this, src_file); it != DirIterator(*this); ++it){
 			FileDescriptor f = *it;
-			copy(f, file);
+			copy(f, file, f.filename);
 		}
 	}
 }
