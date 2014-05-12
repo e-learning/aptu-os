@@ -10,8 +10,7 @@ using std::string;
 
 FS::FS(std::string root)
     : _root(root),
-      config(read_config()),
-      blocks(config.block_size){
+      config(read_config()){
 	if(_root[_root.size() - 1] == '/'){
 		_root = _root.substr(0, _root.size() - 1);
 	}
@@ -58,7 +57,7 @@ void FS::format(){
 
 void FS::import(std::string host_file, std::string fs_file){
     if (!initialized) {throw "Not initialized";}
-	read_meta();
+    read_meta();
     
 	if(fs_file[fs_file.size() - 1] == '/'){
 		fs_file = fs_file.substr(0, fs_file.size() - 1);
@@ -115,11 +114,11 @@ void FS::fexport(std::string fs_file, std::string host_file){
 	read_meta();
 
 	FileDescriptor file = get_file(fs_file, false, true);
-	if( blocks[file.first_block] == 0 ){
-		blocks[file.first_block] = new Block(file.first_block, config.block_size, _root);
-	}
+	Block * file_block = new Block(file.first_block, config.block_size, _root);
+    read_data(&file, sizeof(FileDescriptor), file_block);
+
 	char * buffer = new char[file.size];
-	read_data(buffer, file.size, blocks[file.first_block]);
+	read_data(buffer, file.size, file_block);
 
 	std::ofstream File (host_file, std::ios::out | std::ios::binary);
 	File.write(buffer, file.size);
@@ -186,8 +185,8 @@ void FS::ls(std::string filename){
 	std::cout << ctime(&(file.last_update));
 	if( file.directory ){
 		for(auto it = DirIterator(*this, file); it != DirIterator(*this); ++it){
-			FileDescriptor file = *it;
-			std::cout << std::string(file.filename) << std::endl;
+			FileDescriptor f = *it;
+			std::cout << std::string(f.filename) << std::endl;
 		}
 	}
 }
@@ -354,7 +353,6 @@ FileDescriptor FS::get_file(std::string path, bool create, bool file_available){
 		curr_dir_block = new Block(curr_dir.first_block, config.block_size, _root);
 		path.erase(0, pos + 1);
 	}
-	write_meta();
 	return curr_dir;
 }
 
@@ -474,8 +472,7 @@ _fs(fs){
     if( !dir.directory) throw std::runtime_error( "Can't iterate by file " + std::string(dir.filename));
 	if(dir.first_child > 0 && dir.first_child < _fs.config.block_no){
 		p = new FileDescriptor;
-		Block * block = _fs.get_block(dir.first_child, _fs._root);
-		block->reopen();
+		Block * block = new Block (dir.first_child, _fs.config.block_size, _fs._root);
 		_fs.read_data(p, sizeof(FileDescriptor), block);
 	} else if( dir.first_child == -1){
         p = 0;
@@ -486,7 +483,7 @@ _fs(fs){
 
 DirIterator& DirIterator::operator++(){
 	if( p->next_file > 0 && p->next_file < _fs.config.block_no){
-		Block * block = _fs.get_block(p->next_file, _fs._root);
+		Block * block = new Block(p->next_file, _fs.config.block_size, _fs._root);
 		block->reopen();
 		_fs.read_data(p, sizeof(FileDescriptor), block );
 		return *this;
