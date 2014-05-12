@@ -12,8 +12,8 @@ _start:
 	sti
 
 	leaw  message, %si
-	jmp .print
-
+	call .print
+        
 	.print:
 		lodsb
 		orb  %al, %al
@@ -23,8 +23,9 @@ _start:
 		jmp  .print
 
 	.printdone:
-		ret
-
+		jmp .printdone
+	
+  
 
 message:
 	.ascii "Hello, World!\n\r"  
