@@ -114,7 +114,7 @@ void FS::fexport(std::string fs_file, std::string host_file){
 	read_meta();
 
 	FileDescriptor file = get_file(fs_file, false, true);
-	Block file_block = new Block(file.first_block, config.block_size, _root);
+	Block * file_block = new Block(file.first_block, config.block_size, _root);
     read_data(&file, sizeof(FileDescriptor), file_block);
 
 	char * buffer = new char[file.size];

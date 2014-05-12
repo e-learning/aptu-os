@@ -484,7 +484,6 @@ _fs(fs){
 DirIterator& DirIterator::operator++(){
 	if( p->next_file > 0 && p->next_file < _fs.config.block_no){
 		Block * block = new Block(p->next_file, _fs.config.block_size, _fs._root);
-		block->reopen();
 		_fs.read_data(p, sizeof(FileDescriptor), block );
 		return *this;
 	} else if(p->next_file == -1){
