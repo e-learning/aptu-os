@@ -34,7 +34,6 @@ public:
     int write(void * data, int size);
     int read(void * data, int size);
     void move_to_begin(){	_descriptor.data_written = 0; }
-    void reopen(){ _pos = 0; }
     char * get_data() {return _data;}
     const int get_size() const {return _size;}
     const int get_index() const {return _index;}
@@ -44,11 +43,10 @@ public:
     ~Block();
 
 private:
-    void load_block();
+    void load_block(std::string root);
     int _size;
     int _pos = 0;
     int _index;
-    std::string _root;
     char * _data;
 };
 

@@ -35,24 +35,7 @@ private:
     bool initialized;
     std::string _root;
     const Config config;
-    std::vector<Block *> blocks;
     std::string get_block_name(int block_id);
-    Block  * get_block(int i){
-    	if( blocks[i] == 0){
-    		blocks[i] = new Block(i, config.block_size);
-    		return blocks[i];
-    	}else{
-    		return blocks[i];
-    	}
-    }
-    Block  * get_block(int i, std::string root){
-    	if( blocks[i] == 0){
-    		blocks[i] = new Block(i, config.block_size, root);
-    		return blocks[i];
-    	}else{
-    		return blocks[i];
-    	}
-    }
 
     FileDescriptor get_file(std::string path, bool create, bool file_available);
     void free_block(int n);
@@ -77,7 +60,10 @@ public:
 	DirIterator operator++(int) {DirIterator tmp(*this); operator++(); return tmp;}
 	bool operator==(const DirIterator& rhs) {return p->filename==rhs.p->filename;}
 	bool operator!=(const DirIterator& rhs) {return p->filename!=rhs.p->filename;}
-	FileDescriptor& operator*() {return *p;}
+	FileDescriptor& operator*() {
+        if( p == 0 ) throw ("Call * of zero iterator");
+		return *p;
+    }
 private:
 	FileDescriptor * p;
 	FS & _fs;
