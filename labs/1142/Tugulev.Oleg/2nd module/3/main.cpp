@@ -25,6 +25,7 @@ int FreeSpace(char* mem,int size,int *ptr_inp,int how_much)
       	  if((mem[i]!='0'))
 	    {
 	      length=0;
+	      flag=true;
 	      tmp_ptr=0;
 	    }
     } 
@@ -49,21 +50,13 @@ int FreeMem(int adr,char* mem)
     mem[i]='0';
   return size;
 }
-void Info()
-{
-	
-	
-}
 
 int main ()
 {
 string inp;
 int size_mem=0;
-int free_mem=0;
-int user_mem=0;
 bool run=true;
 int curr_pos=0;
-int block=0;
 
 while (run)
    {
@@ -97,23 +90,20 @@ switch(inp[0])
 					   size_t pos=inp.find(" ");
 					   string mem_len=inp.substr(pos+1,inp.length()-pos);
 					   
-					   if ((atoi(mem_len.c_str()))>=free_mem)
+					   if (FreeSpace(mem,size_mem,&curr_pos,atoi(mem_len.c_str()))==-1)
 					   {
 						   cout<<"-"<<endl;
 						   break;
 					   }
+						
 					   mem[curr_pos]=atoi(mem_len.c_str());
 					   cout <<"+ "<<curr_pos<<endl;
 					   curr_pos++;
-				  	   block++;
+				  	
 					   for (int i=curr_pos;i<curr_pos+atoi(mem_len.c_str());i++)
 					   {
 						   mem[i]='*';
 					   }
-					   curr_pos=FreeSpace(mem,size_mem,&free_mem);
-					   //curr_pos+=atoi(mem_len.c_str());
-					   //free_mem=size_mem-curr_pos;
-					   user_mem+=atoi(mem_len.c_str());
 					   break;
                      }
            }
@@ -130,11 +120,37 @@ switch(inp[0])
 		   case 'i':
 			   {
 			     if(inp.compare(0,4,"info")==0)
-			       {
-				 cout <<"user blocks "<<endl<<block<<endl;
-				 cout <<" user memory "<<endl<<user_mem<<endl;
-				 curr_pos=FreeSpace(mem,size_mem,&free_mem);
-				 cout <<" avaliable memory "<<endl<<free_mem-1<<endl;
+			       {int length=0,max_length=0,user_mem=0,user_block=0;
+				
+				 for (int i=0;i<size_mem;i++)
+				{
+				if (mem[i]=='0')
+					{
+					     length++;
+						
+						if (length>=max_length)
+						    {
+							max_length=length;
+							
+						    }
+					}
+				
+				else
+					{
+					    length=0;
+					    if(mem[i]=='*')
+						user_mem++;
+					    else
+						user_block++;
+					}
+				}
+				cout<<"avalible memory "<<max_length-1<<endl;
+				cout<<"user memory  "<<user_mem<<endl;
+				cout<<"user blocks " <<user_block<<endl;
+				
+				
+				
+				 
 				 
 				 break;
 			       }
@@ -151,9 +167,8 @@ switch(inp[0])
 			 else
 			   {
 			   cout<<"+"<<endl;
-			   block--;
-			   user_mem-=res;
-			   curr_pos=FreeSpace(mem,size_mem,&free_mem);
+			   
+			   
 			   }
 			 break;
 		         }
