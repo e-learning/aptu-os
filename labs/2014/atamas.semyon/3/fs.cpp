@@ -72,11 +72,26 @@ void FS::import(std::string host_file, std::string fs_file){
 		FileDescriptor file = *it;
 		if (std::string(file.filename) == fs_file_name ) throw std::runtime_error("File already exist");
 	}
+
 	FileDescriptor file;
+    Block * file_block = get_free_block();
+	std::ifstream File (host_file, std::ios::in | std::ios::binary);
+	if( File.fail() ) throw std::runtime_error("Can't open " + host_file);
+	File.seekg( 0, std::ios::end );
+	int fileLen = File.tellg();
+	file.size = fileLen;
+	File.seekg( 0, std::ios::beg);
+	char * data = new char[fileLen];
+	File.read(data, fileLen);
+	if(File.fail()) throw std::runtime_error("Can't read file " + host_file);
+	File.close();
+
+	write_data(&file, sizeof(FileDescriptor), file_block);
+	write_data(data, fileLen, file_block);
+
 	file.directory = false;
     file.set_filename(fs_file_name);
 
-    Block * file_block = get_free_block();
 	file.first_block = file_block->get_index();
 	file.parent_file = dst_fold.first_block;
 	file.prev_file = -1;
@@ -91,21 +106,7 @@ void FS::import(std::string host_file, std::string fs_file){
 	}
 	dst_fold.first_child = file.first_block;
 	update_descriptor(dst_fold, dst_block);
-
-
-	std::ifstream File (host_file, std::ios::in | std::ios::binary);
-	if( File.fail() ) throw std::runtime_error("Can't open " + host_file);
-	File.seekg( 0, std::ios::end );
-	int fileLen = File.tellg();
-	file.size = fileLen;
-	File.seekg( 0, std::ios::beg);
-	char * data = new char[fileLen];
-	File.read(data, fileLen);
-	if(File.fail()) throw std::runtime_error("Can't read file " + host_file);
-	File.close();
-
-	write_data(&file, sizeof(FileDescriptor), file_block);
-	write_data(data, fileLen, file_block);
+    update_descriptor(file, file_block);
 	write_meta();
 }
 
@@ -150,9 +151,14 @@ void FS::copy(FileDescriptor src_file, FileDescriptor & dst_fold, std::string ds
 	char * data = new char[src_file.size];
 	read_data(data, src_file.size, src_block);
 
+    FileDescriptor file;
+    Block * file_block = get_free_block();
+	write_data(&file, sizeof(FileDescriptor), file_block);
+	write_data(data, src_file.size, file_block);
+
 	Block * dst_block = new Block(dst_fold.first_block, config.block_size, _root);
 
-	FileDescriptor file;
+
     bool found = false;
 	for(auto it = DirIterator(*this, dst_fold); it != DirIterator(*this); ++it){
 		FileDescriptor f = *it;
@@ -167,7 +173,6 @@ void FS::copy(FileDescriptor src_file, FileDescriptor & dst_fold, std::string ds
         } 
 	}
 
-    Block * file_block = get_free_block();
 	file.first_block = file_block->get_index();
     if(!found){
         file.set_filename(dst_filename);
@@ -187,9 +192,8 @@ void FS::copy(FileDescriptor src_file, FileDescriptor & dst_fold, std::string ds
 	}
 	dst_fold.first_child = file.first_block;
 	update_descriptor(dst_fold, dst_block);
+    update_descriptor(file, file_block);
 
-	write_data(&file, sizeof(FileDescriptor), file_block);
-	write_data(data, src_file.size, file_block);
 	if(src_file.directory){
 		for(auto it = DirIterator(*this, src_file); it != DirIterator(*this); ++it){
 			FileDescriptor f = *it;
@@ -405,7 +409,7 @@ void FS::reserve_block(int n){
 void FS::free_block(int n){
     int pos = n/8;
     int off = n%8;
-    meta.block_map[pos] |= 0 << off;
+    meta.block_map[pos] ^= 1 << off;
 }
 
 std::string FS::get_block_name(int block_id){
