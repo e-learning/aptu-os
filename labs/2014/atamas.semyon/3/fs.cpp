@@ -226,6 +226,24 @@ void FS::rm(std::string path){
 }
 
 void FS::rm(FileDescriptor file){
+	
+	if(file.directory){
+		for(auto it = DirIterator(*this, file); it != DirIterator(*this); ++it){
+			rm(*it);
+		}
+		free_block(file.first_block);
+	} else{
+		int size = file.size + sizeof(file);
+        Block * curr_block = new Block(file.first_block, config.block_size, _root);
+		while( size > 0 ){
+			size -= curr_block->_descriptor.data_written;
+			free_block(curr_block->get_index());
+            if( size > 0){
+                curr_block = new Block(curr_block->_descriptor.next, config.block_size, _root);
+            }
+		}
+	}
+
 	Block * parent_block = new Block(file.parent_file, config.block_size, _root);
 	FileDescriptor parent_descriptor;
 	read_data(&parent_descriptor, sizeof(FileDescriptor), parent_block);
@@ -248,25 +266,6 @@ void FS::rm(FileDescriptor file){
 		read_data(&right_file_descriptor, sizeof(FileDescriptor), right_file_block);
 		right_file_descriptor.prev_file = file.prev_file;
 		update_descriptor(right_file_descriptor, right_file_block);
-	}
-
-
-	Block * curr_block = new Block(file.first_block, config.block_size, _root);
-	if(file.directory){
-		for(auto it = DirIterator(*this, file); it != DirIterator(*this); ++it){
-			FileDescriptor file = *it;
-			rm(file);
-		}
-		free_block(curr_block->get_index());
-	} else{
-		int size = file.size + sizeof(file);
-		while( size > 0 ){
-			size -= curr_block->_descriptor.data_written;
-			free_block(curr_block->get_index());
-			if(size > 0){
-				curr_block = new Block(curr_block->_descriptor.next, config.block_size, _root);
-			}
-		}
 	}
 }
 
@@ -401,12 +400,14 @@ Config FS::read_config() {
 }
 
 void FS::reserve_block(int n){
+    std::cout << "R " << n << std::endl;
     int pos = n/8;
     int off = n%8;
     meta.block_map[pos] |= 1 << off;
 }
 
 void FS::free_block(int n){
+    std::cout << "F " << n << std::endl;
     int pos = n/8;
     int off = n%8;
     meta.block_map[pos] ^= 1 << off;
@@ -487,6 +488,7 @@ Block * FS::get_free_block(){
         int pos = i/8;
         int off = i%8;
         if((meta.block_map[pos] & (1 << off)) == 0) {
+            std::cout << "R " << i << std::endl;
             meta.block_map[pos] |= 1 << off;
             return new Block(i, config.block_size);
         }
