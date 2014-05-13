@@ -4,9 +4,9 @@
 #include <cstdlib>
  using namespace std;
 
-int FreeSpace(char* mem,int size,int *amount)
+int FreeSpace(char* mem,int size,int *ptr_inp,int how_much)
 {
-  int length=0,max_length=0,ptr=0,tmp_ptr=0;
+  int length=0,tmp_ptr=0;
   bool flag=true;
   for (int i=0;i<size;i++)
     {
@@ -17,30 +17,27 @@ int FreeSpace(char* mem,int size,int *amount)
 	      tmp_ptr=i;
 	      flag=false;
 	    }
-	  if ((length>max_length)&&(mem[i]!='0'))
+	  if ((length==how_much+1))
 	    {
-	      max_length=length;
-	      ptr=tmp_ptr;
-	      length=0;
-	      tmp_ptr=0;
-	      flag=true;
+			*ptr_inp=tmp_ptr;
+			return 0;
 	    }
-      	  if((length<=max_length)&&(mem[i]!='0'))
+      	  if((mem[i]!='0'))
 	    {
-	      flag=true;
 	      length=0;
 	      tmp_ptr=0;
 	    }
     } 
-  if ((max_length==0)&&(length!=0))
+  //if ((max_length==0)&&(length!=0))
     
-    *amount=length;
+    //*amount=length;
     
-  else
-    *amount=max_length;
-  if (flag==false)
-    ptr=tmp_ptr;
-  return ptr;
+  //else
+    //*amount=max_length;
+  //if (flag==false)
+    //*ptr_inp=tmp_ptr;
+  //return ptr;
+  return -1;
 }
 
 int FreeMem(int adr,char* mem)
@@ -51,6 +48,11 @@ int FreeMem(int adr,char* mem)
   for (int i=adr;i<adr+size;i++)
     mem[i]='0';
   return size;
+}
+void Info()
+{
+	
+	
 }
 
 int main ()
@@ -80,7 +82,6 @@ while (run)
 char *mem=new char[size_mem];
 for (int i=0;i<size_mem;i++)
   mem[i]='0';
-curr_pos=FreeSpace(mem,size_mem,&free_mem);
 while(run)
 {
 cout << ">";
