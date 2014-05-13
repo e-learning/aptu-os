@@ -28,7 +28,7 @@ public:
 
 
 private:
-    void copy(FileDescriptor src, FileDescriptor dest_file, std::string dest_filename);
+    void copy(FileDescriptor src, FileDescriptor & dest_file, std::string dest_filename);
     void rm(FileDescriptor file);
     Config read_config();
     Meta meta;
