@@ -400,14 +400,12 @@ Config FS::read_config() {
 }
 
 void FS::reserve_block(int n){
-    std::cout << "R " << n << std::endl;
     int pos = n/8;
     int off = n%8;
     meta.block_map[pos] |= 1 << off;
 }
 
 void FS::free_block(int n){
-    std::cout << "F " << n << std::endl;
     int pos = n/8;
     int off = n%8;
     meta.block_map[pos] ^= 1 << off;
@@ -488,7 +486,6 @@ Block * FS::get_free_block(){
         int pos = i/8;
         int off = i%8;
         if((meta.block_map[pos] & (1 << off)) == 0) {
-            std::cout << "R " << i << std::endl;
             meta.block_map[pos] |= 1 << off;
             return new Block(i, config.block_size);
         }
