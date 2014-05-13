@@ -181,6 +181,7 @@ void FS::copy(FileDescriptor src_file, FileDescriptor & dst_fold, std::string ds
     }
 	file.parent_file = dst_fold.first_block;
 	file.size = src_file.size;
+    file.directory = src_file.directory;
 
 	if(dst_fold.first_child != -1){
 		Block * nb = new Block(dst_fold.first_child, config.block_size, _root);
