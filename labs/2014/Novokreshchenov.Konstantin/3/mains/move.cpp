@@ -1,0 +1,79 @@
+#include "Const.h"
+#include "command.h"
+#include "structures.h"
+#include <string>
+#include <iostream>
+
+
+int main(int argc, char* argv[])
+{
+    if (argc < 4) {
+		print_error(ERROR_FEW_ARGS);
+        return ERROR_FEW_ARGS;
+    }
+    std::string rootpath = argv[1];
+    std::string sourcePath = argv[2];
+    std::string destPath = argv[3];
+
+    std::vector<std::string> vpathSrc;
+    std::vector<std::string> vpathDst;
+
+    //checker
+	size_t pathResultSrc = get_path(sourcePath, vpathSrc);
+    if ((vpathSrc.size() <  1) || (pathResultSrc != SUCCESS)) {
+		print_error(pathResultSrc);
+		return pathResultSrc;
+    }
+	size_t pathResultDst = get_path(destPath, vpathDst);
+    if (pathResultDst != SUCCESS) {
+        print_error(pathResultDst);
+        return pathResultDst;
+    }
+    if (src_isPartOf_dst(vpathSrc, vpathDst)) {
+        print_error(ERROR_INCORRECT_PATH);
+        return ERROR_INCORRECT_PATH;
+    }
+    //end of checker
+
+    Root* root = new Root(rootpath);
+    Bitmap* bitmap = new Bitmap(root);
+    Dir * rootDir = root->get_rootDir();
+    rootDir->readSelf(root);
+
+	size_t result;
+
+	//find parentSrcDir and srcRecord
+	//finding parentSrcDir that always exist (because length of vpath >= 2)
+	vecStrIt current = vpathSrc.begin();
+	Dir * parentSrcDir = rootDir;
+	while (current != vpathSrc.end() - 1) {
+		Dir * subdir = parentSrcDir->find_dir_by_name(*current);
+		if (subdir == NULL) {
+			print_error(ERROR_INCORRECT_PATH);
+			return ERROR_INCORRECT_PATH;
+		}
+		parentSrcDir = subdir;
+		current += 1;
+	}
+	//finding record in parentSrcDir
+	std::string recordName = vpathSrc[vpathSrc.size() - 1];
+	Dir * srcDir = parentSrcDir->find_dir_by_name(recordName);
+	if (srcDir != NULL) {
+		result = move_dir_to_dest(root, bitmap, rootDir, parentSrcDir, recordName, vpathDst);
+	}
+	else {
+		File * file = parentSrcDir->find_file_by_name(recordName);
+		if (file == NULL) {
+			print_error(ERROR_INCORRECT_PATH);
+			return ERROR_INCORRECT_PATH;
+		}
+		result = move_file_to_dest(root, bitmap, rootDir, parentSrcDir, recordName, vpathDst);
+	}
+
+	if (result != SUCCESS) {
+		print_error(result);
+		return result;
+	}
+	SaveFS(root, bitmap, rootDir);
+    return SUCCESS;
+}

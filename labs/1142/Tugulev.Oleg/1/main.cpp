@@ -8,10 +8,15 @@
 #include <signal.h>
 using namespace std;
 
-
+void handler_function (int parameter)
+{
+  printf("Ctrl-C pressed\n");
+}
 int main ()
 {
 string inp;
+cout <<"use 'help' for further information about com's "<<endl;
+signal(SIGINT,handler_function);
 while(1)
 {
 cout << ">";
@@ -19,6 +24,19 @@ getline(cin,inp);
 
 switch(inp[0])
 {
+        case 'h':
+	  {
+	    if (inp.compare(0,4,"help")==0)
+		     {
+		       cout <<"ls - list of files in current folder" << endl;
+		       cout<<"ps - list of running processes"<<endl;
+		       cout<<"/<path> to run an app"<<endl;
+		       cout<<"pwd - full path to current folder"<<endl;
+		       cout<<"kill <PID> <-SIGNAL> - send a SIGNAL to process with this PID "<<endl;
+		       cout<<"exit - stop this app"<<"help - list of com's "<<endl;
+		       break;
+		     }
+	        }
 	case '/': 
 		{
 		system(inp.c_str());
@@ -118,3 +136,6 @@ switch(inp[0])
 }
 }
 }
+
+
+

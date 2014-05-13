@@ -1,5 +1,5 @@
 all: main.cpp
-	g++ main.cpp
+	g++ main.cpp -o shell
 
 clean:
-	rm -rf a.out
+	rm -rf shell.out
