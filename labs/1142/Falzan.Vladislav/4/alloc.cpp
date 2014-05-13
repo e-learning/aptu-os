@@ -47,7 +47,7 @@ int main(){
 	char *mas;
 	char *str;
 	int size,i,pos,len,mem,blocks,free,go,max;
-	char arg;
+	int arg;
 	char com[size_of_com];
 
 	printf("Enter a value of the memory (100 - 10000) : ");
@@ -62,27 +62,14 @@ int main(){
 			str = &str[5];
 			sscanf(str,"%d",&arg);
 			if((pos=get_free_space(mas,arg,size)) != -1){
-				mas[pos] = arg|0x80;
+				mas[pos] = arg;
 				printf("+%d\n",pos);
 				pos++;
 				for(i=0;i<arg;i++)
 					mas[pos+i]='X';
 			}else  printf("- (%db)\n",arg);
 		}
-		if((str=strstr(com,"free")) != NULL){
-			str = &str[4];
-			sscanf(str,"%d",&arg);
-			arg = arg>0?arg:0;
-			arg = arg<size?arg:size-1;
-			if((mas[arg]&0x80) == 0x80){
-				len = mas[arg] & 0x7f;
-				len++;
-				for(i=arg;i<arg+len;i++){
-					mas[i] = 0;
-				}
-			       printf("+\n");
-			}else  printf("-\n");
-		}
+
 		if((str=strstr(com,"info")) != NULL){
 			max = 0;
 			blocks = 0;
