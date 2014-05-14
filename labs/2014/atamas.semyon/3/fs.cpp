@@ -133,7 +133,7 @@ void FS::copy(std::string src, std::string dest){
 	read_meta();
 	FileDescriptor src_file = get_file(src, false, true);
 
-	if(dest[dest.size() - 1] == '/'){
+	if( dest != "/" && dest[dest.size() - 1] == '/'){
 		dest = dest.substr(0, dest.size() - 1);
 	}
     int last_match = dest.find_last_of("/");
@@ -278,42 +278,81 @@ void FS::mkdir(std::string path){
     write_meta();
 }
 
-void FS::move(std::string src, std::string dst){
+void FS::move(std::string src, std::string dest){
+
     if (!initialized) {throw "Not initialized";}
 	read_meta();
-	FileDescriptor f_src = get_file(src, false, true);
-	Block * src_block = new Block(f_src.first_block, config.block_size, _root);
+	FileDescriptor src_file = get_file(src, false, true);
+    Block * src_block = new Block(src_file.first_block, config.block_size, _root);
 
-	Block * parent_block = new Block(f_src.parent_file, config.block_size, _root);
+	Block * parent_block = new Block(src_file.parent_file, config.block_size, _root);
 	FileDescriptor parent_descriptor;
 	read_data(&parent_descriptor, sizeof(FileDescriptor), parent_block);
-	if(parent_descriptor.first_child == f_src.first_block){
-		parent_descriptor.first_child = f_src.next_file;
+	if(parent_descriptor.first_child == src_file.first_block){
+		parent_descriptor.first_child = src_file.next_file;
 		update_descriptor(parent_descriptor, parent_block);
 	}
 
-	FileDescriptor f_dst = get_file(dst, false, false);
-	Block * dst_block = new Block(f_dst.first_block, config.block_size, _root);
-
-	f_src.parent_file = f_dst.first_block;
-	if( f_dst.first_child == -1){
-		f_dst.first_child = f_src.first_block;
-		f_src.next_file = -1;
-		f_src.prev_file = -1;
-	} else{
-		Block * child_block = new Block(f_dst.first_child, config.block_size, _root);
-		f_dst.first_child = f_src.first_block;
-		FileDescriptor child_d;
-		read_data(&child_d, sizeof(FileDescriptor), child_block);
-		child_d.prev_file = f_src.first_block;
-		f_src.prev_file = -1;
-		f_src.next_file = child_d.first_block;
-		update_descriptor(child_d, child_block);
+	if(src_file.prev_file != -1){
+		Block * left_file_block = new Block(src_file.prev_file, config.block_size, _root);
+		FileDescriptor left_file_descriptor;
+		read_data(&left_file_descriptor, sizeof(FileDescriptor), left_file_block);
+		left_file_descriptor.next_file = src_file.next_file;
+		update_descriptor(left_file_descriptor, left_file_block);
 	}
-	update_descriptor(f_src, src_block);
-	update_descriptor(f_dst, dst_block);
-    
-    write_meta();
+
+	if(src_file.next_file != -1){
+		Block * right_file_block = new Block(src_file.next_file, config.block_size, _root);
+		FileDescriptor right_file_descriptor;
+		read_data(&right_file_descriptor, sizeof(FileDescriptor), right_file_block);
+		right_file_descriptor.prev_file = src_file.prev_file;
+		update_descriptor(right_file_descriptor, right_file_block);
+	}
+
+	if( dest != "/" && dest[dest.size() - 1] == '/'){
+		dest = dest.substr(0, dest.size() - 1);
+	}
+    int last_match = dest.find_last_of("/");
+    std::string dest_path = dest.substr(0, last_match + 1);
+    std::string dest_filename = dest.substr(last_match + 1);
+
+	FileDescriptor dst_fold = get_file(dest_path, false, false);
+
+	Block * dst_block = new Block(dst_fold.first_block, config.block_size, _root);
+
+
+    bool found = false;
+	for(auto it = DirIterator(*this, dst_fold); it != DirIterator(*this); ++it){
+		FileDescriptor f = *it;
+		if (std::string(f.filename) == dest_filename ){
+            if( f.directory){
+                found = true;
+                dst_fold = f;
+                dst_block = new Block(dst_fold.first_block, config.block_size, _root);
+            } else{
+                throw std::runtime_error("File already exist");
+            } 
+        } 
+	}
+
+    if(!found){
+        src_file.set_filename(dest_filename);
+    }
+	src_file.parent_file = dst_fold.first_block;
+
+	if(dst_fold.first_child != -1){
+		Block * nb = new Block(dst_fold.first_child, config.block_size, _root);
+		FileDescriptor nd;
+		read_data(&nd, sizeof(FileDescriptor), nb);
+		nd.prev_file = src_file.first_block;
+		update_descriptor(nd,nb);
+		src_file.next_file = nd.first_block;
+	}
+	dst_fold.first_child = src_file.first_block;
+	update_descriptor(dst_fold, dst_block);
+    update_descriptor(src_file, src_block);
+
+	write_meta();
 }
 
 FileDescriptor FS::get_file(std::string path, bool create, bool file_available){
