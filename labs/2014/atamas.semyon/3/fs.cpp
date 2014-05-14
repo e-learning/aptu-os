@@ -422,12 +422,13 @@ void FS::write_meta(){
     int size = meta.block_map_size;
     Block * curr_block = new Block(ind, config.block_size);
 
-
+    char * ptr = meta.block_map;
     curr_block->write(&meta, meta_size );
     while(size != 0){
-        int written = curr_block->write(meta.block_map, size);
+        int written = curr_block->write(ptr, size);
         if( written == 0 ) throw std::runtime_error("Some error during writing data occured");
         size -= written;
+        ptr += written;
         if(size != 0){
         	++ind;
         	curr_block->_descriptor.next = ind;
