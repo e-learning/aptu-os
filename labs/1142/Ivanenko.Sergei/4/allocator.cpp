@@ -1,145 +1,99 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
+#include <iostream>
+#include <string>
+using namespace std;
 
-#define size_blocks 20
-void Commands()
-{
-	printf("-------------------------------------\n");
-	printf("Allocate a block of memory: 	  'alloc'\n");
-	printf("Clear the memory block:  	  'free'\n");
-	printf("Information of memory:            'info'\n");
-	printf("The contents of the memory block: 'map'\n");
-	printf("-------------------------------------\n");
+
+int Memory_Size(int ssize){
+	cout << "Blocks Space=";
+	cin >> ssize;
+	return ssize;
 }
-	
-int wait_print(char *st)
+
+int main(void)
 {
-	char chr;
-	int i = 0;
-	while ((chr = getchar()) != '\n')
+	int res_adr = 0;
+	int sys = 16;//Ðåçåðâèðóåì ïîñëåäíèå 16 áàéò ïîä ñëóæåáíûå äàííûå
+	int N = 0;//Ðàçìåð âûäåëÿåìîé ïàìÿòè
+	int global_size = 0, block = 0, size = 0;
+	N = Memory_Size(N);
+	char *memory = new char[N];//Ìàññèâ çíà÷åíèé êàæäîãî áàéòà
+	string name_com;
+	global_size = N;
+	if ((global_size<100) || (global_size>10000)){
+		cout << "Error! Input correct \n";
+		return 1;
+
+	}
+	else{
+		for (int j = 0; j < N - sys; j++)
+			memory[j] = 'f';
+		for (int j = (N - sys); j < N; j++)
+			memory[j] = 'm';
+	}
+
+
+	while (1)//áåñêîíå÷íûé öèêë
 	{
-		st[i] = chr;
-		i++;
-	}
-	st[i] = '\0';
-	return i;
-}
-
-int empty(char *massiv, int len, int size){
-	int i, 
-		ch_len, 
-		start, 
-		go;
-	ch_len = len;
-	for (i = 0, go = 0; i<size; i++){
-		if (massiv[i] == 0)
-		{
-			if (!go)
+		cout << "\nInput name of command: ";
+		cin >> name_com;
+		if (name_com == "info"){
+			size = N - (sys + res_adr);
+			cout << "All Blocks:" << global_size << "; ";
+			cout << "\tUser Blocks:" << block << "; ";
+			cout << "\tBlocks,which Alloc sucsess:" << size << ";\n";
+		}
+		if (name_com == "alloc"){
+			//int res_adr;
+			cout << "Input value of the reserved block: ";
+			cin >> res_adr;
+			if ((res_adr == 0) || (res_adr>N-(sys))){
+			//if ((res_adr == 0) || (res_adr >= ((N - sys) + 1))){
+				cout << " - " << endl;
+			}
+			else
 			{
-				start = i;
-				go = 1;
-				ch_len++;
+				block++;//ñ÷åò÷èê ïîëüçîâàòåëüñêèõ áëîêîâ
+				global_size--;
+				for (int j = (N - (N - 0)); j < res_adr ; j++){
+					memory[j] = 'u';
+					
+				}
+				cout << " + " << block << endl;
 			}
-			ch_len--;
+			//size = N - (sys + block);
+			//block++;//ñ÷åò÷èê ïîëüçîâàòåëüñêèõ áëîêîâ
+			//cout << " + " << block << endl;
 		}
-		else
-		{
-			ch_len = len;
-			start = 0;
-			go = 0;
+		if (name_com == "free"){
+			if (block != 0){
+				while (global_size != N){
+					for (int j = 0; j < N; j++){
+						if (memory[j] == 'u'){
+							memory[j] = 'f';
+						}
+					}
+					global_size++;
+					block--;
+					res_adr = 0;
+					size = N - (sys + res_adr);
+				}
+				cout << " + " << endl;
+			}
+			else{
+				cout << " - " << endl;
+			}
 		}
-
-		if (!ch_len)
-			return start;
+		if (name_com == "map"){
+			cout << "Composition of dedicated memory\n";
+			for (int j = 0; j < N; j++){
+				cout << memory[j];
+			}
+			cout << "\n\n";
+			cout << "1)m-system blocks;\n";
+			cout << "2)u-user bloks;\n";
+			cout << "3)f-free bloks;\n";
+		}
+		if (name_com == "exit") break;
 	}
-	return -1;
-}
-
-int main(){
-	char *massiv;
-	char *str;
-	int size, i, pos, len, mem, blocks, free, go, max;
-	char arg;
-	char com[size_blocks];
-
-	Commands();
-	printf("Input size of the memory field : ");
-	scanf("%d", &size);
-	massiv = (char*)malloc(size);
-	memset(massiv, 0, size);
-	if (massiv == NULL)
-		return 2;
-	while (1){
-		wait_print(com);
-		if ((str = strstr(com, "alloc")) != NULL){
-			str = &str[5];
-			sscanf(str, "%d", &arg);
-			if ((pos = empty(massiv, arg, size)) != -1){
-				massiv[pos] = arg | 0x80;
-				printf("+%d\n", pos);
-				pos++;
-				for (i = 0; i<arg; i++)
-					massiv[pos + i] = 'X';
-			}
-			else  printf("- (%db)\n", arg);
-		}
-		if ((str = strstr(com, "free")) != NULL){
-			str = &str[4];
-			sscanf(str, "%d", &arg);
-			arg = arg>0 ? arg : 0;
-			arg = arg<size ? arg : size - 1;
-			if ((massiv[arg] & 0x80) == 0x80){
-				len = massiv[arg] & 0x7f;
-				len++;
-				for (i = arg; i<arg + len; i++){
-					massiv[i] = 0;
-				}
-				printf("+\n");
-			}
-			else  printf("-\n");
-		}
-		if ((str = strstr(com, "info")) != NULL){
-			max = 0;
-			blocks = 0;
-			free = 0;
-			mem = 0;
-			for (i = 0; i<size; i++){
-				if (massiv[i] == 0){
-					if (!go)
-						go = 1;
-					free++;
-				}
-				else{
-					go = 0;
-					if (free>max)
-						max = free;
-					free = 0;
-					if (massiv[i] == 'X')
-						mem++;
-					else
-						blocks++;
-				}
-			}
-			if (free>max)
-				max = free;
-			printf("b_m_mx\n");
-			printf("%d %d %d\n", blocks, mem, max == 0 ? 0 : max - 1);
-		}
-		if ((str = strstr(com, "map")) != NULL){
-			for (i = 0; i<size; i++){
-				switch (massiv[i]){
-				case 0:printf("f"); break;
-				case 'X':printf("u"); break;
-				default: printf("m"); break;
-				}
-			}
-			printf("\n");
-		}
-		if ((str = strstr(com, "exit")) != NULL){
-			break;
-		}
-	}
-	return 0;
 }
