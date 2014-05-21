@@ -57,7 +57,7 @@ bool DirManager::parsePath(std::string &path, std::deque<std::string> &out)
   return pathStream.eof();
 }
 
-size_t DirManager::getDirFileInodeId(const Inode &dirInode, const std::string &fileName)
+size_t DirManager::getDirFileInodeId(const Inode &dirInode, const std::string &fileName, bool isDir)
 {
   assert(dirInode.isDirectory());
   //*********
@@ -66,13 +66,20 @@ size_t DirManager::getDirFileInodeId(const Inode &dirInode, const std::string &f
   getDirFiles (dirInode, dirFiles);
   for (size_t i = 0; i < dirFiles.size (); i++) {
       if (dirFiles[i].isEqualName(fileName)) {
-          return dirFiles[i].inodeId;
+        if (isDir) {
+		Inode n;
+		m_controller->readInode(n, dirFiles[i].inodeId);
+		if (!n.isDirectory()) {
+			continue;
+		}
+	}
+	return dirFiles[i].inodeId;
       }
   }
   return 0;
 }
 
-bool DirManager::addFileToDir(Inode &dirInode, Inode &fileInode, const std::string &fileName)
+bool DirManager::addFileToDir(Inode &dirInode, Inode &fileInode, const std::string &fileName, bool isUpdate)
 {
   std::vector<DirEntry> dirFiles(dirInode.directoryFiles);
   std::vector<BlockRun> blockRunsList;
@@ -83,8 +90,13 @@ bool DirManager::addFileToDir(Inode &dirInode, Inode &fileInode, const std::stri
 
   for (size_t i = 0; i < dirFiles.size (); i++) {
       if (fileName.compare (dirFiles[i].name) == 0) {
-          std::cerr << fileName << " already exist" << std::endl;
-          return false;
+          Inode n;
+          m_controller->readInode (n, dirFiles[i].inodeId);
+          bool nFlag = n.isDirectory ();
+          if (nFlag == fileInode.isDirectory ()) {
+            std::cerr << fileName << " already exists" << std::endl;
+            return false;
+          }
     }
   }
   size_t avaibleFilesInDir = m_superblock.blockSize / sizeof(DirEntry);
@@ -102,8 +114,10 @@ bool DirManager::addFileToDir(Inode &dirInode, Inode &fileInode, const std::stri
     }*/
   m_writer.write((const char*) (&dirFiles[0]), dirInode.data.blockId, 1, dirFiles.size () * sizeof(DirEntry));
   dirInode.directoryFiles++;
-  dirInode.dataSize += fileInode.dataSize;
-  m_controller->updateSize(dirInode, fileInode.dataSize);
+  if (isUpdate) {
+  	dirInode.dataSize += fileInode.dataSize;
+  	m_controller->updateSize(dirInode, fileInode.dataSize);
+  }
   return true;
 }
 

@@ -26,6 +26,7 @@ public:
   bool move(std::string& src, std::string& dst);
   bool rm(std::string& file);
   void updateSize(Inode fileInode, long long dataSize);
+  void readInode(Inode& inode, size_t inodeId);
 private:
   void freeResources(Inode& srcInode);
   void freeData(Inode& srcInode);
@@ -39,7 +40,7 @@ private:
   void readFromBlockRun(std::ofstream& to, size_t startBlock, size_t len, size_t& size);
   bool allocateMemory(std::vector<BlockRun>& allocBlocks, size_t fileLength);
   bool createFreeList(std::list<BlockRun>& freeList, size_t requiredBlocks);
-  bool getInode(std::deque<std::string>& path, Inode& inode);
+  bool getInode(std::deque<std::string>& path, Inode& inode, bool isDir);
   void readSuperblock();
   bool removeFileFromDir(Inode& srcInode);
   void readDataBitmap();
@@ -47,7 +48,6 @@ private:
   bool createRootDir();
   bool getFileName(Inode& fileInode, std::string& name);
   bool importFile(Inode& inode, std::string& filename);
-  void readInode(Inode& inode, size_t inodeId);
   void writeInode(Inode& inode);
   size_t getFileLength(std::ifstream& file);
   std::string m_initDir;

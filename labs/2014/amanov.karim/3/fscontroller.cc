@@ -59,7 +59,7 @@ bool FsController::import(std::string& host_file, std::string& fs_file)
   std::string fileName = path.back ();
   path.pop_back ();
   Inode dirInode;
-  if (!getInode(path, dirInode)) {
+  if (!getInode(path, dirInode, true)) {
       return false;
   }
 
@@ -100,7 +100,7 @@ bool FsController::exportFile(std::string& fs_file, std::string& host_file)
 
 
   Inode fileInode;
-  if (!getInode(path, fileInode)) {
+  if (!getInode(path, fileInode, false)) {
       return false;
   }
 
@@ -133,7 +133,7 @@ bool FsController::ls(std::string &fs_file)
   }
 
   Inode fileInode;
-  if (!getInode(path, fileInode)) {
+  if (!getInode(path, fileInode, false)) {
       return false;
   }
 
@@ -162,7 +162,7 @@ bool FsController::copy(std::string &src, std::string &dst)
   }
 
   Inode srcInode;
-  if (!getInode(srcPath, srcInode)) {
+  if (!getInode(srcPath, srcInode, false)) {
       return false;
   }
 
@@ -177,11 +177,11 @@ bool FsController::copy(std::string &src, std::string &dst)
   dstPath.pop_back ();
 
   Inode dstInode;
-  if (!getInode(dstPath, dstInode)) {
+  if (!getInode(dstPath, dstInode, true)) {
       return false;
   }
 
-  size_t dstDirId = m_dirManager->getDirFileInodeId (dstInode, fileName);
+  size_t dstDirId = m_dirManager->getDirFileInodeId (dstInode, fileName, true);
   if (dstDirId) {
       Inode tmp;
       readInode (tmp, dstDirId);
@@ -197,7 +197,15 @@ bool FsController::copy(std::string &src, std::string &dst)
       std::cerr << "Error : dst is not a dir" << std::endl;
   }
 
-  copyFile (srcInode, dstInode, fileName);
+ size_t reqBlocks = (srcInode.dataSize/(m_superblock.blockSize)) + ((srcInode.dataSize % (m_superblock.blockSize)) ? 1 : 0);
+ if (reqBlocks > m_superblock.blocksNum - m_superblock.usedBlocks - 1) {
+  	std::cerr << "Error : not enought memmory (too few empty blocks)" << std::endl;
+  	return false;
+  }
+
+  if (!copyFile (srcInode, dstInode, fileName)) {
+	return false;
+  }
   dstInode.lastModifiedTime = std::time(NULL);
   dstInode.dataSize += srcInode.dataSize;
   writeInode (dstInode);
@@ -282,7 +290,7 @@ bool FsController::move(std::string &src, std::string &dst)
   }
 
   Inode srcInode;
-  if (!getInode(srcPath, srcInode)) {
+  if (!getInode(srcPath, srcInode, false)) {
       return false;
   }
 
@@ -297,11 +305,11 @@ bool FsController::move(std::string &src, std::string &dst)
   dstPath.pop_back ();
 
   Inode dstInode;
-  if (!getInode(dstPath, dstInode)) {
+  if (!getInode(dstPath, dstInode, true)) {
       return false;
   }
 
-  size_t dstDirId = m_dirManager->getDirFileInodeId (dstInode, fileName);
+  size_t dstDirId = m_dirManager->getDirFileInodeId (dstInode, fileName, true);
   if (dstDirId) {
       Inode tmp;
       readInode (tmp, dstDirId);
@@ -336,7 +344,7 @@ bool FsController::rm(std::string &file)
   }
 
   Inode srcInode;
-  if (!getInode(srcPath, srcInode)) {
+  if (!getInode(srcPath, srcInode, false)) {
       return false;
   }
 
@@ -408,6 +416,10 @@ bool FsController::copyData(Inode &srcInode, Inode &copyInode)
   std::vector<BlockRun> allocBlocks;
   size_t requiredBlocks = (srcInode.dataSize/(m_superblock.blockSize)) + ((srcInode.dataSize % (m_superblock.blockSize)) ? 1 : 0);
 
+  if (requiredBlocks > m_superblock.usedBlocks - 1) {
+	std::cerr << "not enought memory" << std::endl;
+	return false;
+  }
   if (!allocateMemory (allocBlocks, requiredBlocks)) {
       return false;
   }
@@ -502,7 +514,7 @@ bool FsController::copyFile(Inode &srcInode, Inode &dstInode, std::string &fileN
       if (!copyData(srcInode, copyInode)) {
           return false;
         }
-      if (!m_dirManager->addFileToDir (dstInode, copyInode, fileName)) {
+      if (!m_dirManager->addFileToDir (dstInode, copyInode, fileName, false)) {
           return false;
         }
       m_inodeBitmap.setBusy (copyInode.inodeId);
@@ -518,7 +530,7 @@ bool FsController::moveFile(Inode &srcInode, Inode &dstInode, std::string &fileN
   if (!removeFileFromDir (srcInode)) {
       return false;
     }
-
+  readInode(dstInode, dstInode.inodeId); 
   if (!m_dirManager->addFileToDir (dstInode, srcInode, fileName)) {
       return false;
     }
@@ -547,20 +559,25 @@ bool FsController::doExportFile(Inode &fileInode, std::string &host_file)
 
 bool FsController::allocateMemory(std::vector<BlockRun> &allocBlocks, size_t requiredBlocks)
 {
+  if (requiredBlocks > m_superblock.blocksNum - m_superblock.usedBlocks - 1) {
+  	std::cerr << "Error : not enought memmory (too few empty blocks)" << std::endl;
+  	return false;
+  }
   std::list<BlockRun> freeList;
   if (!createFreeList (freeList, requiredBlocks)) {
       auto f = [](BlockRun& b1, BlockRun& b2){return b1.len > b2.len;};
       freeList.sort (f);
       auto it = freeList.begin ();
-      while (requiredBlocks > 0) {
+      size_t tmp = requiredBlocks;
+      while (tmp != 0) {
           if (it == freeList.end ()) {
               std::cerr << "Error : not enought memmory" << std::endl;
               return false;
           }
-          (*it).len = std::min((*it).len, requiredBlocks);
+          (*it).len = std::min((*it).len, tmp);
           allocBlocks.push_back (*it);
-          ++it;
-          requiredBlocks -= std::min((*it).len, requiredBlocks);
+          tmp -= std::min((*it).len, tmp);
+	  ++it;
       }
     } else {
       BlockRun& block = freeList.back ();
@@ -606,7 +623,7 @@ bool FsController::createFreeList(std::list<BlockRun> &freeList, size_t required
   return false;
 }
 
-bool FsController::getInode(std::deque<std::string>& path, Inode &inode)
+bool FsController::getInode(std::deque<std::string>& path, Inode &inode, bool isDir)
 {
   readInode (inode, 1);
 
@@ -615,7 +632,11 @@ bool FsController::getInode(std::deque<std::string>& path, Inode &inode)
       path.pop_front ();
       size_t nextInodeId = 0;
       if (inode.isDirectory()) {
-        nextInodeId = m_dirManager->getDirFileInodeId(inode, fileName);
+      	if (path.empty()) {
+		nextInodeId = m_dirManager->getDirFileInodeId(inode, fileName, isDir);
+	} else {
+        	nextInodeId = m_dirManager->getDirFileInodeId(inode, fileName, true);
+	}      
       }
       if (!inode.isDirectory() || nextInodeId == 0)
       {
@@ -722,10 +743,7 @@ bool FsController::importFile(Inode &inode, std::string &filename)
   size_t fileLength = getFileLength (inputFile);
   inode.dataSize = fileLength;
   size_t requiredBlocks = (fileLength/(m_superblock.blockSize)) + ((fileLength % (m_superblock.blockSize)) ? 1 : 0);
-  if (requiredBlocks > m_superblock.blocksNum - m_superblock.usedBlocks - 1) {
-      std::cerr << "Error : not enought memmory (too few empty blocks)" << std::endl;
-      return false;
-    }
+
   std::vector<BlockRun> allocBlocks;
 
   if (!allocateMemory(allocBlocks, requiredBlocks)) {

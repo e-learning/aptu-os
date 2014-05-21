@@ -51,9 +51,9 @@ public:
   void writeNewDirInfo(size_t block, size_t id, size_t parent_id);
   static bool parsePath(std::string& path, std::deque<std::string>& out);
   static const char SEPARATOR;
-  size_t getDirFileInodeId(const Inode& dirInode, const std::string& fileName);
+  size_t getDirFileInodeId(const Inode& dirInode, const std::string& fileName, bool isDir = false);
   void getDirFiles(const Inode &dirInode, std::vector<DirEntry> &dirFiles);
-  bool addFileToDir(Inode& dirInode, Inode& fileInode, const std::string& fileName);
+  bool addFileToDir(Inode& dirInode, Inode& fileInode, const std::string& fileName, bool isUpdate = true);
   std::string getFileName(const Inode& fileInode);
   bool removeFileFromDir(Inode &dirInode, const Inode& inode);
 private:
