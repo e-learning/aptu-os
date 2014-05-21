@@ -180,6 +180,19 @@ bool FsController::copy(std::string &src, std::string &dst)
   if (!getInode(dstPath, dstInode)) {
       return false;
   }
+
+  size_t dstDirId = m_dirManager->getDirFileInodeId (dstInode, fileName);
+  if (dstDirId) {
+      Inode tmp;
+      readInode (tmp, dstDirId);
+      if (tmp.isDirectory ()) {
+          dstInode = tmp;
+          if (!getFileName (srcInode, fileName)) {
+            return false;
+          }
+      }
+  }
+
   if (!dstInode.isDirectory ()) {
       std::cerr << "Error : dst is not a dir" << std::endl;
   }
@@ -287,6 +300,19 @@ bool FsController::move(std::string &src, std::string &dst)
   if (!getInode(dstPath, dstInode)) {
       return false;
   }
+
+  size_t dstDirId = m_dirManager->getDirFileInodeId (dstInode, fileName);
+  if (dstDirId) {
+      Inode tmp;
+      readInode (tmp, dstDirId);
+      if (tmp.isDirectory ()) {
+          dstInode = tmp;
+          if (!getFileName (srcInode, fileName)) {
+            return false;
+          }
+      }
+  }
+
   if (!dstInode.isDirectory ()) {
       std::cerr << "Error : dst is not a dir" << std::endl;
   }
