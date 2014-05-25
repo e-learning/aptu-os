@@ -14,7 +14,7 @@ main.o: main.cpp
 	gcc -o main.o -c main.cpp
 
 ps.o: ps.h ps.cpp
-	gcc -o ps.o -c ps.cpp
+	gcc -o ps.o -c -fPIC ps.cpp
 
 libps.so: ps.o
 	gcc -shared -o libps.so ps.o
