@@ -3,14 +3,13 @@
     .global _start
 _start:
     movw  $len,  %cx
-    lea   msg,   %bx
-print:
-    movb  (%bx), %al
-    movb  $0x0E, %ah
+    lea   msg,   %si
+prnt:
+    lodsb
+    movb  $0x0e, %ah
     int   $0x10
-    inc   %bx
     dec   %cx
-    jnz   print
+    jnz   prnt
     hlt
 
 msg:
@@ -19,4 +18,4 @@ msg:
 
     . = _start + 510
     .byte 0x55
-    .byte 0xAA
+    .byte 0xaa

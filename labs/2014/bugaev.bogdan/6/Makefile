@@ -4,7 +4,7 @@ OBJ = $(NAME).o
 BIN = $(NAME).bin
 
 $(BIN): $(OBJ)
-	ld -Ttext 0x7C00 --oformat=binary $(OBJ) -o $(BIN)
+	ld -Ttext 0x7c00 --oformat=binary $(OBJ) -o $(BIN)
 
 $(OBJ): $(SRC)
 	as $(SRC) -o $(OBJ)
