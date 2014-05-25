@@ -1,0 +1,11 @@
+*.o
+*.pro*
+
+build*/
+
+1/shell
+fs/
+
+4/allocator
+5/memory
+

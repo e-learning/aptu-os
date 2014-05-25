@@ -1,0 +1,15 @@
+CXX = g++
+CXXFLAGS = -O2  -Wall -fmessage-length=0 -std=c++11
+
+all: init.o
+	$(CXX) $(CXXFLAGS) init.o -o init
+	make clean
+
+init: src/init.cpp 
+	$(CXX) $(CXXFLAGS) -c init.cpp
+
+
+.PHONY: clean
+
+clean:
+	rm -f *.o
