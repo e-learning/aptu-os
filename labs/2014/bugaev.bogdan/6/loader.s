@@ -2,11 +2,19 @@
 .text
     .global _start
 _start:
-    movw  $len,  %cx
-    lea   msg,   %si
+    cli
+    movw  %cs,     %ax
+    movw  %ax,     %ds
+    addw  $0x0220, %ax 
+    movw  %ax,     %ss
+    movw  $0x0100, %sp
+    sti
+
+    movw  $len,    %cx
+    leaw  msg,     %si
 prnt:
     lodsb
-    movb  $0x0e, %ah
+    movb  $0x0e,   %ah
     int   $0x10
     dec   %cx
     jnz   prnt
