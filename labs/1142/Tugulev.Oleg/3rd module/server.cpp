@@ -24,6 +24,8 @@ void *recieve_and_send(void* inp)
 {
 	who_online *user;
 	user = (who_online*) inp;
+	printf("%i ",user->id);
+	printf("%i ",user->socket);
 	char mes[255];
 	int sock = user->socket;
 	int vec_el=user->id;
@@ -34,10 +36,12 @@ void *recieve_and_send(void* inp)
 		recv(sock,mes,255,0);
 		tmp<<mes;
 		tmp>>buffer;
+		printf("%s",mes);
 		size_t found=buffer.find(':');
 		string com=buffer.substr(found);
 		if (com.compare("ST")==0)
 			{
+			  write(sock,"disconnected",12);
 				close(sock);
 				iter--;
 				for (int i=vec_el;i<data.size();i++)
@@ -48,9 +52,10 @@ void *recieve_and_send(void* inp)
 				data.pop_back();
 				break;
 			}
-		for (int i=0;i<iter;i++)
-			send(data[i].socket,buffer.c_str(),buffer.length(),0);
-	
+		else
+		        for (int i=0;i<iter;i++)
+			write(data[i].socket,buffer.c_str(),buffer.length());
+		sleep(1);
 	}
 	return NULL;
 }
@@ -81,18 +86,27 @@ int main()
 	if(bind(server_h,(struct sockaddr*)&adr_st,sizeof(adr_st))<0)
 		error("Can't bind!");
 	//listen
+	printf("do\n");
 	listen (server_h,1);
+        printf("posle\n");
 	//ready to work!
 	while(iter!=0)
 	{
 		iter--;
+		printf("%i",iter);
 		socket_h=accept(server_h,NULL,NULL);
-		cout<<"+1";
+		if (write(socket_h,"I got your message",18)<0)
+		  error("Can't send to client!");
 		cont.id=iter;
 		iter++;
 		cont.socket=socket_h;
 		data.push_back(cont);
-		pthread_create(&thr_handler,NULL,recieve_and_send,(void*)&data[iter-1]);
+		printf("socket %i\n",data[iter-1].socket);
+		printf("data %i\n",data[iter-1].id);
+		if(pthread_create(&thr_handler,NULL,recieve_and_send,(void*)&data[iter-1])!=0)
+		  error("Can't create thread!");
+		else
+		  printf("OK\n");
 		
 	}
 	

@@ -21,8 +21,9 @@ void *reciever(void* arg)
 				mes[i]=0;
 			}
 
-		recv(*socket,mes,255,0);
+		recv(socket[0],mes,255,0);
 		cout<<mes<<endl;
+		sleep(1);
 	}
 	return NULL;
 }
@@ -37,6 +38,7 @@ void error(const char *msg)
 int main()
 {	pthread_t thr_handler;
 	struct sockaddr_in adr_st;
+	struct in_addr in_ad;
 	string message;
 	string user_name;
 	bool run=true;
@@ -55,9 +57,10 @@ int main()
 	if (socket_h<0)
 		error("Can't create socket");
 	//struct filling
+	in_ad.s_addr=inet_addr("127.0.0.1");
 	adr_st.sin_family = AF_INET;
 	adr_st.sin_port = htons(PORT); // convert to network order of bytes
-	inet_pton(AF_INET,"127.0.0.1",&adr_st.sin_addr);//(type of adr,adr as char,destination)
+	adr_st.sin_addr = in_ad;
 	//connect to server
 	if(connect (socket_h,(struct sockaddr *)&adr_st,sizeof(adr_st))<0)
 		error("Can't connect!");
@@ -68,15 +71,17 @@ int main()
 	//send messges to server
 	while (1)
 	{	
-		cout <<endl<<user_name<<":";
-		cin >>message;
-		message=user_name+":"+message;
+		string work;
+		getline(cin,work);
+		message=user_name+":"+work;
 		
 		if(send(socket_h,message.c_str(),message.length(),0)<0)
 				error("Can't send!");
 		message.clear();
-		if (message.compare("ST") == 0)
+		if (work=="ST")
 			break;
+		work.clear();
+
 		
 	}
 	//end
