@@ -5,57 +5,56 @@
 #include <stdlib.h>
 #include <iostream>
 #include <pthread.h>
-#include <vector>
-#include <sstream>
+#include <cstring>
 
 #define PORT 3425
 
 using namespace std;
 
-struct who_online
+struct to_func
 {
 	int id;
 	int socket;
 };
-vector<who_online> data;
-int iter=1;
+int *list;
+int iter=0;
+int current_client;
+struct to_func cont;
 
-void *recieve_and_send(void* inp)
-{
-	who_online *user;
-	user = (who_online*) inp;
-	printf("%i ",user->id);
-	printf("%i ",user->socket);
+void *recieve_and_send(void* )
+{	
+  //	printf("%i ",data[current_client].id /*user->id*/);
+  //	printf("%i ",data[current_client].socket/*user->socket*/);
 	char mes[255];
-	int sock = user->socket;
-	int vec_el=user->id;
-	stringstream tmp;
-	string buffer;
+	int sock = cont.socket;
+	list[cont.id-1]=sock;
+	int el = cont.id-1 ;
 	while(1)
 	{
 		recv(sock,mes,255,0);
-		tmp<<mes;
-		tmp>>buffer;
-		printf("%s",mes);
-		size_t found=buffer.find(':');
-		string com=buffer.substr(found);
-		if (com.compare("ST")==0)
+		if (strstr(mes,"STOP_CHAT")!=NULL)
 			{
-			  write(sock,"disconnected",12);
 				close(sock);
+				//printf("%i",vec_el);
+				for (int i=el;i<iter;i++)
+					list[i]=list[i+1];
+				list[iter-1]=0;
 				iter--;
-				for (int i=vec_el;i<data.size();i++)
-				{
-					data[i]=data[i+1];
-					data[i].id--;
-				}
-				data.pop_back();
+				
 				break;
 			}
-		else
-		        for (int i=0;i<iter;i++)
-			write(data[i].socket,buffer.c_str(),buffer.length());
-		sleep(1);
+
+		
+		for (int i=0;i<iter;i++)
+
+		      if (i!=el)
+			{
+			  //printf("message %s\n",buffer.c_str());
+				write(list[i],mes,255);
+			}
+		for (int i=0;i<255;i++)
+			mes[i]=0;
+		sleep(2);
 	}
 	return NULL;
 }
@@ -72,7 +71,9 @@ int main()
 	pthread_t thr_handler;
 	struct sockaddr_in adr_st;
 	int server_h,socket_h;
-        who_online cont;
+	bool run=true;
+	int cap=4;
+	list=(int*)malloc(sizeof(int)*cap);
 
 	//create socket
 	server_h=socket(AF_INET,SOCK_STREAM,0); // (adr family, type of socket, protocol)
@@ -86,30 +87,30 @@ int main()
 	if(bind(server_h,(struct sockaddr*)&adr_st,sizeof(adr_st))<0)
 		error("Can't bind!");
 	//listen
-	printf("do\n");
 	listen (server_h,1);
-        printf("posle\n");
 	//ready to work!
-	while(iter!=0)
+	while(run)
 	{
-		iter--;
-		printf("%i",iter);
 		socket_h=accept(server_h,NULL,NULL);
-		if (write(socket_h,"I got your message",18)<0)
-		  error("Can't send to client!");
 		cont.id=iter;
 		iter++;
+		current_client=iter-1;
+		if(iter>=cap)
+			{
+				cap++;
+				list = (int*)realloc(list,sizeof(int)*cap);
+			}
 		cont.socket=socket_h;
-		data.push_back(cont);
-		printf("socket %i\n",data[iter-1].socket);
-		printf("data %i\n",data[iter-1].id);
-		if(pthread_create(&thr_handler,NULL,recieve_and_send,(void*)&data[iter-1])!=0)
+		cont.id=iter;
+		if(pthread_create(&thr_handler,NULL,recieve_and_send,NULL/*(void*)&data[iter-1]*/)!=0)
 		  error("Can't create thread!");
 		else
 		  printf("OK\n");
-		
-	}
 	
+		if (iter==0)
+			run=false;		
+	}
+	printf("konec!");
 	//end
 	close(server_h);
 	return 0;

@@ -7,7 +7,7 @@
 #include <pthread.h>
 
 #define PORT 3425
-
+bool flag = false;
 using namespace std;
 void *reciever(void* arg)
 {
@@ -16,12 +16,11 @@ void *reciever(void* arg)
 	socket = (int*)arg;
 	while(1)
 	{
-		for (int i=0; i<255; i++)
+		/*for (int i=0; i<255; i++)
 			{
 				mes[i]=0;
-			}
-
-		recv(socket[0],mes,255,0);
+			}*/
+		recv(*socket,mes,255,0);
 		cout<<mes<<endl;
 		sleep(1);
 	}
@@ -78,7 +77,7 @@ int main()
 		if(send(socket_h,message.c_str(),message.length(),0)<0)
 				error("Can't send!");
 		message.clear();
-		if (work=="ST")
+		if (work=="STOP_CHAT")
 			break;
 		work.clear();
 
