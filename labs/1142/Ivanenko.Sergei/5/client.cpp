@@ -49,23 +49,20 @@ int main()
         while(name.length()>25);
 
         //create socket
-        soc=socket(AF_INET,SOCK_STREAM,0); // (adr family, type of socket, protocol)
+        soc=socket(AF_INET,SOCK_STREAM,0); 
         if (soc<0)
                 error("Can't create socket");
         //struct filling
         in_ad.s_addr=inet_addr("127.0.0.1");
         addr.sin_family = AF_INET;
-        addr.sin_port = htons(PORT); // convert to network order of bytes
+        addr.sin_port = htons(PORT); 
         addr.sin_addr = in_ad;
         //connect to server
         if(connect (soc,(struct sockaddr *)&addr,sizeof(addr))<0)
                 error("Can't connect!");
         cout<<"Connected!\n";
-	cout<<"You can send messages\n";
-        //recive messages from server
+	cout<<"You can send messages\n";       
         pthread_create(&thread,NULL,rec,(void*)&soc);
-        //ready to work!
-        //send messges to server
         while (1)
         {      
                 string work;
@@ -81,7 +78,6 @@ int main()
 
                
         }
-        //end
         close(soc);
         return 0;
 }
