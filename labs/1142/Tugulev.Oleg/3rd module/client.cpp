@@ -63,7 +63,7 @@ int main()
 	//connect to server
 	if(connect (socket_h,(struct sockaddr *)&adr_st,sizeof(adr_st))<0)
 		error("Can't connect!");
-	cout<<"Connected!"<<endl<<"You can send messages"<<endl<<"Type ST to stop working";
+	cout<<"Connected!"<<endl<<"You can send messages"<<endl<<"Type STOP_CHAT to stop working"<<endl;
 	//recive messages from server
 	pthread_create(&thr_handler,NULL,reciever,(void*)&socket_h);
 	//ready to work!
