@@ -29,15 +29,7 @@ int FreeSpace(char* mem,int size,int *ptr_inp,int how_much)
               tmp_ptr=0;
             }
     } 
-  //if ((max_length==0)&&(length!=0))
-    
-    //*amount=length;
-    
-  //else
-    //*amount=max_length;
-  //if (flag==false)
-    //*ptr_inp=tmp_ptr;
-  //return ptr;
+  
   return -1;
 }
 
