@@ -4,13 +4,20 @@
 .globl _start
 
 _start:
-  jmp _boot
-  welcome: .asciz "Hello, World!\n\r"
-
+  cli
+  movw  %cs,     %ax
+  movw  %ax,     %ds
+  addw  $0x0220, %ax 
+  movw  %ax,     %ss
+  movw  $0x0100, %sp
+  sti
+	
   .macro mWriteString str
     leaw  \str, %si
     call .writeStringIn
   .endm
+
+  mWriteString welcome
 
   .writeStringIn:
     lodsb
@@ -20,10 +27,11 @@ _start:
     int  $0x10
     jmp  .writeStringIn
   .writeStringOut:
-    ret
+    movb $0x0 , %ah
+    int $0x16
+    hlt
 
-_boot:
-  mWriteString welcome
+welcome: .asciz "Hello, World!\n\r"  	
 
   . = _start + 510
   .byte 0x55
