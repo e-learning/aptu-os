@@ -127,7 +127,7 @@ void printInfo(){
         }
     }
 
-    std::cout << userBlocks << userMem << maxSize << std::endl;
+	std::cout << userBlocks << ' ' <<  userMem << ' ' << maxSize << std::endl;
 }
 
 void printMap(){
