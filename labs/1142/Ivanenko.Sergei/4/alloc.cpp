@@ -12,80 +12,107 @@ int Memory_Size(int ssize){
 
 int main(void)
 {
+	int system_adr = 0;
+	int r = 0;
+	int z = 0;
+	int p=0;
+	int l=0;
 	int res_adr = 0;
-	int sys = 16;//Резервируем последние 16 байт под служебные данные
-	int N = 0;//Размер выделяемой памяти
+	int user_blocks = 0;//Г·ГЁГ±Г«Г® ГўГ»Г¤ГҐГ«ГҐГ­Г­Г»Гµ ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гѕ ГЎГ«Г®ГЄГ®Гў
+	int system_blocks = 0;//Г·ГЁГ±Г«Г® Г±Г«ГіГ¦ГҐГЎГ­Г»Гµ ГЎГ«Г®ГЄГ®Гў
+	int sys = 0;//ГђГҐГ§ГҐГ°ГўГЁГ°ГіГҐГ¬ ГЇГ®Г±Г«ГҐГ¤Г­ГЁГҐ 16 ГЎГ Г©ГІ ГЇГ®Г¤ Г±Г«ГіГ¦ГҐГЎГ­Г»ГҐ Г¤Г Г­Г­Г»ГҐ
+	int N = 0;//ГђГ Г§Г¬ГҐГ° ГўГ»Г¤ГҐГ«ГїГҐГ¬Г®Г© ГЇГ Г¬ГїГІГЁ
 	int global_size = 0, block = 0, size = 0;
 	N = Memory_Size(N);
-	char *memory = new char[N];//Массив значений каждого байта
+	char *memory = new char[N];//ГЊГ Г±Г±ГЁГў Г§Г­Г Г·ГҐГ­ГЁГ© ГЄГ Г¦Г¤Г®ГЈГ® ГЎГ Г©ГІГ 
 	string name_com;
 	global_size = N;
 	if ((global_size<100) || (global_size>10000)){
 		cout << "Error! Input correct \n";
-		return 1;
+		return(0);
 
 	}
 	else{
-		for (int j = 0; j < N - sys; j++)
+		for (int j = 0; j < N; j++)
 			memory[j] = 'f';
-		for (int j = (N - sys); j < N; j++)
-			memory[j] = 'm';
 	}
 
 
-	while (1)//бесконечный цикл
+	while (1)//ГЎГҐГ±ГЄГ®Г­ГҐГ·Г­Г»Г© Г¶ГЁГЄГ«
 	{
+		if (user_blocks == 0){
+			size = global_size;
+		}
+		else{
+			size = global_size - (user_blocks + system_blocks);
+		}
 		cout << "\nInput name of command: ";
 		cin >> name_com;
 		if (name_com == "info"){
-			size = N - (sys + res_adr);
-			cout << "All Blocks:" << global_size << "; ";
-			cout << "\tUser Blocks:" << block << "; ";
+			cout << "User blocks:" << block << "; ";
+			cout << "\tSize user memory blocks:" << user_blocks << "; ";
 			cout << "\tBlocks,which Alloc sucsess:" << size << ";\n";
 		}
+		
 		if (name_com == "alloc"){
-			//int res_adr;
-			cout << "Input value of the reserved block: ";
 			cin >> res_adr;
-			if ((res_adr == 0) || (res_adr>N-(sys))){
-			//if ((res_adr == 0) || (res_adr >= ((N - sys) + 1))){
+			
+			if ((res_adr==0)||(res_adr>=size)){
 				cout << " - " << endl;
 			}
 			else
 			{
-				block++;//счетчик пользовательских блоков
-				global_size--;
-				for (int j = (N - (N - 0)); j < res_adr ; j++){
-					memory[j] = 'u';
-					
-				}
-				cout << " + " << block << endl;
-			}
-			//size = N - (sys + block);
-			//block++;//счетчик пользовательских блоков
-			//cout << " + " << block << endl;
-		}
-		if (name_com == "free"){
-			if (block != 0){
-				while (global_size != N){
-					for (int j = 0; j < N; j++){
-						if (memory[j] == 'u'){
-							memory[j] = 'f';
+				user_blocks += res_adr;
+				block++;//Г·ГЁГ±Г«Г® Г°Г Г§ ГўГ»Г¤ГҐГ«ГҐГ­ГЁГї ГЎГ«Г®ГЄГ®Гў
+				for (int j = l; j < N; j++){
+					if ((memory[j] == 'f')&&(p==0)){
+							memory[j] = 'm';
+							system_adr = j;
+							p++;
+							system_blocks++;
+						}
+					else{
+						for (int s = l + 1; s < (N - (N - (res_adr + (z+1)))); s++){
+							memory[s] = 'u';
+							l = s;
 						}
 					}
-					global_size++;
-					block--;
-					res_adr = 0;
-					size = N - (sys + res_adr);
 				}
-				cout << " + " << endl;
+				l = l + 1;
+				z = l;
+				p = 0;
+				cout << " + " << system_adr+1 << endl;
+			}
+		}
+		
+		if (name_com == "free"){
+			cin >> system_adr;			
+			if ((memory[system_adr-1] != 'm')){
+				cout << " - " << endl;
 			}
 			else{
-				cout << " - " << endl;
+				int j;
+				j = system_adr;
+				while ( (memory[j] == 'u')){
+					if ((memory[j - 1] == 'm') && (r == 0)){
+						memory[j - 1] = 'f';
+						memory[j] = 'f';
+						r++;
+					}
+					else{
+						r++;
+						memory[j] = 'f';
+					}
+					j++;
+					user_blocks--;
+				}
+				block--;
+				r = 0;
+				cout << " + " << endl;
 			}
 		}
 		if (name_com == "map"){
-			cout << "Composition of dedicated memory\n";
+			cout << "\nComposition of dedicated memory\n";
 			for (int j = 0; j < N; j++){
 				cout << memory[j];
 			}
