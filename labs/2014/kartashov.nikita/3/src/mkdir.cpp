@@ -1,19 +1,20 @@
-#include <iostream>
-#include "utils/file_system.h"
+#include "utils/FileSystem.h"
 
-using namespace std;
-
-int main (const int argc, const char *argv[]) try {
-    if (argc < 3) {
-        std::cout << "Usage: mkdir root path" << std::endl;
-    } else {
-        file_system(argv[1]).find_directory(argv[2],true);
-    }
-    return 0;
-} catch (const char * msg) {
-    std::cerr << msg << std::endl;
-    return 1;
-} catch (const string msg) {
-    std::cerr << msg << std::endl;
-    return 1;
+int usage()
+{
+  std::cerr << "Usage: ./mkdir <root> <path>"
+            << std::endl;
+  return 1;
 }
+
+int main(int argc, char *argv[])
+{
+  if (argc != 3)
+    return usage();
+
+  FileSystem fs(argv[1]);
+  return fs.doMkdir(argv[2]);
+}
+
+
+
