@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -g -Wall -Wextra -std=c++0x -pedantic
+CXXFLAGS = -g -Wall -Wextra -std=c++11 -pedantic
 APPNAME = init format import export ls copy move rm mkdir
 OBJECTS = $(builddir)/filedesc.o $(builddir)/filesystem.o 
 srcdir = src
