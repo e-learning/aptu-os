@@ -73,8 +73,8 @@ private:
     void copy(FileDesc const & source_desc, FileDesc & target_desc);
     void move(FileDesc & source_desc, FileDesc & target_desc);
 
-    size_t find_first_free_block() {
-        for (size_t i = 1; i < bitmap.size(); ++i){
+    size_t find_first_free_block(int start = 0) {
+        for (size_t i = start + 1; i < bitmap.size(); ++i){
             if (!bitmap[i]) {
                 return i;
             }
