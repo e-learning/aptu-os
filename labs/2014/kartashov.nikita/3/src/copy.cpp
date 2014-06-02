@@ -1,32 +1,19 @@
-#include <iostream>
-#include "utils/file_system.h"
+#include "utils/FileSystem.h"
 
-using namespace std;
-
-int main (const int argc, const char *argv[]) try 
+int usage()
 {
-    if (argc < 4) 
-		{
-        std::cout << "Usage: copy root source destination" << std::endl;
-    }
-		else 
-		{
-        file_system fs(argv[1]);
-
-        file_record source_d = fs.find_descriptor(argv[2], false);
-        file_record destination_d = fs.find_descriptor(argv[3], true, source_d.directory);
-
-        fs.copy(source_d, destination_d);
-    }
-    return 0;
-} 
-catch (const char * msg) 
-{
-    std::cerr << msg << std::endl;
-    return 1;
+  std::cerr << "Usage: ./copy <root> <src> <dst>"
+            << std::endl;
+  return 1;
 }
-catch (const string msg) 
+
+int main(int argc, char *argv[])
 {
-    std::cerr << msg << std::endl;
-    return 1;
+  if (argc != 4)
+    return usage();
+
+	FileSystem fs(argv[1]);
+  return fs.doCopy(argv[2], argv[3]);
 }
+
+
