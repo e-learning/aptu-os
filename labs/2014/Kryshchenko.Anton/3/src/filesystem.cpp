@@ -199,7 +199,7 @@ void FileSystem::write_data(FileDesc & fd, istream & is) {
         bd.id = id;
         bd.length = is.gcount();
         if (is) {
-            bd.next_id = find_first_free_block();
+            bd.next_id = find_first_free_block(id);
         } else {
             bd.next_id = -1;
         }
@@ -420,7 +420,7 @@ void FileSystem::copy(const FileDesc & source_desc, FileDesc & target_desc) {
             next_source = block_desc.next_id;
             Block new_block_desc = block_desc;
             new_block_desc.id = next_dest;
-            next_dest = (next_source == -1 ? -1 : find_first_free_block());
+            next_dest = (next_source == -1 ? -1 : find_first_free_block(new_block_desc.id));
             new_block_desc.next_id = next_dest;
             ofstream new_block(to_string(new_block_desc.id, root), ios::binary);
             new_block.write((char *)&new_block_desc, sizeof(Block));
