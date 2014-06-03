@@ -436,27 +436,35 @@ void FileSystem::copy(const FileDesc & source_desc, FileDesc & target_desc) {
 void FileSystem::move_cmd(const std::string &source_file_name, const std::string &target_file_name) {
     if (source_file_name != target_file_name) {
         FileDesc source_desc = find_desc(source_file_name, false, false);
+        FileDesc target_desc;
+        if (source_desc.is_directory) {
 
-        FileDesc target_desc = find_desc(target_file_name, true, source_desc.is_directory);
+            target_desc = find_dir(target_file_name, true);
 
+
+        } else {
+            target_desc = find_desc(target_file_name, true, false);
+        }
         move(source_desc, target_desc);
     }
 }
 
 void FileSystem::move(FileDesc & source_desc, FileDesc & target_desc) {
+
     if (source_desc.is_directory) {
         if (target_desc.is_directory) {
+
             if (source_desc.first_file_id != 1) {
-                target_desc = find_desc(target_desc, source_desc.name, true, true);
+                FileDesc new_target_desc = find_desc(target_desc, source_desc.name, true, true);
 
                 if (source_desc.first_file_id != -1) {
                     FileDesc first_file = read_desc(source_desc.first_file_id, root);
-                    if (target_desc.first_file_id == -1) {
-                        target_desc.first_file_id = first_file.id;
-                        first_file.parent_id = target_desc.id;
-                        write_desc(target_desc, root, bitmap, root_desc);
+                    if (new_target_desc.first_file_id == -1) {
+                        new_target_desc.first_file_id = first_file.id;
+                        first_file.parent_id = new_target_desc.id;
+                        write_desc(new_target_desc, root, bitmap, root_desc);
                     } else {
-                        FileDesc last_child = read_desc(target_desc.first_file_id, root);
+                        FileDesc last_child = read_desc(new_target_desc.first_file_id, root);
                         while (last_child.next_file_id != -1) {
                             last_child = read_desc(last_child.next_file_id, root);
                         }
@@ -466,12 +474,14 @@ void FileSystem::move(FileDesc & source_desc, FileDesc & target_desc) {
                     }
                     write_desc(first_file, root, bitmap, root_desc);
                 } else {
+
+                    write_desc(new_target_desc, root, bitmap, root_desc);
                     write_desc(target_desc, root, bitmap, root_desc);
                 }
 
             }
-            source_desc.remove(bitmap, root, root_desc);
-
+            FileDesc new_source_desc = read_desc(source_desc.id, root);
+            new_source_desc.remove(bitmap, root, root_desc);
 
         } else {
             throw runtime_error("Target is file");
@@ -493,8 +503,6 @@ void FileSystem::move(FileDesc & source_desc, FileDesc & target_desc) {
                 target_desc.remove(bitmap, root, root_desc);
             }
         }
-
-
 
     }
 }
