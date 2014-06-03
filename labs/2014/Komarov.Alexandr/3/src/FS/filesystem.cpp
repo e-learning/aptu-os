@@ -1,7 +1,6 @@
 #include "filesystem.hpp"
 
 
-
 Block::Block(size_t i, size_t s) {
     blockIndex = i;
     blockSize = s - sizeof(HeaderForBlock);
@@ -39,7 +38,6 @@ BlockContainer::BlockContainer(size_t s, const std::string &p) : blockSize(s), p
 }
 
 BlockContainer::~BlockContainer() {
-    //~
 }
 
 Block *BlockContainer::getBlock(size_t n) {
@@ -93,6 +91,7 @@ FileSystem::FileSystem(const char *rootPath) : ready(false), S(0), N(0), path(ro
 }
 
 FileSystem::~FileSystem() {
+    delete blocks;
 }
 
 bool FileSystem::init() {
@@ -454,22 +453,45 @@ bool FileSystem::remove(const std::string &path, bool recursive) {
 // ---
 
 bool FileSystem::move(const std::string &src, const std::string &dst) {
-    if(src == dst) return false;
 
+
+    if( dst.size() >= src.size() && dst.substr(0, src.size()) == src){
+        return false;
+    }
+
+    if(src == dst) {
+        return false;
+    }
     EntryForFile *srcFE = findFile(src);
-    if(!srcFE) return false;
-
+    if(!srcFE) {
+        return false;
+    }
     size_t lastSlash = src.find_last_of('/');
     EntryForFile *pdir = findFile(src.substr(0, lastSlash));
     HeaderForDirectory *pdh = (HeaderForDirectory*)getBlock(pdir->firstBlock)->data();
 
     EntryForFile *dstFE = findFile(dst);
-    if(!dstFE) dstFE = forcedCreateDir(dst);
-    else {
+    if(!dstFE) {
+        dstFE = forcedCreateDir(dst);
+    } else {
         std::string testDst = dst + (dst[dst.size()-1] == '/' ? "" : "/") + src.substr(lastSlash+1);
         EntryForFile *testDstFE = findFile(testDst, true);
         if(testDstFE) {
-            return false;
+
+            DirIterator dit(this, getBlock(srcFE->firstBlock), true);
+
+            while(dit.hasNext()){
+
+                if(! move(src + "/" + dit.next()->name(), testDst)){
+                    return false;
+                }
+
+                DirIterator bufIt(this, getBlock(srcFE->firstBlock), true);
+                dit = bufIt;
+            }
+            remove(src);
+            return true;
+
         }
     }
     if(!(dstFE->attr & FLAG_DIR)) {
@@ -575,6 +597,10 @@ bool FileSystem::copyDir(Block *src, const std::string &dst) {
 
 bool FileSystem::copy(const std::string &src, const std::string &dst_) {
 
+    if( dst_.size() >= src.size() && dst_.substr(0, src.size()) == src){
+        return false;
+    }
+
     std::string dst = dst_;
     if( dst.size() > 1 && dst[dst.size()-1] == '/') {
         dst = dst.substr(0, dst.size()-2);
@@ -608,7 +634,7 @@ bool FileSystem::copy(const std::string &src, const std::string &dst_) {
             if(dpath.empty()) break;
             //~
             if(dpath == src) {
-                flag = 0;
+                flag = 1;
             }
             epos = lspos-1;
         }
