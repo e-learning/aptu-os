@@ -8,7 +8,7 @@ using std::ios;
 using std::runtime_error;
 
 string to_string(int id, string const & root) {
-    return root + "/" + "Block" + std::to_string(id);
+    return root + "/" + std::to_string(id);
 }
 
 Block read_block_desc(int id, string const & root) {
@@ -24,7 +24,7 @@ Block read_block_desc(int id, string const & root) {
 
 
 string to_string(FileDesc const & f, string const & root) {
-    return root + "/" + "File" + std::to_string(f.id);
+    return root + "/" + std::to_string(f.id);
 }
 
 FileDesc read_desc(int id, string const & root) {
