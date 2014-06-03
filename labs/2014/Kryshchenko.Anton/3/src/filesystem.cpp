@@ -7,6 +7,7 @@
 #include <sstream>
 #include <math.h>
 #include <stdexcept>
+#include <unistd.h>
 
 using std::runtime_error;
 using std::string;
