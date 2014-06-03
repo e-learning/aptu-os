@@ -471,8 +471,6 @@ void FileSystem::move(FileDesc & source_desc, FileDesc & target_desc) {
     } else {
         if (target_desc.is_directory) {
             target_desc = find_desc(target_desc, source_desc.name, true, false);
-        } else {
-            throw runtime_error("Target is file");
         }
         target_desc.clear(bitmap, root);
         target_desc.block_count = source_desc.block_count;
