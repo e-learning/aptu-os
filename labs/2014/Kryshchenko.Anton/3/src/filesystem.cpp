@@ -7,7 +7,6 @@
 #include <sstream>
 #include <math.h>
 #include <stdexcept>
-#include <unistd.h>
 
 using std::runtime_error;
 using std::string;
@@ -434,33 +433,42 @@ void FileSystem::copy(const FileDesc & source_desc, FileDesc & target_desc) {
 }
 
 
-void FileSystem::move_cmd(const std::string &source_file_name, const std::string &target_dir_name) {
+void FileSystem::move_cmd(const std::string &source_file_name, const std::string &target_file_name) {
+    if (source_file_name != target_file_name) {
+        FileDesc source_desc = find_desc(source_file_name, false, false);
 
-    FileDesc source_desc = find_desc(source_file_name, false, false);
-    FileDesc target_desc = find_desc(target_dir_name, true, source_desc.is_directory);
+        FileDesc target_desc = find_desc(target_file_name, true, source_desc.is_directory);
 
-    move(source_desc, target_desc);
+        move(source_desc, target_desc);
+    }
 }
 
 void FileSystem::move(FileDesc & source_desc, FileDesc & target_desc) {
     if (source_desc.is_directory) {
         if (target_desc.is_directory) {
             if (source_desc.first_file_id != 1) {
-                FileDesc first_file = read_desc(source_desc.first_file_id, root);
-                if (target_desc.first_file_id == -1) {
-                    target_desc.first_file_id = first_file.id;
-                    first_file.parent_id = target_desc.id;
-                    write_desc(target_desc, root, bitmap, root_desc);
-                } else {
-                    FileDesc last_child = read_desc(target_desc.first_file_id, root);
-                    while (last_child.next_file_id != -1) {
-                        last_child = read_desc(last_child.next_file_id, root);
+                target_desc = find_desc(target_desc, source_desc.name, true, true);
+
+                if (source_desc.first_file_id != -1) {
+                    FileDesc first_file = read_desc(source_desc.first_file_id, root);
+                    if (target_desc.first_file_id == -1) {
+                        target_desc.first_file_id = first_file.id;
+                        first_file.parent_id = target_desc.id;
+                        write_desc(target_desc, root, bitmap, root_desc);
+                    } else {
+                        FileDesc last_child = read_desc(target_desc.first_file_id, root);
+                        while (last_child.next_file_id != -1) {
+                            last_child = read_desc(last_child.next_file_id, root);
+                        }
+                        last_child.next_file_id = first_file.id;
+                        first_file.prev_file_id = last_child.id;
+                        write_desc(last_child, root, bitmap, root_desc);
                     }
-                    last_child.next_file_id = first_file.id;
-                    first_file.prev_file_id = last_child.id;
-                    write_desc(last_child, root, bitmap, root_desc);
+                    write_desc(first_file, root, bitmap, root_desc);
+                } else {
+                    write_desc(target_desc, root, bitmap, root_desc);
                 }
-                write_desc(first_file, root, bitmap, root_desc);
+
             }
             source_desc.remove(bitmap, root, root_desc);
 
@@ -471,13 +479,21 @@ void FileSystem::move(FileDesc & source_desc, FileDesc & target_desc) {
     } else {
         if (target_desc.is_directory) {
             target_desc = find_desc(target_desc, source_desc.name, true, false);
+            target_desc.clear(bitmap, root);
+            target_desc.block_count = source_desc.block_count;
+            target_desc.first_block = source_desc.first_block;
+            target_desc.modified_time = time(0);
+            write_desc(target_desc, root, bitmap, root_desc);
+            source_desc.remove(bitmap, root, root_desc);
+        } else {
+            if (target_desc.name != source_desc.name) {
+                strncpy(source_desc.name, target_desc.name, sizeof(source_desc.name));
+                source_desc.modified_time = time(0);
+                write_desc(source_desc, root, bitmap, root_desc);
+                target_desc.remove(bitmap, root, root_desc);
+            }
         }
-        target_desc.clear(bitmap, root);
-        target_desc.block_count = source_desc.block_count;
-        target_desc.first_block = source_desc.first_block;
-        target_desc.modified_time = time(0);
-        write_desc(target_desc, root, bitmap, root_desc);
-        source_desc.remove(bitmap, root, root_desc);
+
 
 
     }
