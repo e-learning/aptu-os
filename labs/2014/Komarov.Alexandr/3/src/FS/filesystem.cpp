@@ -1,6 +1,9 @@
 #include "filesystem.hpp"
 
 
+#include <cstring>
+#include <string>
+
 Block::Block(size_t i, size_t s) {
     blockIndex = i;
     blockSize = s - sizeof(HeaderForBlock);
@@ -470,6 +473,7 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
     HeaderForDirectory *pdh = (HeaderForDirectory*)getBlock(pdir->firstBlock)->data();
 
     EntryForFile *dstFE = findFile(dst);
+
     if(!dstFE) {
         dstFE = forcedCreateDir(dst);
     } else {
@@ -494,8 +498,27 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
             }
         }
     }
-    if(!(dstFE->attr & FLAG_DIR)) {
-        return false;
+
+
+    if(!(dstFE->attr & FLAG_DIR) && !(srcFE->attr & FLAG_DIR)) {
+
+        std::string nameDst = dstFE->name();
+        size_t lastSlash = dst.find_last_of('/');
+        std::string pathDst = dst.substr(0, lastSlash);
+        std::string nameSrc = srcFE->name();
+
+
+        if( !removeFile(dst) ) {
+            return false;
+        }
+
+        if( !move(src, pathDst) ){
+           return false;
+        }
+        EntryForFile *pdir = findFile(pathDst + "/" + nameSrc);
+
+        std::strcpy(pdir->filename, nameDst.c_str());
+        return true;
     }
 
 
@@ -511,8 +534,9 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
         Block *newblock = getBlock(inewblock);
         newblock->header()->next = -1;
         dstFE = (EntryForFile*)newblock->data();
-    } else if(!dit.hasNext()) ++dstFE;
-
+    } else if(!dit.hasNext()) {
+        ++dstFE;
+    }
     dstFE->copy(srcFE);
     dit.dirHeader()->fileCount++;
     pdh->fileCount--;
@@ -603,7 +627,7 @@ bool FileSystem::copy(const std::string &src, const std::string &dst_) {
 
     std::string dst = dst_;
     if( dst.size() > 1 && dst[dst.size()-1] == '/') {
-        dst = dst.substr(0, dst.size()-2);
+        dst = dst.substr(0, dst.size()-1);
     }
 
     //~
