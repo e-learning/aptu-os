@@ -6,15 +6,16 @@ _start:
         cli
         movw %cs, %ax
         movw %ax, %ds
+        addw $0x0220, %ax
         movw %ax, %ss
         movw $0x7C00, %sp
         sti
 
-helloworld_txt: .ascii "Hello, world!"
+helloworld_txt: .ascii "hello, world"
 .set len, .-helloworld_txt
 
         lea helloworld_txt, %si
-        movb $len, %ecx
+        movb $len, %cl
 
 Print:
         lodsb
