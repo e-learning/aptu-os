@@ -225,7 +225,7 @@ EntryForFile *FileSystem::createFile(const std::string &path, bool alloc) {
         return 0;
     }
 
-    DirIterator dit(this, getBlock(dir->firstBlock), false);
+    DirIterator dit(this, getBlock(dir->firstBlock), false);  //~
     EntryForFile *fe = dit.current();
     while(dit.hasNext() && fe->attr & FLAG) {
         fe = dit.next();
@@ -460,7 +460,6 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
     if( dst.size() >= src.size() && dst.substr(0, src.size()) == src){
         return false;
     }
-
     if(src == dst) {
         return false;
     }
@@ -468,20 +467,25 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
     if(!srcFE) {
         return false;
     }
+
     size_t lastSlash = src.find_last_of('/');
+    //родина исходного файла или директории
     EntryForFile *pdir = findFile(src.substr(0, lastSlash));
     HeaderForDirectory *pdh = (HeaderForDirectory*)getBlock(pdir->firstBlock)->data();
 
     EntryForFile *dstFE = findFile(dst);
 
+    if( dstFE != 0 && !(dstFE->attr & FLAG_DIR) && (srcFE->attr & FLAG_DIR)) {
+        return false;
+    }
 
-    if(!(dstFE==0) && !(dstFE->attr & FLAG_DIR) && !(srcFE->attr & FLAG_DIR)) {
+    // если оба файла
+    if( dstFE != 0 && !(dstFE->attr & FLAG_DIR) && !(srcFE->attr & FLAG_DIR)) {
 
         std::string nameDst = dstFE->name();
         std::string nameSrc = srcFE->name();
         std::string pathDst = "/";
         std::string pathSrc = "/";
-
 
         size_t lastSlash = dst.find_last_of('/');
         if(lastSlash != 0) {
@@ -505,25 +509,35 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
             return false;
         }
 
-        std::strcpy(pdir->filename, nameDst.c_str());
+        std::strcpy(pdir->filename, nameDst.c_str());  // аккуратно переименовать
+        //pdir->name();
 
         return true;
     }
 
+    //есть ли родина у dst
+    size_t lastSlash2 = dst.find_last_of('/');
+    if(dst[0] != '/' || lastSlash2 == std::string::npos ) { //|| lastSlash2 == dst.size()-1
+        return 0;
+    }
+    std::string namePathDst = dst.substr(0, lastSlash2);
+    EntryForFile* pdirDst = findFile(namePathDst);
+    if(pdirDst == 0 && dst != "/") {
+        return false;
+    }
 
 
+
+    // если нет такого, то создаем
     if(!dstFE) {
-        dstFE = forcedCreateDir(dst);
-    } else {
-        std::string testDst = dst + (dst[dst.size()-1] == '/' ? "" : "/") + src.substr(lastSlash+1);
-        EntryForFile *testDstFE = findFile(testDst, true);
-        if(testDstFE) {
-            if((srcFE->attr & FLAG_DIR)) {
-                DirIterator dit(this, getBlock(srcFE->firstBlock), true);
 
+        if((srcFE->attr & FLAG_DIR)) {
+
+                dstFE = forcedCreateDir(dst);
+                DirIterator dit(this, getBlock(srcFE->firstBlock), true);
                 while(dit.hasNext()){
                     std::string name = dit.next()->name();
-                    if(! move(src + "/" + name, testDst)){
+                    if(! move(src + "/" + name, dst)){
                         return false;
                     }
                     DirIterator bufIt(this, getBlock(srcFE->firstBlock), true);
@@ -531,9 +545,56 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
                 }
                 remove(src);
                 return true;
-            } else {
-                removeFile(testDst);
+
+        } else {
+
+            EntryForFile *copyFE = createFile(dst, true);
+            if(!copyFE) {
+                return false;
             }
+            int srcBlock = srcFE->firstBlock;
+            int dstBlock = copyFE->firstBlock;
+
+            for(int i=0; i<srcFE->blocks; i++) {
+                Block *sblock = getBlock(srcBlock);
+                Block *dblock = getBlock(dstBlock);
+                memcpy(dblock->data(), sblock->data(), dblock->size());
+
+                if(sblock->header()->next == -1) {
+                    dblock->header()->next = -1;
+                    break;
+                }
+                int newblock = allocateBlock();
+                if(newblock == -1) {
+                    return false;
+                }
+                dblock->header()->next = newblock;
+                srcBlock = sblock->header()->next;
+                dstBlock = newblock;
+            }
+
+            int fb = copyFE->firstBlock;
+            copyFE->copy(srcFE);
+            std::strcpy(copyFE->filename, dst.substr(lastSlash2+1).c_str());
+            copyFE->firstBlock = fb;
+            copyFE->modTime = time(0);
+
+            remove(src);
+            return true;
+        }
+//////////////////////////////////////////////////////////////////
+    } else {
+        std::string testDst = dst + (dst[dst.size()-1] == '/' ? "" : "/") + src.substr(lastSlash+1);
+        EntryForFile *testDstFE = findFile(testDst, true);
+
+        // уже есть такая папка внутри
+        if(testDstFE && testDstFE->attr & FLAG_DIR) {
+            return false;
+        }
+
+        //есть файл с тем же именем внутри, то подменяем
+        if(testDstFE && !(testDstFE->attr & FLAG_DIR) && !(srcFE->attr & FLAG_DIR)) {
+            return move(src, testDst);
         }
     }
 
