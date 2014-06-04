@@ -475,7 +475,7 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
     EntryForFile *dstFE = findFile(dst);
 
 
-    if(!(dstFE==0) &&(dstFE->attr & FLAG_DIR) && !(srcFE->attr & FLAG_DIR)) {
+    if(!(dstFE==0) && !(dstFE->attr & FLAG_DIR) && !(srcFE->attr & FLAG_DIR)) {
 
         std::string nameDst = dstFE->name();
         std::string nameSrc = srcFE->name();
