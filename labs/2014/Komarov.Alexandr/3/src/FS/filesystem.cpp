@@ -474,6 +474,44 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
 
     EntryForFile *dstFE = findFile(dst);
 
+
+    if(!(dstFE==0) &&(dstFE->attr & FLAG_DIR) && !(srcFE->attr & FLAG_DIR)) {
+
+        std::string nameDst = dstFE->name();
+        std::string nameSrc = srcFE->name();
+        std::string pathDst = "/";
+        std::string pathSrc = "/";
+
+
+        size_t lastSlash = dst.find_last_of('/');
+        if(lastSlash != 0) {
+            pathDst = dst.substr(0, lastSlash) + "/";
+        }
+        lastSlash = src.find_last_of('/');
+        if(lastSlash != 0) {
+            pathSrc = src.substr(0, lastSlash) + "/";
+        }
+
+        if( !removeFile(dst) ) {
+            return false;
+        }
+
+        if( pathDst != pathSrc && !move(src, pathDst) ){
+           return false;
+        }
+
+        EntryForFile *pdir = findFile(pathDst + nameSrc);
+        if(pdir  == 0) {
+            return false;
+        }
+
+        std::strcpy(pdir->filename, nameDst.c_str());
+
+        return true;
+    }
+
+
+
     if(!dstFE) {
         dstFE = forcedCreateDir(dst);
     } else {
@@ -497,28 +535,6 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
                 removeFile(testDst);
             }
         }
-    }
-
-
-    if(!(dstFE->attr & FLAG_DIR) && !(srcFE->attr & FLAG_DIR)) {
-
-        std::string nameDst = dstFE->name();
-        size_t lastSlash = dst.find_last_of('/');
-        std::string pathDst = dst.substr(0, lastSlash);
-        std::string nameSrc = srcFE->name();
-
-
-        if( !removeFile(dst) ) {
-            return false;
-        }
-
-        if( !move(src, pathDst) ){
-           return false;
-        }
-        EntryForFile *pdir = findFile(pathDst + "/" + nameSrc);
-
-        std::strcpy(pdir->filename, nameDst.c_str());
-        return true;
     }
 
 
