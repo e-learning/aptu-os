@@ -10,8 +10,8 @@ _start:
         movw $0x7C00, %sp
         sti
 		
-		leaw helloworld_txt, %si
-		movw $len, %cx
+        leaw helloworld_txt, %si
+        movw $len, %cx
 Print:
         lodsb
         movb $0x0E, %ah
