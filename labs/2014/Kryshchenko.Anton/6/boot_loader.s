@@ -14,7 +14,7 @@ helloworld_txt: .ascii "Hello, world!\n"
 .set len, .-helloworld_txt
 
         lea helloworld_txt, %si
-        movb $len, %cl
+        movb $len, %ecx
 
 Print:
         lodsb
