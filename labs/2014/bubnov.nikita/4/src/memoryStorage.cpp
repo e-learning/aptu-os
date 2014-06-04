@@ -21,26 +21,23 @@ int MemoryStorage::allocate(int size)
     Block* current = firstBlock;
     int offset = 0;
 
-    while (current != NULL)
-    {
-        if (current->isFree() && current->size() >= size)
-        {
-            if (current->size() - size >= MIN_BLOCK_SIZE)
-            {
-                Block* newBlock = new Block(current->size() - size - HEADER_SIZE);
-                current->setSize(size);
-                newBlock->setPrevBlock(current);
-                newBlock->setNextBlock(current->next());
-                if (current->next() != NULL)
-                    current->next()->setPrevBlock(newBlock);
-                current->setNextBlock(newBlock);
-            }
-            current->allocate();
-            return offset + HEADER_SIZE;
-        }
-        
-        offset += HEADER_SIZE + current->getRealSize();
+    while(current != NULL && (!current->isFree() || current->size() < size) ) {
+        offset += HEADER_SIZE + current->size();
         current = current->next();
+    }
+
+    if(current != NULL && current->isFree() && current->size() >= size) {
+        if(current->size() - size >= MIN_BLOCK_SIZE) {
+            Block* newBlock = new Block(current->size() - size - HEADER_SIZE);
+            current->setSize(size);
+            newBlock->setPrevBlock(current);
+            newBlock->setNextBlock(current->next());
+            if (current->next() != NULL)
+                current->next()->setPrevBlock(newBlock);
+            current->setNextBlock(newBlock);
+        }
+        current->allocate();
+        return offset + HEADER_SIZE;
     }
 
     return -1;
@@ -53,19 +50,18 @@ int MemoryStorage::free(int offset)
     
     int current_offset = 0;
     Block* current = firstBlock;
-    while (current != NULL) 
-    {
-        if (!current->isFree() && current_offset + HEADER_SIZE == offset)
-        {
-            current->free();
-            current->mergeWithNext();
-            current->mergeWithPrev();
-            return 0;
-        }
-
-        current_offset += HEADER_SIZE + current->getRealSize();
-        current = current->next();          
+    while(current != NULL && current_offset + HEADER_SIZE < offset) {
+        current_offset += HEADER_SIZE + current->size();
+        current = current->next();
     }
+
+    if(current != NULL && !current->isFree() && current_offset + HEADER_SIZE == offset) {
+        current->free();
+        current->mergeWithNext();
+        current->mergeWithPrev();
+        return 0;
+    }
+
     return -1;
 }
 
@@ -75,12 +71,12 @@ MemInfo MemoryStorage::getInfo()
     Block* current = firstBlock;
     while (current != NULL)
     {
-        if (!current->isFree())
+        if (current->isFree())
         {
-            ++inf.allocBlocks;
-            inf.allocMemory += current->getRealSize();
-        } else {
             inf.maxAlloc = std::max(inf.maxAlloc, current->size());
+        } else {
+            ++inf.allocBlocks;
+            inf.allocMemory += current->size();
         }
         current = current->next();
     }
@@ -105,7 +101,7 @@ std::string MemoryStorage::toString()
             ch = 'u';
         }
 
-        for (int i = 0; i < current->getRealSize(); ++i) 
+        for (int i = 0; i < current->size(); ++i) 
         {
             result[sPos++] = ch;
         }

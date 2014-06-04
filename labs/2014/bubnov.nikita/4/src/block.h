@@ -8,7 +8,7 @@ const int MIN_BLOCK_SIZE = HEADER_SIZE + 1;
 class Block
 {
 public:
-    Block(int size) : mySize(size), nextBlock(NULL), prevBlock(NULL) {}
+    Block(int size) : mySize(size), nextBlock(NULL), prevBlock(NULL), myFree(1) {}
 
     int available()
     {
@@ -21,25 +21,18 @@ public:
 
     bool isFree()
     {
-        return mySize > 0;
+        return myFree;
     }
 
     void allocate() 
     {
-        if(mySize > 0)
-        {
-            mySize = -mySize;
-        }
+        myFree = 0;
     }
 
     void free() 
     {
-        if(mySize < 0) {
-            mySize = -mySize;
-        }
+        myFree = 1;
     }
-
-    int getRealSize() {return abs(mySize);}
 
     void mergeWithNext()
     {
@@ -76,7 +69,7 @@ private:
     int mySize;
     Block* nextBlock;
     Block* prevBlock;
-    bool myIsFree;
+    bool myFree;
 };
 
 
