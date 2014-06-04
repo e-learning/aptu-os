@@ -11,11 +11,9 @@ _start:
      mov %bp, OFFSET FLAT:message
      mov %ah, 0x13 #print string
      mov %bh, 0
-     mov %bl, 150
-     mov %dh, 0 
-     mov %cx, 12
-     mov %dl, 0
+     mov %bl, 0x07
      int 0x10
+    
 
 message:
      .ascii "Hello World!"
