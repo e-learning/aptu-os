@@ -454,7 +454,6 @@ bool FileSystem::remove(const std::string &path, bool recursive) {
 
 bool FileSystem::move(const std::string &src, const std::string &dst) {
 
-
     if( dst.size() >= src.size() && dst.substr(0, src.size()) == src){
         return false;
     }
@@ -477,21 +476,22 @@ bool FileSystem::move(const std::string &src, const std::string &dst) {
         std::string testDst = dst + (dst[dst.size()-1] == '/' ? "" : "/") + src.substr(lastSlash+1);
         EntryForFile *testDstFE = findFile(testDst, true);
         if(testDstFE) {
+            if((srcFE->attr & FLAG_DIR)) {
+                DirIterator dit(this, getBlock(srcFE->firstBlock), true);
 
-            DirIterator dit(this, getBlock(srcFE->firstBlock), true);
-
-            while(dit.hasNext()){
-
-                if(! move(src + "/" + dit.next()->name(), testDst)){
-                    return false;
+                while(dit.hasNext()){
+                    std::string name = dit.next()->name();
+                    if(! move(src + "/" + name, testDst)){
+                        return false;
+                    }
+                    DirIterator bufIt(this, getBlock(srcFE->firstBlock), true);
+                    dit = bufIt;
                 }
-
-                DirIterator bufIt(this, getBlock(srcFE->firstBlock), true);
-                dit = bufIt;
+                remove(src);
+                return true;
+            } else {
+                removeFile(testDst);
             }
-            remove(src);
-            return true;
-
         }
     }
     if(!(dstFE->attr & FLAG_DIR)) {
