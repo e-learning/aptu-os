@@ -16,7 +16,7 @@ _start:
      mov %cx, 12
      mov %dl, 0
      int 0x10
-    
+     jmp $
 
 message:
      .ascii "Hello World!"
