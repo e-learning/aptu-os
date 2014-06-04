@@ -10,7 +10,7 @@ _start:
         movw $0x7C00, %sp
         sti
 
-helloworld_txt: .ascii "Hello, world!\n"
+helloworld_txt: .ascii "Hello, world!"
 .set len, .-helloworld_txt
 
         lea helloworld_txt, %si
