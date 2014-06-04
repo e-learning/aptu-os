@@ -22,5 +22,3 @@ test:
 clean: 
 	@rm -f *.o
 	@rm -f $(APPS)
-	@rm -rf $FS_DIR
-	@rm -f tests/content
