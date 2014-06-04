@@ -53,7 +53,7 @@ int MemoryStorage::free(int offset)
     
     int current_offset = 0;
     Block* current = firstBlock;
-    while (true) 
+    while (current != NULL) 
     {
         if (!current->isFree() && current_offset + HEADER_SIZE == offset)
         {
@@ -62,11 +62,11 @@ int MemoryStorage::free(int offset)
             current->mergeWithPrev();
             return 0;
         }
-        if (current->next() == NULL)
-            return -1;
+
         current_offset += HEADER_SIZE + current->getRealSize();
         current = current->next();          
     }
+    return -1;
 }
 
 MemInfo MemoryStorage::getInfo()
