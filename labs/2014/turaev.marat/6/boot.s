@@ -12,7 +12,6 @@ _start:
   movw $0x0100, %sp
   sti
 
-msg: .ascii "hello, world"
 .set l, .-msg
   lea msg, %si     
   movb $l, %ecx 
@@ -23,6 +22,8 @@ print:
   int $0x10
   loop print 
   hlt 
+
+msg: .ascii "hello, world"
 
   . = _start + 510
   .byte 0x55
