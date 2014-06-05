@@ -6,8 +6,7 @@ _start:
 
      lea %bp, begin_message
 
-     lea ax, len
-     mov %cx, ax
+     lea %cx, len
 
      mov %ax, 0
      mov %es, %ax
@@ -21,7 +20,7 @@ _start:
      jmp $
 
 begin_message:
-     .asciz "hello world!"
+     .ascii "hello world!asjkdfhkasdhf"
      .set len, . - begin_message
      . = _start + 510
      .byte 0x55
