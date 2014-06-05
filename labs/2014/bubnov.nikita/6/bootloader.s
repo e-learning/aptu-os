@@ -1,4 +1,4 @@
-.intel_syntax
+.intel_syntax noprefix
 .code16gcc
 .text
 .globl _start
@@ -6,9 +6,8 @@ _start:
 
      lea %bp, begin_message
 
-     lea %cx, end_message
-     lea %ax, begin_message
-     sub %cx, %ax
+     lea ax, len
+     mov %cx, ax
 
      mov %ax, 0
      mov %es, %ax
@@ -23,7 +22,7 @@ _start:
 
 begin_message:
      .asciz "hello world!"
-end_message:
+     .set len, . - begin_message
      . = _start + 510
      .byte 0x55
      .byte 0xaa
