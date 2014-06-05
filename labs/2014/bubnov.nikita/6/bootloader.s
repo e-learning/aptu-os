@@ -4,9 +4,11 @@
 .globl _start
 _start:
 
-     lea %bp, message
+     lea %bp, begin_message
 
-     mov %cx, [len]
+     lea %cx, end_message
+     lea %ax, begin_message
+     sub %cx, %ax
 
      mov %ax, 0
      mov %es, %ax
@@ -19,9 +21,9 @@ _start:
      int 0x10
      jmp $
 
-message:
+begin_message:
      .asciz "hello world!"
-     len = . - message
+end_message:
      . = _start + 510
      .byte 0x55
      .byte 0xaa
