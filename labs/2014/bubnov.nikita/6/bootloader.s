@@ -4,17 +4,9 @@
 .globl _start
 _start:
 
+     lea %bp, message
 
-     lea %si, message
-     mov %bp, %si
-
-     mov %cx, 0
-myloop:
-     inc %si
-     inc %cx
-     mov %ax, [%si]
-     cmp %ax, 0
-     jne myloop
+     mov %cx, [len]
 
      mov %ax, 0
      mov %es, %ax
@@ -29,6 +21,7 @@ myloop:
 
 message:
      .asciz "hello world!"
+     len = . - message
      . = _start + 510
      .byte 0x55
      .byte 0xaa
