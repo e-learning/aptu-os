@@ -12,8 +12,7 @@ _start:
   movw $0x0100, %sp
   sti
 
-.set l, .-msg
-  lea msg, %si     
+  lea msg, %si  
   movb $l, %ecx 
   
 print: 
@@ -24,6 +23,7 @@ print:
   hlt 
 
 msg: .ascii "hello, world"
+.set l, .-msg
 
   . = _start + 510
   .byte 0x55
