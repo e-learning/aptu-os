@@ -1,44 +1,19 @@
-#include <iostream>
-#include <string>
-#include "utils/file_system.h"
+#include "utils/FileSystem.h"
 
-using std::string;
-using std::ifstream;
+int usage()
+{
+  std::cerr << "Usage: ./import <root> <host_file> <fs_file>"
+            << std::endl;
+  return 1;
+}
 
-int main (const int argc, const char *argv[]) 
-	try 
-	{
-    if (argc < 4) 
-		{
-        std::cout << "Usage: import root host_file fs_file" << std::endl;
-        return 0;
-    } 
-		else 
-		{
-        file_system fs(argv[1]);
+int main(int argc, char *argv[])
+{
+  if (argc != 4)
+    return usage();
 
-        fs.check_initialized();
+  FileSystem fs(argv[1]);
+  return fs.doImport(argv[2], argv[3]);
+}
 
-        ifstream source_file(argv[2], ios::binary);
-        if (!source_file) {
-            throw "Cannot open file to import";
-        }
 
-        file_record fd = fs.find_descriptor(argv[3]);
-        if (fd.directory) {
-            throw string("'") + fd.name + "' is a directory";
-        }
-
-        fs.write_data(fd,source_file);
-    }
-    return 0;
-	}
-	catch (const char * msg) 
-	{
-    std::cerr << msg << std::endl;
-    return 1;
-	}
-	catch (const string msg) 
-	{
-    std::cerr << msg << std::endl;
-	}
