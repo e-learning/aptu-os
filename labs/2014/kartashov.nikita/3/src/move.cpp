@@ -1,33 +1,20 @@
-#include <iostream>
-#include "utils/file_system.h"
+#include "utils/FileSystem.h"
 
-using namespace std;
+int usage()
+{
+  std::cerr << "Usage: ./move <root> <src> <dst>"
+            << std::endl;
+  return 1;
+}
 
-int main (const int argc, const char *argv[]) 
-	try 
-	{
-    if (argc < 4) 
-		{
-        std::cout << "Usage: move root source destination" << std::endl;
-    }
-		else 
-		{
-        file_system fs(argv[1]);
+int main(int argc, char *argv[])
+{
+  if (argc != 4)
+    return usage();
 
-        file_record source_d = fs.find_descriptor(argv[2], false);
-        file_record destination_d = fs.find_descriptor(argv[3], true, source_d.directory);
+  FileSystem fs(argv[1]);
+  return fs.doMove(argv[2], argv[3]);
+}
 
-        fs.move(source_d, destination_d);
-    }
-    return 0;
-	}
-	catch (const char * msg) 
-	{
-    std::cerr << msg << std::endl;
-    return 1;
-	} 
-	catch (const string msg) 
-	{
-    std::cerr << msg << std::endl;
-    return 1;
-	}
+
+

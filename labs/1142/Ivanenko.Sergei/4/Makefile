@@ -1,5 +1,8 @@
-allocator: allocator.o
-	g++ -o allocator allocator.o
-allocator.o: allocator.cpp
-	g++ -c -o allocator.o allocator.cpp
+
+com: alloc
+	g++ alloc.o -o com
+alloc: alloc.cpp
+	g++ -c alloc.cpp -o alloc.o
+clear:
+	rm *.o
 

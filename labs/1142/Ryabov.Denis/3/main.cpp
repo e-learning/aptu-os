@@ -6,6 +6,9 @@
 #include <cstdlib>
 #include <unistd.h>
 using namespace std;
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 static void *potok(void *){
 	int id = shmget(ftok("3laba", 0), 0, 0);
 	if (id == -1) exit(1);
@@ -14,7 +17,9 @@ static void *potok(void *){
 	while (1) {
 		if (*adr==0){
 		*adr=rand()%100+1;
+		pthread_mutex_lock(&mutex);
 		cout<<"Записали:"<<*adr<<endl;
+		pthread_mutex_unlock(&mutex);
 		sleep(3);
 		}
 	}
@@ -31,7 +36,9 @@ int main(void){
 	if (pthread_create(&pth, NULL, potok, NULL) != 0) {cout<<"Не удалось создать поток"<<endl;  return 1;}
 	while (1){
 		if (*adr!=0){
+			pthread_mutex_lock(&mutex);
 			cout<<"Найдено:"<<*adr<<endl;
+			pthread_mutex_unlock(&mutex);
 			*adr=0;
 			sleep(1);
 		}

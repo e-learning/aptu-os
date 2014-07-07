@@ -1,45 +1,106 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include <deque>
-#include <string>
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <queue>
 
 using std::string;
-using std::deque;
-using std::pair;
+using std::priority_queue;
 
-enum TaskEvent {
-    OK,
-    QUANT_OVER,
-    IO,
-    FINISHED
-};
+size_t timer = 0;
+size_t quant;
 
-class task
-{
-public:
-    task(string & str);
-    bool update_IO_time();
-    TaskEvent update_working_time();
-    bool compair_priority() const;
+struct IO {
+    IO(size_t start_time, size_t exec_time)
+        :start_time(start_time), exec_time(exec_time) {
 
-    bool operator<(task const & t) const {
-        return start < t.start;
     }
 
+    size_t start_time;
+    size_t exec_time;
 
-    static int quant;
-    int start;
-    string name;
+    bool operator < (IO const & other) const {
+        return start_time == other.start_time ? exec_time <= other.exec_time
+                : start_time <= other.start_time;
+    }
+};
+
+struct Task {
+
+    string id;
+
+    size_t start_time;
+    size_t exec_time;
+    size_t waiting_time;
+    size_t start_io_time;
+
+    priority_queue<IO> io;
+
+    bool is_io_in_quant() const {
+        return (start_time <= timer)
+                && (io.size() == 0
+                    ? false
+                    : io.top().start_time - (exec_time - waiting_time) <= quant);
+    }
+
+    bool is_finish_in_quant() const {
+        return start_time <= timer
+                && waiting_time <= quant;
+    }
+
+    bool is_io() const {
+        return io.size() == 0
+                ? false
+                : io.top().start_time == exec_time - waiting_time;
+    }
+
+    bool completed() const {
+        return waiting_time == 0;
+    }
+
+    size_t io_finish_time() const {
+        return start_io_time + io.top().exec_time;
+    }
+
+    void close_io() {
+        waiting_time -= io.top().exec_time;
+        io.pop();
+    }
+
+    void step(){
+        --waiting_time;
+    }
+};
 
 
-private:
-    int lenght;
-    int io_time;
-    int total_time;
-    int local_time;
-    deque< pair<int, int> > io_blocks;
+struct Task_Comparator {
+
+    bool operator ()(const Task & that, const Task & other) const {
+        if (that.is_io_in_quant()) {
+            return false;
+        } else if (other.is_io_in_quant()) {
+            return true;
+        }
+        if (that.is_finish_in_quant()) {
+            return false;
+        } else if (other.is_finish_in_quant()) {
+            return true;
+        }
+        return that.start_time > other.start_time;
+    }
 
 };
+
+struct Task_IO_Comparator {
+
+    bool operator ()(const Task & that, const Task & other) const {
+        return that.io_finish_time() > other.io_finish_time();
+    }
+
+};
+
+
 
 #endif // TASK_H

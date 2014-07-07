@@ -1,18 +1,24 @@
-CC = g++
-CFLAGS = -Wall -ggdb -Wextra -pedantic -std=c++11
+CC = clang++
+CFLAGS = -Wall -O2 -ggdb -Wextra -pedantic -Werror -std=c++11
 
-SOURCEDIR = src/utils
+SOURCEDIR = src
+UTILDIR = $(SOURCEDIR)/utils
+
+UTIL_SOURCES = $(wildcard $(UTILDIR)/*.cpp)
 SOURCES = $(wildcard $(SOURCEDIR)/*.cpp)
 
-TARGETS = init format import export ls move copy rm mkdir
+TARGETS = $(SOURCES:src/%.cpp=%)
 
 all: $(TARGETS)
 
-$(TARGETS): $(SOURCES)
-	$(CC) $(CFLAGS) src/$@.cpp $(SOURCES) -o $@
+$(TARGETS): $(SOURCES) $(UTIL_SOURCES)
+	@echo -n 'Linking $@ ...'
+	$(CC) $(CFLAGS) $(UTIL_SOURCES) src/$@.cpp -o $@
+	@echo ' OK'
 	@rm -rf *.dSYM
 
-.PHONY: clean 
 
 clean:
-	@rm -rf $(TARGETS)	
+	@rm -rf $(BINDIR) $(TARGETS)
+
+.PHONY: clean 
