@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-void kill_run(const char*);
+void kill_run(char*);
 void ls_run();
 void ps_run();
 void pwd_run();
