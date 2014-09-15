@@ -1,4 +1,4 @@
-FLAGS = -Wall -Werror
+FLAGS = -Wall -Werror -g
 
 all: my_shell
 

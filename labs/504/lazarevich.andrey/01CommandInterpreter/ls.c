@@ -6,7 +6,6 @@
 
 void ls_run()
 {
-	char 			files[256][256];
 	DIR 			*dir;
 	struct dirent	*entry;	
 	struct winsize	w;
@@ -25,16 +24,15 @@ void ls_run()
 	{
 		if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0)
 		{ 
-			strcpy( files[counter], entry->d_name);
-			if ((length + strlen(files[counter])) > w.ws_col)
+			if ((length + strlen(entry->d_name)) >= w.ws_col)
 			{
 				length = 0;
-				printf("\n%s\t", files[counter]);
+				printf("\n%s\t", entry->d_name);
 			}
 			else
-				printf("%s\t", files[counter]);
+				printf("%s\t", entry->d_name);
 
-			length += strlen(files[counter]) + 4;		
+			length += strlen(entry->d_name) + 5;		
 			counter++;
 		}
 	}
