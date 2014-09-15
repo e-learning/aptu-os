@@ -72,11 +72,39 @@ void pwd_handler(arguments) {
     cout << result << endl;
 }
 
+int get_pid(const char* entry_name) {
+    int pid;
+    if (sscanf(entry_name, "%u", &pid)) {
+        return pid;
+    } else {
+        return -1;
+    }
+}
+
 void ps_handler(arguments) {
-    DIR *pd = opendir("/proc");
-    if (!pd) {
+    DIR *proc_dir = opendir("/proc");
+    if (!proc_dir) {
         print_error("ps");
         return;
+    }
+
+    vector<int> pids;
+
+    dirent* dir_entry = readdir(proc_dir);
+    while (dir_entry) {
+        int pid = get_pid(dir_entry->d_name);
+        if (pid != -1) {
+            pids.push_back(pid);
+        }
+
+        dir_entry = readdir(proc_dir);
+    }
+
+    closedir(proc_dir);
+
+    for (auto it = pids.begin(); it != pids.end(); ++it) {
+        int pid = *it;
+        cout << pid << endl;
     }
 }
 
