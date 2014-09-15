@@ -5,6 +5,8 @@
 #include <vector>
 #include <sstream>
 #include <dirent.h>
+#include <string.h>
+#include <signal.h>
 
 using namespace std;
 
@@ -20,10 +22,18 @@ void print_with_prefix_and_suffix(const string& str, const string& message) {
     cout << endl;
 }
 
+void print_error(const string& cmd) {
+    print_with_prefix_and_suffix(cmd, strerror(errno));
+}
+
+void print_command_not_found_error(const string& cmd) {
+    print_with_prefix_and_suffix(cmd, ": command not found");
+}
+
 void print_dir(const string& path) {
     DIR* dir = opendir(path.c_str());
     if (!dir) {
-        print_with_prefix_and_suffix(path, strerror(errno));
+        print_error(path);
         return;
     }
 
@@ -65,13 +75,39 @@ void pwd_handler(arguments) {
 void ps_handler(arguments) {
     DIR *pd = opendir("/proc");
     if (!pd) {
-        print_with_prefix_and_suffix("ps", strerror(errno));
+        print_error("ps");
         return;
     }
 }
 
 void kill_handler(arguments args) {
+    if (args.size() == 2) {
+        int pid = stoi(args[0]);
+        if (pid < 0) {
+            print_with_prefix_and_suffix("kill", "pid shold be an integer number greater than 0");
+            return;
+        }
+        if (errno != 0) {
+            print_error("kill");
+            return;
+        }
 
+        int signal = stoi(args[1]);
+        if (errno != 0) {
+            print_error("kill");
+            return;
+        }
+        if (signal < 0 || signal > 64) {
+            print_with_prefix_and_suffix("kill", "signal shold be an integer number in range between 0 and 64");
+            return;
+        }
+
+        if (kill(pid, signal) != 0) {
+            print_error("kill");
+        }
+    } else {
+        print_with_prefix_and_suffix("kill", "usage: kill <pid> <signal>");
+    }
 }
 
 void exit_handler(arguments) {
@@ -108,10 +144,6 @@ command split_string(const string& raw_command) {
 void print_shell_prefix() {
     cout << "> ";
     cout.flush();
-}
-
-void print_command_not_found_error(const string& command) {
-    cout << command << ": command not found" << endl;
 }
 
 int main() {
