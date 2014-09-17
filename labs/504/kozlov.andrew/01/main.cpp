@@ -39,7 +39,36 @@ command split_string(const string& raw_command) {
 
 void sigint_handler(int signal_number) {
     cout << "SIGINT" << endl;
-    exit(0);
+    exit(EXIT_SUCCESS);
+}
+
+void exec_handler(command& cmd) {
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        print_with_prefix_and_suffix(cmd.first, "fork() error");
+        exit(EXIT_FAILURE);
+    } else if (pid == 0) {
+        arguments args = cmd.second;
+        char** args_array = new char*[args.size() + 1];
+
+        for (size_t i = 0; i < args.size(); ++i) {
+            args_array[i] = new char[args[i].size() + 1];
+            strcpy(args_array[i], args[i].c_str());
+        }
+
+        execvp(cmd.first.c_str(), args_array);
+
+        for (size_t i = 0; i < args.size(); ++i) {
+            delete[] args_array[i];;
+        }
+        delete[] args_array;
+        
+        exit(EXIT_SUCCESS);
+    } else {
+        int status;
+        waitpid(pid, &status, 0);
+    }
 }
 
 int main() {
@@ -53,18 +82,18 @@ int main() {
 
         string s = "";
         if (getline(cin, s)) {
-            auto c = split_string(s);
+            auto cmd = split_string(s);
 
             bool command_is_found = false;
             for (auto it = utils.begin(); it != utils.end(); ++it) {
-                if (c.first == it->first) {
-                    it->second(c.second);
+                if (cmd.first == it->first) {
+                    it->second(cmd.second);
                     command_is_found = true;
                 }
             }
 
             if (!command_is_found) {
-
+                exec_handler(cmd);
             }
         }
     }
