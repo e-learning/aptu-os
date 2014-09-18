@@ -53,16 +53,21 @@ void exec_handler(command& cmd) {
         arguments args = cmd.second;
         char** args_array = new char*[args.size() + 1];
 
-        for (size_t i = 0; i < args.size(); ++i) {
-            args_array[i] = new char[args[i].size() + 1];
+        for (size_t i = 1; i <= args.size(); ++i) {
+            args_array[i] = new char[args[i].length() + 1];
             strcpy(args_array[i], args[i].c_str());
         }
 
-        execvp(cmd.first.c_str(), args_array);
+        char* file = new char[cmd.first.length() + 1];
+	strcpy(file, cmd.first.c_str());
+	args_array[0] = file;
 
-        for (size_t i = 0; i < args.size(); ++i) {
+        execv(file, args_array);
+
+        for (size_t i = 0; i <= args.size(); ++i) {
             delete[] args_array[i];;
         }
+	//delete[] file;
         delete[] args_array;
         
         exit(EXIT_SUCCESS);
