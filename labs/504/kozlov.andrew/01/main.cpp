@@ -3,6 +3,7 @@
 #include <array>
 #include <sstream>
 #include <stdlib.h>
+#include <sys/wait.h>
 
 extern void ls_handler(arguments);
 extern void pwd_handler(arguments);
@@ -50,7 +51,7 @@ void exec_handler(command& cmd) {
         exit(EXIT_FAILURE);
     } else if (pid == 0) {
         arguments args = cmd.second;
-        char** args_array = new char*[args.size()];
+        char** args_array = new char*[args.size() + 1];
 
         for (size_t i = 0; i < args.size(); ++i) {
             args_array[i] = new char[args[i].size() + 1];
@@ -58,6 +59,12 @@ void exec_handler(command& cmd) {
         }
 
         execvp(cmd.first.c_str(), args_array);
+
+        for (size_t i = 0; i < args.size(); ++i) {
+            delete[] args_array[i];;
+        }
+        delete[] args_array;
+        
         exit(EXIT_SUCCESS);
     } else {
         int status;
