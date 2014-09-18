@@ -7,7 +7,7 @@ common = common.o
 all: shell
 
 common.o: common.h common.cpp
-	$(CPP) $(FLAGS) -c common.cpp
+	$(CPP) $(FLAGS) -fPIC -c common.cpp
 
 ls.o: $(common) ls.cpp
 	$(CPP) $(FLAGS) -c ls.cpp

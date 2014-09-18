@@ -43,6 +43,13 @@ void sigint_handler(int signal_number) {
     exit(EXIT_SUCCESS);
 }
 
+char* copy_c_str(const string& s) {
+    char* result = new char[s.length() + 1];
+    strcpy(result, s.c_str());
+
+    return result;
+}
+
 void exec_handler(command& cmd) {
     pid_t pid = fork();
 
@@ -53,21 +60,16 @@ void exec_handler(command& cmd) {
         arguments args = cmd.second;
         char** args_array = new char*[args.size() + 1];
 
-        for (size_t i = 1; i <= args.size(); ++i) {
-            args_array[i] = new char[args[i].length() + 1];
-            strcpy(args_array[i], args[i].c_str());
+	args_array[0] = copy_c_str(cmd.first);
+        for (size_t i = 0; i < args.size(); ++i) {
+            args_array[i + 1] = copy_c_str(args[i]);
         }
 
-        char* file = new char[cmd.first.length() + 1];
-	strcpy(file, cmd.first.c_str());
-	args_array[0] = file;
-
-        execv(file, args_array);
+        execv(args_array[0], args_array);
 
         for (size_t i = 0; i <= args.size(); ++i) {
             delete[] args_array[i];;
         }
-	//delete[] file;
         delete[] args_array;
         
         exit(EXIT_SUCCESS);
