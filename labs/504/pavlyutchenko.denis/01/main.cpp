@@ -107,13 +107,10 @@ int main()
             ls(args);
         }
         else {
-            string programName = "/bin/" + string(args[0]);
-            const char *cstr = programName.c_str();
-
             pid_t pid = fork();
 
             if (pid == 0) { /* child process */
-                execv(cstr, args);
+                execvp(args[0], args);
                 exit(127); /* only if execv fails */
             }
             else { /* pid!=0; parent process */
