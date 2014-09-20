@@ -5,12 +5,11 @@
 #include <cstdlib>
 
 
-string KillCmd::exec(vector<string> &args) {
+void KillCmd::exec(vector<string> &args) {
     if(args.size() <= 1) {
-        cout << "Please provide PID as first parameter to kill" << endl;
-        return "";
+        cout << "Please provide PID as first parameter to kill" << endl << flush;
+        return;
     }
     string pid = args[1];
     kill(atoi(pid.c_str()), SIGTERM);
-    return "SIGTERM sended";
 }

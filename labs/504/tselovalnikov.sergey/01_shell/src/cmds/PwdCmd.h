@@ -7,5 +7,5 @@ public:
     PwdCmd(string text) : Cmd(text) {
     }
 
-    virtual string exec();
+    virtual void exec();
 };

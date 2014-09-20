@@ -3,6 +3,6 @@
 
 #include "../utils/ProcessUtils.h"
 
-string PsCmd::exec() {
-    return utils::listOfAllProcess();
+void PsCmd::exec() {
+    cout <<  utils::listOfAllProcess() << endl << flush;
 }

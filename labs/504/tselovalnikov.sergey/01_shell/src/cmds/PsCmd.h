@@ -7,5 +7,5 @@ public:
     PsCmd(string text) : Cmd(text) {
     }
 
-    virtual string exec();
+    virtual void exec();
 };

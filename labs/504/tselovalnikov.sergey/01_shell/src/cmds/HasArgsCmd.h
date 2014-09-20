@@ -8,9 +8,9 @@ public:
     HasArgsCmd(string text) : Cmd(text) {
     }
 
-    string exec();
+    virtual void exec();
 
-    virtual string exec(vector<string> &args) = 0;
+    virtual void exec(vector<string> &args) = 0;
 protected:
     void parseArgs(vector<string> &args, string command);
 };

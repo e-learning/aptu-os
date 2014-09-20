@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "ExitCmd.h"
 
-string ExitCmd::exec() {
+void ExitCmd::exec() {
     exit(1);
 }

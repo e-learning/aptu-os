@@ -5,5 +5,5 @@ public:
     EmptyCmd() : Cmd("") {
     }
 
-    virtual string exec();
+    virtual void exec();
 };

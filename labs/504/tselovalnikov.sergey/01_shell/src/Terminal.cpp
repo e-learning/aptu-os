@@ -1,9 +1,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <string.h>
-#include <backward/strstream>
 #include <fcntl.h>
+#include <string.h>
 #include "Terminal.h"
 #include "utils/StringUtils.h"
 
@@ -15,20 +14,16 @@ Terminal::Terminal() {
 }
 
 string Terminal::read() {
-    cout << "$ ";
+    cout << "$ " << flush;
     string command;
-    while(command.empty()) {
+    while (command.empty()) {
         getline(cin, command);
         utils::trim(command);
     }
     return command;
 }
 
-void Terminal::print(string str) {
-    cout << str << endl;
-}
-
-string Terminal::eval(string line) {
+void Terminal::eval(string line) {
     if (hasPipe(line)) {
         return execWithPipe(line);
     } else {
@@ -45,21 +40,18 @@ bool Terminal::hasRedirectOut(string line) {
 }
 
 void Terminal::run() {
-    // Simple REPL
+    // Simple REL
     while (true) {
         string command = read();
-        string result = eval(command);
-        print(result);
+        eval(command);
     }
 }
 
-string Terminal::execWithPipe(string line) {
+void Terminal::execWithPipe(string line) {
     int fileDescriptor[2] = {0, 0};
     int pipe_pos = line.rfind('|');
     string firstCommand = line.substr(0, pipe_pos);
     string secondCommand = line.substr(pipe_pos + 1);
-
-    cout << firstCommand << endl << secondCommand << endl;
 
     pipe(fileDescriptor);
     pid_t pid = fork();
@@ -76,68 +68,61 @@ string Terminal::execWithPipe(string line) {
         close(fileDescriptor[PIPE_READ]);
         int status = 0;
         waitpid(pid, &status, 0);
-        string result = eval(secondCommand);
-        return result;
+        eval(secondCommand);
     }
 }
 
-string Terminal::exec(string line) {
-    if(hasRedirectOut(line)) {
-        return setupRedirect(line);
+void Terminal::exec(string line) {
+    if (hasRedirectOut(line)) {
+        setupRedirect(line);
+        return;
     }
-    Cmd* command = cmdFactory->getCmd(line);
-    string result = command->exec();
+    Cmd *command = cmdFactory->getCmd(line);
+    command->exec();
     delete command;
-    return result;
 }
 
 string Terminal::setupRedirect(string line) {
     int fileDescriptor[2] = {0, 0};
     pipe(fileDescriptor);
-    pid_t pid = fork();
-    if(pid == 0) {
-        close(fileDescriptor[PIPE_READ]);
-        vector<string> args;
-        utils::split(line, ' ', args);
-        int in = line.find('<');
-        if (in != -1) {
-            string file;
-            for (int i = 0; i < args.size(); i++) {
-                if (args[i] == "<") {
-                    file = args[i + 1];
-                }
-            }
-            FILE *readfile = fopen(file.c_str(), "r");
-            dup2(fileDescriptor[PIPE_READ], fileno(readfile));
-            close(fileDescriptor[PIPE_READ]);
-            close(fileDescriptor[PIPE_WRITE]);
+    vector<string> args;
+    utils::split(line, ' ', args);
+    int in = line.find('<');
+    stringstream newline;
+    for (int i = 0; i < args.size(); i++) {
+        if (args[i] == "<" || args[i] == ">") {
+            i++;
         } else {
-            string file;
-            for (int i = 0; i < args.size(); i++) {
-                if (args[i] == ">") {
-                    file = args[i + 1];
-                }
-            }
-            freopen(file.c_str(), "a+", stdout);
-//            int fd = open(file.c_str(), O_WRONLY | O_CREAT);
-//            dup2(fd, PIPE_WRITE);   // make stdout go to file
-//            close(fd);     // fd no longer needed - the dup'ed handles are sufficient
+            newline << args[i] << " ";
         }
-        strstream newline;
-        for (int i = 0; i < args.size(); i++) {
-            if (args[i] == "<" || args[i] == ">") {
-                i++;
-            } else {
-                newline << args[i] << " ";
-            }
-        }
-        exec(newline.str());
-        fflush(stdout);
-        sleep(1);
-        exit(0);
-    } else {
-        int status = 0;
-        waitpid(pid, &status, 0);
-        return "";
     }
+    if (in != -1) {
+        string file;
+        for (int i = 0; i < args.size(); i++) {
+            if (args[i] == "<") {
+                file = args[i + 1];
+            }
+        }
+        FILE *readfile = fopen(file.c_str(), "r+");
+        dup2(fileDescriptor[PIPE_READ], fileno(readfile));
+        close(fileDescriptor[PIPE_READ]);
+        close(fileDescriptor[PIPE_WRITE]);
+        exec(newline.str());
+        fclose(readfile);
+    } else {
+        string file;
+        for (int i = 0; i < args.size(); i++) {
+            if (args[i] == ">") {
+                file = args[i + 1];
+            }
+        }
+        int fl = open(file.c_str(), O_CREAT | O_RDWR | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
+        dup2(fl,1);
+        close(fl);
+        exec(newline.str());
+    }
+}
+
+Terminal::~Terminal() {
+    delete cmdFactory;
 }

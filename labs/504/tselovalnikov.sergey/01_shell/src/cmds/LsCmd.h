@@ -9,5 +9,5 @@ public:
     LsCmd(string text) : HasArgsCmd(text) {
     }
 
-    virtual string exec(vector<string> &args);
+    virtual void exec(vector<string> &args);
 };

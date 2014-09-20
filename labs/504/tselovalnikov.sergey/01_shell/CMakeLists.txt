@@ -5,6 +5,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     add_definitions(-std=gnu++0x)
 endif()
 
+
 set(SOURCE_FILES
     main.cpp
     src/Terminal.h
@@ -36,7 +37,7 @@ set(SOURCE_LIB
     src/utils/ProcessUtils.cpp
 )
 
-add_library(utils STATIC ${SOURCE_LIB})
+add_library(utils SHARED ${SOURCE_LIB})
 add_executable(shell ${SOURCE_FILES})
 
 target_link_libraries(shell utils)

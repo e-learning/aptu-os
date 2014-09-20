@@ -1,5 +1,3 @@
-#pragma once
-
 #include <string>
 #include "cmds/CmdFactory.h"
 
@@ -9,23 +7,23 @@ class Terminal {
 public:
     Terminal();
 
+    ~Terminal();
+
     void run();
 
 protected:
     string read();
 
-    string eval(string line);
-
-    void print(string str);
+    void eval(string line);
 
 private:
     CmdFactory *cmdFactory;
 
     bool hasPipe(string line);
 
-    string execWithPipe(string line);
+    void execWithPipe(string line);
 
-    string exec(string line);
+    void exec(string line);
 
     bool hasRedirectOut(string line);
 

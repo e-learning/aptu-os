@@ -10,7 +10,7 @@ public:
 
 private:
 
-    virtual string exec(vector<string> &args);
+    virtual void exec(vector<string> &args);
 
     void transformArgs(vector<string> &args, vector<char *> &argv);
 

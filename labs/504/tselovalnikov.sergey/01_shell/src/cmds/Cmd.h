@@ -10,7 +10,7 @@ public:
         this->text = text;
     };
 
-    virtual string exec() = 0;
+    virtual void exec() = 0;
 
     virtual ~Cmd() {
     };

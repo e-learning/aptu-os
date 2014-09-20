@@ -5,11 +5,9 @@
 
 #include "PwdCmd.h"
 
-string PwdCmd::exec() {
+void PwdCmd::exec() {
     char the_path[256];
-
     getcwd(the_path, 255);
     strcat(the_path, "/");
-
-    return the_path;
+    printf("%s\n", the_path);
 }

@@ -7,7 +7,7 @@
 const int PIPE_READ = 0;
 const int PIPE_WRITE = 1;
 
-string ExecCmd::exec(vector<string> &args) {
+void ExecCmd::exec(vector<string> &args) {
     pid_t pid = fork();
     if (pid != 0) {
         // parent
@@ -17,6 +17,7 @@ string ExecCmd::exec(vector<string> &args) {
         // child
         vector<char *> argv;
         transformArgs(args, argv);
+        argv.push_back(NULL);
         int res = execvp(argv[0], argv.data());
         if(res != 0) {
             char errmsg[256];
@@ -26,10 +27,11 @@ string ExecCmd::exec(vector<string> &args) {
                 cout << argv.data()[i] << " ";
             }
             perror(errmsg);
+            cout << endl << flush;
         }
+        fflush(stdout);
         exit(0);
     }
-    return "";
 }
 
 void ExecCmd::transformArgs(vector<string> &args, vector<char *> &argv) {
