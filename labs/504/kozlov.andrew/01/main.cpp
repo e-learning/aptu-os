@@ -65,7 +65,7 @@ void exec_handler(command& cmd) {
             args_array[i + 1] = copy_c_str(args[i]);
         }
 
-        execv(args_array[0], args_array);
+        execvp(args_array[0], args_array);
 
         for (size_t i = 0; i <= args.size(); ++i) {
             delete[] args_array[i];;
