@@ -37,7 +37,8 @@ void run()
 	char command[MAX_COMMAND_LENGTH];
 	while (1)
 	{
-		printf(">");
+		printf(":>");
+		command[0] = '\0';
 		fgets(command, MAX_COMMAND_LENGTH, stdin);
 		parse(command);
 	}
@@ -48,18 +49,21 @@ void parse(char* command)
 	int i;
 	int matched = 0;
 	char util_name[MAX_COMMAND_LENGTH];
-	sscanf(command, "%s", util_name);
-	for (i = 0; i < UTILS_COUNT; i++)
+	util_name[0] = '\0';
+	if (sscanf(command, "%s", util_name))
 	{
-		if (strcmp(util_name, utils[i].name) == 0)
+		for (i = 0; i < UTILS_COUNT; i++)
 		{
-			matched = 1;
-			utils[i].fun(command);
+			if (strcmp(util_name, utils[i].name) == 0)
+			{
+				matched = 1;
+				utils[i].fun(command);
+			}
 		}
-	}
-	if (!matched)
-	{
-		execute(command);
+		if (!matched)
+		{
+			execute(command);
+		}
 	}
 }
 
@@ -108,7 +112,9 @@ void create_process()
 		if (execvp(tokens[0], tokens))
 		{
 			printf("Exec error.\n");
+			exit(EXIT_FAILURE);
 		}
+		exit(EXIT_SUCCESS);
 	}
 	else
 	{
