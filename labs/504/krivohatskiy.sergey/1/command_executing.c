@@ -109,7 +109,7 @@ bool execute_command(char* command_string)
         my_get_current_dir_name();
         break;
     case PS:
-
+        my_ps();
         break;
     case KILL:
         if(cmd.args_count < 2)
