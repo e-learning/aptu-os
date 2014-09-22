@@ -86,6 +86,7 @@ int create_tokens(char* command)
 		}
 		token = strtok(0, " \n");
 	}
+	tokens[token_count] = 0;
 	return token_count;
 }
 
@@ -96,6 +97,7 @@ void delete_tokens()
 	{
 		free((void*)tokens[i]);
 	}
+	token_count = 0;
 }
 
 void create_process()
