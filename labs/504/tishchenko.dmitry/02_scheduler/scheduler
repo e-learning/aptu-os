@@ -1,0 +1,108 @@
+#!/usr/bin/env python
+import sys
+
+class Process:
+    def __init__(self, descString):
+        descList = descString.split(' ')
+        self.id = descList[0]
+        self.appearanceTime = int(descList[1])
+        self.worked = 0
+        self.blockedTill = 0
+        self.time = int(descList[2])
+        self.ioOperations = list()
+        for ioIndex in range(len(descList[3:])/2):
+            self.ioOperations.append((int(descList[3+2*ioIndex]), int(descList[4+2*ioIndex])))
+        self.ioOperations.sort(key=lambda ioOperation:ioOperation[0])
+
+    def printDescription(self):
+        description = "ID:%s\nAppearance time:%d\nWork time:%d\n" % (self.id, self.appearanceTime, self.time)
+        for ioOperation in self.ioOperations:
+            description+= "IO start:%d IO length:%d\n" % ioOperation
+        sys.stdout.write(description)
+
+    def timeToInterrupt(self,timeSlice):
+        if len(self.ioOperations)>0:
+            return min(self.time - self.worked, self.ioOperations[0][0] - self.worked, timeSlice)
+        else:
+            return min(self.time - self.worked, timeSlice)
+
+    def timeToUnblock(self, currentTime):
+        return max(0, self.blockedTill - currentTime)
+
+    def worktimeLeft(self):
+        return self.time - self.worked
+
+    def schedule(self, currentTime, timeSlice):
+        sys.stdout.write("%d %s\n" % (currentTime, self.id))
+        timeToWork = self.timeToInterrupt(timeSlice)
+        self.worked += timeToWork
+        if len(self.ioOperations)>0 and self.ioOperations[0][0] == self.worked:
+            self.worked+=self.ioOperations[0][1]
+            self.blockedTill = currentTime+timeToWork+self.ioOperations[0][1]
+            self.ioOperations.pop(0)
+        return currentTime+timeToWork
+
+def insertIntoReadyList(readyList, timeSlice, process):
+    timeToInterrupt = process.timeToInterrupt(timeSlice)
+    for index in range(len(readyList)):
+        if timeToInterrupt < readyList[index].timeToInterrupt(timeSlice):
+            readyList.insert(index, process)
+            return
+    readyList.append(process)
+
+def insertIntoBlockedList(blockedList, process, currentTime):
+    timeToUnblock = process.timeToUnblock(currentTime)
+    for index in range(len(blockedList)):
+        if timeToUnblock < blockedList[index].timeToUnblock(currentTime):
+            blockedList.insert(index, process)
+            return
+    blockedList.append(process)
+
+def renewBlockedList(blockedList, readyList, currentTime, timeSlice):
+    while len(blockedList)>0 and blockedList[0].timeToUnblock(currentTime)==0:
+        processToMove = blockedList.pop(0)
+        insertIntoReadyList(readyList, timeSlice, processToMove)
+
+def renewFutureTasks(futureTasks, readyList, currentTime, timeSlice):
+    while len(futureTasks)>0 and futureTasks[0].appearanceTime<=currentTime:
+        processToMove = futureTasks.pop(0)
+        insertIntoReadyList(readyList, timeSlice, processToMove)
+
+processes = list()
+timeSlice = int(sys.stdin.readline())
+readyList = list()
+blockedList = list()
+futureTasks = list()
+for processDescription in sys.stdin:
+    newProcess = Process(processDescription)
+    if newProcess.appearanceTime > 0:
+        futureTasks.append(newProcess)
+    else:
+        insertIntoReadyList(readyList, timeSlice, newProcess)
+futureTasks.sort(key = lambda process: process.appearanceTime)
+
+currentTime = 0
+
+while len(readyList)+len(futureTasks)+len(blockedList)>0:
+    if len(readyList)>0:
+        processToSchedule = readyList.pop(0)
+        currentTime = processToSchedule.schedule(currentTime, timeSlice)
+        if processToSchedule.worktimeLeft()>0:
+            if processToSchedule.timeToUnblock(currentTime)!=0:
+                insertIntoBlockedList(blockedList, processToSchedule, currentTime)
+            else:
+                insertIntoReadyList(readyList, timeSlice, processToSchedule)
+        renewBlockedList(blockedList, readyList, currentTime, timeSlice)
+        renewFutureTasks(futureTasks, readyList, currentTime, timeSlice)
+    else:
+        sys.stdout.write("%d IDLE\n" % (currentTime))
+        if len(blockedList)>0:
+            if len(futureTasks)>0:
+                currentTime = min(blockedList[0].timeToUnblock(currentTime)+currentTime, futureTasks[0].appearanceTime)
+                renewFutureTasks(futureTasks, readyList, currentTime, timeSlice)
+            else:
+                currentTime += blockedList[0].timeToUnblock(currentTime)
+            renewBlockedList(blockedList, readyList, currentTime, timeSlice)
+        else:
+            currentTime = futureTasks[0].appearanceTime
+            renewFutureTasks(futureTasks, readyList, currentTime, timeSlice)
