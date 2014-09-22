@@ -10,7 +10,7 @@
 #include <fstream>
 #include "ps.h"
 
-extern "C" void ps(){
+void ps(){
     DIR *dir;
     struct dirent *entry;
     dir = opendir("/proc");

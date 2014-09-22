@@ -9,8 +9,7 @@
 #include <cctype>
 #include <fstream>
 #include <termios.h>
-
-extern "C" int ps();
+#include "ps.h"
 
 std::string way_val();
 int correct_dir(std::string str);
@@ -38,6 +37,7 @@ int main() {
 
         int index1 = str_command.find_first_of(' ');
         int index2 = str_command.find_last_of(' ');
+
         if (index1 != -1){
             str_command_one = str_command.substr(0, index1);
             str_command_two = str_command.substr(index1+1, str_command.length() - index1 -1);
@@ -115,7 +115,8 @@ void sys_call(std::string str){
     std::string param3;
     std::string buffer1;
     int counter = 0;
-    for(int i = 0; i < str.length(); i++){
+    int len = str.length();
+    for(int i = 0; i < len; i++){
         if(str[i] == ' ')
             counter++;
     }
@@ -133,7 +134,7 @@ void sys_call(std::string str){
             break;
         case 2:
             counter = 0;
-            for(int i = 0; i < str.length(); i++){
+            for(int i = 0; i < len; i++){
                 int cnt = 0;
                 if(str[i] == ' ')
                     counter++;
@@ -152,7 +153,7 @@ void sys_call(std::string str){
             break;
         case 3:
             counter = 0;
-            for(int i = 0; i < str.length(); i++){
+            for(int i = 0; i < len; i++){
                 int cnt = 0;
                 if(str[i] == ' ')
                     counter++;
@@ -245,7 +246,8 @@ int sign(std::string str){
         return 15;
     else if(str == "SIGSTOP")
         return 17;
-    else
+    else{
         std::cerr << "Undifined signal" << std::endl;
-
+        return 0;
+    }
 }
