@@ -1,7 +1,17 @@
 #include "common.h"
+#include <signal.h>
 #include <string.h>
+
+void sighandler(int signum)
+{
+	printf("Program was interrupted with Ctrl+C\n");
+	exit(-1);
+}
+
 int main (int argc, char **argv)
 {
+	struct sigaction sigact;
+				
 	char			*command_name;
 	const char		ls_command[] = "ls",
 					ps_command[] = "ps",
@@ -17,7 +27,10 @@ int main (int argc, char **argv)
 								
 	size_t			read_bytes;
 	size_t			command_size = 16;
-
+	
+	
+	sigact.sa_handler = sighandler;
+	sigaction(SIGINT, &sigact, NULL);
 	command_name = (char *) malloc(command_size + 1);
 
 	printf("Weclome to command interpreter. Now 5 commands available(ls, pwd, ps, kill, exit):\n");
@@ -47,6 +60,7 @@ int main (int argc, char **argv)
 						else
 							try_run_programm(command_name);
 	}
+	free(command_name);
 	return 0;
 	
 }

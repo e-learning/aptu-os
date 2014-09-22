@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-void kill_run(char*);
-void ls_run();
-void ps_run();
-void pwd_run();
-void try_run_programm(char*);
+extern void kill_run(char*);
+extern void ls_run();
+extern void ps_run();
+extern void pwd_run();
+extern void try_run_programm(char*);
 #endif
 

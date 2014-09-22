@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #define MAX_ARGS_LENGTH 255
+#define MAX_ARG_LENGTH 32
 
 int child( const char *name, char **argv)
 {
@@ -31,17 +32,18 @@ char **copy_args(int argc, char *command_name)
 		
 	substring = strtok(command_name, delimiters);
 	args[0] = strdup(substring);
-	printf("ARGS:%s ", args[0]);
+	//printf("ARGS:<%s> ", args[0]);
 		
 	for (i = 1; i < argc; i++)
 	{
 		substring = strtok(NULL, delimiters);
-		args[i] = strdup(substring);
-		printf("%s ", args[i]);
+		args[i] = malloc(sizeof(char) * MAX_ARG_LENGTH);
+		strncpy(args[i], substring, strlen(substring) - 1);
+		//printf("<%s> - <%d> ", args[i], strlen(args[i]));
 	}
 	
 	args[argc] = (char *)NULL;
-	printf("\n");
+	//printf("\n");
 	return args;
 }
 
@@ -68,10 +70,10 @@ void try_run_programm(char *command_name)
 	int status;
 	char arguments[256];
 	char *name;
-	strncpy(arguments, command_name, strlen(command_name) - 1);
+	strcpy(arguments, command_name);
 	name = strtok(command_name, " ");
 	int argc = parse_string_for_argv(arguments, strlen(arguments));
-	printf("ARGC:%d\n", argc);
+	//printf("ARGC:%d\n", argc);
 	char **args = copy_args(argc, arguments);
 	if (!args)
 	{
