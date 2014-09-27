@@ -8,14 +8,14 @@
 #include <signal.h>
 #include <cctype>
 #include <fstream>
-#include "ps.h"
+#include "sh.h"
 
-void ps(){
+extern "C" void ps(){
     DIR *dir;
     struct dirent *entry;
     dir = opendir("/proc");
     if (!dir) {
-        std::cerr << "Crash open dir(ps)" << std::endl;
+        std::cerr << "Couldnt open dir" << std::endl;
         exit(1);
     };
     std::ifstream file_in;

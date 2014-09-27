@@ -9,7 +9,8 @@
 #include <cctype>
 #include <fstream>
 #include <termios.h>
-#include "ps.h"
+
+extern "C" int ps();
 
 std::string way_val();
 int correct_dir(std::string str);
@@ -37,7 +38,6 @@ int main() {
 
         int index1 = str_command.find_first_of(' ');
         int index2 = str_command.find_last_of(' ');
-
         if (index1 != -1){
             str_command_one = str_command.substr(0, index1);
             str_command_two = str_command.substr(index1+1, str_command.length() - index1 -1);
@@ -88,7 +88,7 @@ int main() {
                 sys_call(str_command);   
             }
             else if(pid == -1)
-                std::cerr << "Fork failed" << std::endl;
+                std::cerr << "Fork fail" << std::endl;
 
         }
     sleep(0.5);
@@ -102,7 +102,7 @@ void ctrl_c(int sig){
     if(sig != SIGINT)
         return;
     else{
-        std::cout << "You enter ctrl + c" << std::endl;
+        std::cout << "ctrl + c" << std::endl;
         return;
         exit (0);
    }
@@ -115,8 +115,7 @@ void sys_call(std::string str){
     std::string param3;
     std::string buffer1;
     int counter = 0;
-    int len = str.length();
-    for(int i = 0; i < len; i++){
+    for(unsigned int i = 0; i < str.length(); i++){
         if(str[i] == ' ')
             counter++;
     }
@@ -124,17 +123,17 @@ void sys_call(std::string str){
         case 0:
             way = way + str;
             if(execl (way.c_str(), str.c_str(), (char*)0) == -1)
-                std::cerr << "Comman not find in /bin/" << std::endl;
+                std::cerr << "Unknown command" << std::endl;
             break;
         case 1:
             way = way + str.substr(0,str.find_first_of(' '));
             param1 = str.substr(str.find_first_of(' ')+1,str.length());
             if(execl (way.c_str(), str.substr(0,str.find_first_of(' ')).c_str(),param1.c_str(), (char*)0) == -1)
-                        std::cerr << "Comman not find in /bin/" << std::endl;
+                        std::cerr << "Unknown command" << std::endl;
             break;
         case 2:
             counter = 0;
-            for(int i = 0; i < len; i++){
+            for(unsigned int i = 0; i < str.length(); i++){
                 int cnt = 0;
                 if(str[i] == ' ')
                     counter++;
@@ -149,11 +148,11 @@ void sys_call(std::string str){
                 }
             }
             if(execl (way.c_str(),buffer1.c_str(), param1.c_str(), param2.c_str(), (char*)0) == -1)
-                std::cerr << "Comman not find in /bin/" << std::endl;
+                std::cerr << "Unknown command" << std::endl;
             break;
         case 3:
             counter = 0;
-            for(int i = 0; i < len; i++){
+            for(unsigned int i = 0; i < str.length(); i++){
                 int cnt = 0;
                 if(str[i] == ' ')
                     counter++;
@@ -173,10 +172,10 @@ void sys_call(std::string str){
 
             }
             if(execl (way.c_str(),buffer1.c_str(), param1.c_str(), param2.c_str(), param3.c_str(), (char*)0) == -1)
-                std::cerr << "Comman not find in /bin/" << std::endl;
+                std::cerr << "Unknown command" << std::endl;
             break;
         default:
-            std::cerr << "Uncorrect name command" << std::endl;
+            std::cerr << "Unknown command" << std::endl;
     }
 }
 
@@ -187,7 +186,7 @@ void pwd(std::string str){
 
     dir = opendir(str.c_str());
     if (!dir) {
-        std::cerr << "Crash open dir(pwd)" << std::endl;
+        std::cerr << "Couldnt open dir" << std::endl;
         exit(1);
     };
     while ( (entry = readdir(dir)) != NULL) {
@@ -246,8 +245,9 @@ int sign(std::string str){
         return 15;
     else if(str == "SIGSTOP")
         return 17;
-    else{
-        std::cerr << "Undifined signal" << std::endl;
+    else
+    {
+        std::cerr << "Unknown signal" << std::endl;
         return 0;
     }
 }
