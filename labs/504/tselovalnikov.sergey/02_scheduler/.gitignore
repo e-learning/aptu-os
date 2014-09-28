@@ -23,3 +23,5 @@ hs_err_pid*
 
 # IntelliJ
 out/
+
+scheduler
