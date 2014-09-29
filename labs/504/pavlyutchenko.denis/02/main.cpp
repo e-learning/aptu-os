@@ -6,6 +6,22 @@
 
 using namespace std;
 
+struct MoreThanByTi
+{
+    bool operator()(const Task& lhs, const Task& rhs) const
+    {
+        return lhs.get_Ti() > rhs.get_Ti();
+    }
+};
+
+struct MoreThanByLeftTime
+{
+    bool operator()(const Task& lhs, const Task& rhs) const
+    {
+        return lhs.left_time() > rhs.left_time();
+    }
+};
+
 int main() {
     const string IDLE_MESSAGE = "IDLE";
 

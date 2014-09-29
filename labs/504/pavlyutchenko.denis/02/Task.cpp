@@ -70,11 +70,11 @@ public:
 
     void recalculate_Ti_and_worked_time(int current_time) {
         if(!get_iops().empty()) {
-            int length_of_io = get_iops().front().second;
+            int length_of_io = iops.front().second;
             worked_time += length_of_io;
             Ti = current_time + length_of_io;
 
-            get_iops().pop();
+            iops.pop();
         }
     }
 
