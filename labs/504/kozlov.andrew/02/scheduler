@@ -1,0 +1,6 @@
+#!/bin/bash
+pwd_dir=`pwd`
+
+cd `dirname $0`
+java Scheduler
+cd $pwd_dir

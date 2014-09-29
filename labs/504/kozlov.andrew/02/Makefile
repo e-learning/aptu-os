@@ -1,15 +1,11 @@
-all: scheduler
+java_name=Scheduler
 
-Scheduler.class: Scheduler.java
-	javac Scheduler.java
+all: $(java_name).class
 
-scheduler: Scheduler.class
-	touch scheduler
-	chmod +x scheduler
-	echo "#!/bin/bash" >> scheduler
-	echo "java Scheduler" >> scheduler
+$(java_name).class: $(java_name).java
+	javac $(java_name).java
 
 clean:
-	rm -f *.class scheduler
+	rm -f *.class
 
 .PHONY: clean
