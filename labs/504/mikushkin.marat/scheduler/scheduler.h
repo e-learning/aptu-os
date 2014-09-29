@@ -17,7 +17,7 @@ struct TimeToRunCmp {
 
 class Scheduler {
 public:
-    int quantLength;
+    int processorUnit;
     int currentTime;
     std::priority_queue<Process, std::vector<Process>, StartTimeCmp> waitingTasks;
     std::priority_queue<Process, std::vector<Process>, TimeToRunCmp> readyTasks;
@@ -25,7 +25,7 @@ public:
     Scheduler();
     void processTask(Process & curTask);
     void makeMove();
-    void readInput();
+    void init();
 
 };
 

@@ -1,7 +1,7 @@
 #include "process.h"
 
 Process::Process(std::string line) {
-    time_runned = 0;
+    remainingTime = 0;
     std::stringstream ss(line);
 
     ss >> name;
@@ -15,8 +15,8 @@ Process::Process(std::string line) {
 
 int Process::timeToRun() {
     if(!ioOperations.empty()) {
-        return ioOperations.front().first - time_runned;
+        return ioOperations.front().first - remainingTime;
     } else {
-        return end - time_runned;
+        return end - remainingTime;
     }
 }

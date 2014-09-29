@@ -38,7 +38,7 @@ void processTask(Process & curTask) {
 
     if(!curTask.ioOperations.empty()) {
         int ioLength = curTask.ioOperations.front().second;
-        curTask.time_runned += ioLength;
+        curTask.remainingTime += ioLength;
         curTask.start = currentTime + ioLength;
 
         curTask.ioOperations.pop();
@@ -65,7 +65,7 @@ void makeMove() {
     std::cout << currentTime << " " << curTask.name << std::endl;
 
     int activeTime = std::min(quantLength, curTask.timeToRun());
-    curTask.time_runned += activeTime;
+    curTask.remainingTime += activeTime;
     currentTime += activeTime;
 
     processTask(curTask);

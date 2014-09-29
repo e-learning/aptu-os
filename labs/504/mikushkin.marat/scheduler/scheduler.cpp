@@ -12,7 +12,7 @@ void Scheduler::processTask(Process & curTask) {
 
     if(!curTask.ioOperations.empty()) {
         int ioLength = curTask.ioOperations.front().second;
-        curTask.time_runned += ioLength;
+        curTask.remainingTime += ioLength;
         curTask.start = currentTime + ioLength;
 
         curTask.ioOperations.pop();
@@ -38,15 +38,15 @@ void Scheduler::makeMove() {
 
     std::cout << currentTime << " " << curTask.name << std::endl;
 
-    int activeTime = std::min(quantLength, curTask.timeToRun());
-    curTask.time_runned += activeTime;
+    int activeTime = std::min(processorUnit, curTask.timeToRun());
+    curTask.remainingTime += activeTime;
     currentTime += activeTime;
 
     processTask(curTask);
 }
 
-void Scheduler::readInput() {
-    std::cin >> quantLength;
+void Scheduler::init() {
+    std::cin >> processorUnit;
 
     std::string line;
     getline(std::cin, line);

@@ -10,9 +10,10 @@
 class Process {
 public:
     std::string name;
-    int start, end;
+    int start;
+    int end;
+    int remainingTime;
     std::queue<std::pair<int, int> > ioOperations;
-    int time_runned;
 
     Process(std::string line);
     int timeToRun();
