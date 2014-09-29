@@ -4,20 +4,20 @@ Scheduler::Scheduler() {
     ;
 }
 
-void Scheduler::processTask(Process & curTask) {
-    if(curTask.timeToRun() > 0) {
-        readyTasks.push(curTask);
+void Scheduler::sendToProcessor(Process & currentProcess) {
+    if(currentProcess.timeToRun() > 0) {
+        readyTasks.push(currentProcess);
         return;
     }
 
-    if(!curTask.ioOperations.empty()) {
-        int ioLength = curTask.ioOperations.front().second;
-        curTask.remainingTime += ioLength;
-        curTask.start = currentTime + ioLength;
+    if(!currentProcess.ioOperations.empty()) {
+        int ioLength = currentProcess.ioOperations.front().second;
+        currentProcess.remainingTime += ioLength;
+        currentProcess.start = currentTime + ioLength;
 
-        curTask.ioOperations.pop();
+        currentProcess.ioOperations.pop();
 
-        waitingTasks.push(curTask);
+        waitingTasks.push(currentProcess);
     }
 }
 
@@ -42,7 +42,7 @@ void Scheduler::makeMove() {
     curTask.remainingTime += activeTime;
     currentTime += activeTime;
 
-    processTask(curTask);
+    sendToProcessor(curTask);
 }
 
 void Scheduler::init() {

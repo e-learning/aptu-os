@@ -3,27 +3,27 @@
 
 #include "process.h"
 
-struct StartTimeCmp {
-    bool operator() (Process & first, Process & second) {
-        return first.start > second.start;
-    }
-};
-
-struct TimeToRunCmp {
-    bool operator() (Process & first, Process & second) {
-        return first.timeToRun() > second.timeToRun();
-    }
-};
-
 class Scheduler {
 public:
+    struct ComparatorByStartTime {
+        bool operator() (Process & first, Process & second) {
+            return first.start > second.start;
+        }
+    };
+
+    struct ComparatorByTimeToRun {
+        bool operator() (Process & first, Process & second) {
+            return first.timeToRun() > second.timeToRun();
+        }
+    };
+
     int processorUnit;
     int currentTime;
-    std::priority_queue<Process, std::vector<Process>, StartTimeCmp> waitingTasks;
-    std::priority_queue<Process, std::vector<Process>, TimeToRunCmp> readyTasks;
+    std::priority_queue<Process, std::vector<Process>, ComparatorByStartTime> waitingTasks;
+    std::priority_queue<Process, std::vector<Process>, ComparatorByTimeToRun> readyTasks;
 
     Scheduler();
-    void processTask(Process & curTask);
+    void sendToProcessor(Process & currentProcess);
     void makeMove();
     void init();
 
