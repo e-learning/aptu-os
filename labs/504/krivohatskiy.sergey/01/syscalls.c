@@ -22,6 +22,8 @@ void my_get_current_dir_name()
     if(getcwd(buff, 512))
     {
         printf("%s\n", buff);
+    } else {
+        printf("Getcwd failed");
     }
 }
 

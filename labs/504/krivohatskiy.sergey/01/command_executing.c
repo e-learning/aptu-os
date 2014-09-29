@@ -114,7 +114,7 @@ bool execute_command(char* command_string)
     case KILL:
         if(cmd.args_count < 2)
         {
-            // TODO: process errors
+            printf("usage: kill pid sig");
         } else {
             my_kill(atoi(cmd.args[1]), atoi(cmd.args[2]));
         }
