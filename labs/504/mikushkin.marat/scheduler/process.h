@@ -11,7 +11,7 @@ class Process {
 public:
     std::string name;
     int start, end;
-    std::queue<std::pair<int, int> > iops;
+    std::queue<std::pair<int, int> > ioOperations;
     int time_runned;
 
     Process(std::string line);

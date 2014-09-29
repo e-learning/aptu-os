@@ -9,13 +9,13 @@ Process::Process(std::string line) {
 
     int io_start, io_len;
     while(ss >> io_start >> io_len) {
-        iops.push(std::pair<int,int>(io_start, io_len));
+        ioOperations.push(std::pair<int,int>(io_start, io_len));
     }
 }
 
 int Process::timeToRun() {
-    if(!iops.empty()) {
-        return iops.front().first - time_runned;
+    if(!ioOperations.empty()) {
+        return ioOperations.front().first - time_runned;
     } else {
         return end - time_runned;
     }

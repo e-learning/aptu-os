@@ -36,12 +36,12 @@ void processTask(Process & curTask) {
         return;
     }
 
-    if(!curTask.iops.empty()) {
-        int ioLength = curTask.iops.front().second;
+    if(!curTask.ioOperations.empty()) {
+        int ioLength = curTask.ioOperations.front().second;
         curTask.time_runned += ioLength;
         curTask.start = currentTime + ioLength;
 
-        curTask.iops.pop();
+        curTask.ioOperations.pop();
 
         waitingTasks.push(curTask);
     }
