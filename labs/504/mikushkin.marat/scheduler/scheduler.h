@@ -19,12 +19,12 @@ public:
 
     int processorUnit;
     int currentTime;
-    std::priority_queue<Process, std::vector<Process>, ComparatorByStartTime> waitingTasks;
-    std::priority_queue<Process, std::vector<Process>, ComparatorByTimeToRun> readyTasks;
+    std::priority_queue<Process, std::vector<Process>, ComparatorByStartTime> waitingProcesses;
+    std::priority_queue<Process, std::vector<Process>, ComparatorByTimeToRun> readyProcesses;
 
     Scheduler();
     void sendToProcessor(Process & currentProcess);
-    void makeMove();
+    void update();
     void init();
 
 };

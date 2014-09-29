@@ -6,7 +6,7 @@ Scheduler::Scheduler() {
 
 void Scheduler::sendToProcessor(Process & currentProcess) {
     if(currentProcess.timeToRun() > 0) {
-        readyTasks.push(currentProcess);
+        readyProcesses.push(currentProcess);
         return;
     }
 
@@ -17,32 +17,32 @@ void Scheduler::sendToProcessor(Process & currentProcess) {
 
         currentProcess.ioOperations.pop();
 
-        waitingTasks.push(currentProcess);
+        waitingProcesses.push(currentProcess);
     }
 }
 
-void Scheduler::makeMove() {
-    while(!waitingTasks.empty() && waitingTasks.top().start <= currentTime) {
-        readyTasks.push(waitingTasks.top());
-        waitingTasks.pop();
+void Scheduler::update() {
+    while(!waitingProcesses.empty() && waitingProcesses.top().start <= currentTime) {
+        readyProcesses.push(waitingProcesses.top());
+        waitingProcesses.pop();
     }
 
-    if(readyTasks.empty()) {
+    if(readyProcesses.empty()) {
         std::cout << currentTime << " IDLE" << std::endl;
-        currentTime = waitingTasks.top().start;
+        currentTime = waitingProcesses.top().start;
         return;
     }
 
-    Process curTask = readyTasks.top();
-    readyTasks.pop();
+    Process currentProcess = readyProcesses.top();
+    readyProcesses.pop();
 
-    std::cout << currentTime << " " << curTask.name << std::endl;
+    std::cout << currentTime << " " << currentProcess.name << std::endl;
 
-    int activeTime = std::min(processorUnit, curTask.timeToRun());
-    curTask.remainingTime += activeTime;
+    int activeTime = std::min(processorUnit, currentProcess.timeToRun());
+    currentProcess.remainingTime += activeTime;
     currentTime += activeTime;
 
-    sendToProcessor(curTask);
+    sendToProcessor(currentProcess);
 }
 
 void Scheduler::init() {
@@ -52,7 +52,7 @@ void Scheduler::init() {
     getline(std::cin, line);
 
     while(getline(std::cin, line)) {
-        waitingTasks.push(Process(line));
+        waitingProcesses.push(Process(line));
     }
 
     currentTime = 0;
