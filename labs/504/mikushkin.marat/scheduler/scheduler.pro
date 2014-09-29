@@ -4,8 +4,10 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp \
-    process.cpp
+    process.cpp \
+    scheduler.cpp
 
 HEADERS += \
-    process.h
+    process.h \
+    scheduler.h
 
