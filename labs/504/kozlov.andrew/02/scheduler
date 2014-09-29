@@ -1,11 +1,6 @@
 #!/bin/bash
-echo "compilation started"
-javac Scheduler.java
-echo "compilation finished"
+pwd_dir=`pwd`
 
-echo "runnig"
+cd `dirname $0`
 java Scheduler
-echo "terminated"
-
-echo "cleaning directory"
-rm *.class
+cd $pwd_dir
