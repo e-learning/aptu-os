@@ -1,8 +1,9 @@
 main: main.class scheduler.class task.class taskParser.class
 	jar cfe scheduler.jar Main *.class
 	rm -f *.class
-	echo "#!/bin/bash\njava -jar scheduler.jar" > scheduler
-	chmod +x scheduler
+	echo "#!/bin/bash" > scheduler
+	echo 'java -jar $${BASH_SOURCE[0]}.jar' >> scheduler
+	chmod a+x scheduler
 
 main.class: Main.java
 	javac Main.java
