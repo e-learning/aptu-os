@@ -7,9 +7,9 @@ Process::Process(std::string line) {
     ss >> name;
     ss >> start >> end;
 
-    int io_start, io_len;
-    while(ss >> io_start >> io_len) {
-        ioOperations.push(std::pair<int,int>(io_start, io_len));
+    int ioOperationStart, ioOperationEnd;
+    while(ss >> ioOperationStart >> ioOperationEnd) {
+        ioOperations.push(std::pair<int,int>(ioOperationStart, ioOperationEnd));
     }
 }
 
