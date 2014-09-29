@@ -3,7 +3,7 @@ import sys
 
 class Process:
     def __init__(self, descString):
-        descList = descString.split(' ')
+        descList = descString.split()
         self.id = descList[0]
         self.appearanceTime = int(descList[1])
         self.worked = 0
@@ -42,10 +42,24 @@ class Process:
             self.ioOperations.pop(0)
         return currentTime+timeToWork
 
+    def isPriorToExecuteThen(self, anotherProcess, timeSlice):
+        interruptionTime = self.timeToInterrupt(timeSlice)
+        anotherInterruptionTime = anotherProcess.timeToInterrupt(timeSlice)
+        if interruptionTime < anotherInterruptionTime:
+            return True
+        elif interruptionTime==anotherInterruptionTime:
+            hasFinalIO = len(self.ioOperations)>0 and self.ioOperations[0][0]==(self.worked+interruptionTime)
+            willEnd = interruptionTime==self.worktimeLeft()
+            anotherHasFinalIO = len(anotherProcess.ioOperations)>0 and \
+            anotherProcess.ioOperations[0][0]==(anotherProcess.worked+anotherInterruptionTime)
+            anotherWillEnd = anotherInterruptionTime==anotherProcess.worktimeLeft()
+            if (hasFinalIO or willEnd) and not (anotherHasFinalIO or anotherWillEnd):
+                return True
+        return False
+
 def insertIntoReadyList(readyList, timeSlice, process):
-    timeToInterrupt = process.timeToInterrupt(timeSlice)
     for index in range(len(readyList)):
-        if timeToInterrupt < readyList[index].timeToInterrupt(timeSlice):
+        if process.isPriorToExecuteThen(readyList[index],timeSlice):
             readyList.insert(index, process)
             return
     readyList.append(process)
