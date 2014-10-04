@@ -1,1 +1,4 @@
-done
+rejected
+
+* kill blah blah --> shell termination
+* python3        --> cannot exec child process: No such file or directory

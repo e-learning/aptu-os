@@ -1,1 +1,7 @@
-done
+accepted
+
+Notes:
+* PATH_MAX, MAX_INPUT instead of hardcoded limits
+* scandir function instead of manual dir traversal
+* fgets (+MAX_INPUT) instead of realloc
+* call exit to exit
