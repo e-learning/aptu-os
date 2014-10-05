@@ -6,7 +6,7 @@ int main() {
   int argc;
 
   while (true) {
-    cout << "> ";
+    cout << "$ ";
 
     argc = read_args(argv);
 
