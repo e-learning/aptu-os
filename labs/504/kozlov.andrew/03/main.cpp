@@ -56,7 +56,7 @@ struct node_t {
     }
 
     bool is_valid() const {
-        return begin_ >= 0 && end_ >= begin_ && begin_ < buffer->size() && end_ <= buffer->size();
+        return begin_ >= 0 && end_ >= 0 && begin_ < buffer->size() && end_ <= buffer->size();
     }
 
     void read_begin() {
@@ -256,6 +256,9 @@ int main(int argc, const char *argv[])
             result = buffer->info();
         } else if (command == "MAP") {
             result = buffer->map();
+        } else if (command == "QUIT")
+        {
+            break;
         }
 
         std::cout << result << std::endl;
