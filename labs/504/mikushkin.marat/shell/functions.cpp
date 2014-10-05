@@ -65,7 +65,6 @@ int read_args(char **argv) {
 
   while (cin >> arg) {
     if (want_to_quit(arg)) {
-      cout << "Goodbye!\n";
       exit(0);
     }
 
