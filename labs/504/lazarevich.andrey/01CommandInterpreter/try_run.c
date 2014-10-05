@@ -5,9 +5,10 @@
 #define MAX_ARGS_LENGTH 255
 #define MAX_ARG_LENGTH 32
 
-int child( const char *name, char **argv)
+int child( const char *name, char **argv, pid_t *pid)
 {
 	printf("Now there is process PID:%d NAME:%s\n",getpid(), name); 
+	*pid = getpid();
 	return execvp(name, argv);
 }
 
@@ -66,7 +67,7 @@ int parse_string_for_argv(char *arguments, int size)
 
 void try_run_programm(char *command_name)
 {
-	pid_t pid;
+	pid_t pid, exec_pid;
 	int status;
 	char arguments[256];
 	char *name;
@@ -95,10 +96,11 @@ void try_run_programm(char *command_name)
 		free_memory(args, argc);
 		return;
 	}
-		
-	if ((pid == 0) && child(name, args))
+	
+	if ((pid == 0) && child(name, args, &exec_pid))
 	{
 		perror("cannot exec child process");
+		kill( exec_pid, SIGTERM );
 		free_memory(args, argc);
 		return;
 	}
