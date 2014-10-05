@@ -6,7 +6,7 @@ int main() {
   int argc;
 
   while (true) {
-    cout << "SarahShell> ";
+    cout << "> ";
 
     argc = read_args(argv);
 
