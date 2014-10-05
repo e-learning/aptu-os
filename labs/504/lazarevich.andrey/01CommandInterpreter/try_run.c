@@ -26,7 +26,7 @@ char **copy_args(int argc, char *command_name)
 	char 		*substring;
 	const char	delimiters[] = " ";
 	
-	char **args = malloc(sizeof(char *) * (argc + 1));
+	char **args = (char**)calloc(argc + 1, sizeof(char*));
 	if (!args)
 		return (char **)NULL;
 		
@@ -37,13 +37,13 @@ char **copy_args(int argc, char *command_name)
 	for (i = 1; i < argc; i++)
 	{
 		substring = strtok(NULL, delimiters);
-		args[i] = malloc(sizeof(char) * MAX_ARG_LENGTH);
+		args[i] = (char *)calloc(MAX_ARG_LENGTH, sizeof(char));
 		strncpy(args[i], substring, strlen(substring) - 1);
 		//printf("<%s> - <%d> ", args[i], strlen(args[i]));
 	}
 	
 	args[argc] = (char *)NULL;
-	//printf("\n");
+	printf("\n");
 	return args;
 }
 
@@ -70,10 +70,17 @@ void try_run_programm(char *command_name)
 	int status;
 	char arguments[256];
 	char *name;
+	int was_malloced = 0;
 	strcpy(arguments, command_name);
-	name = strtok(command_name, " ");
 	int argc = parse_string_for_argv(arguments, strlen(arguments));
-	//printf("ARGC:%d\n", argc);
+	if (argc == 1)
+	{
+		name = (char*)calloc(MAX_ARG_LENGTH, 1);
+		was_malloced = 1;
+		strncpy(name, command_name, strlen(command_name) - 1);
+	}
+	else
+		name = strtok(command_name, " ");
 	char **args = copy_args(argc, arguments);
 	if (!args)
 	{
@@ -98,5 +105,6 @@ void try_run_programm(char *command_name)
 	
 	waitpid(pid, &status, 0);
 	free_memory(args, argc);
-	
+	if (was_malloced == 1)
+		free(name);
 }
