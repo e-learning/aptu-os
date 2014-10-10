@@ -1,8 +1,0 @@
-done
-
-shell> make
-/usr/lib/x86_64-linux-gnu/qt5/bin/qmake -o Makefile shell.pro
-make: /usr/lib/x86_64-linux-gnu/qt5/bin/qmake: Command not found
-make: *** [Makefile] Error 127
-
-use gcc (g++ is your case)
