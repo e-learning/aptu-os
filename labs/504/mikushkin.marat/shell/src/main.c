@@ -33,6 +33,10 @@ int parseInputTwo(char ** argv) {
 		return -1;
 	}
 
+	if (strcmp(userInput, "\n") == 0) {
+		return 0;
+	}
+
 	char * pch;
 	char * cstr;
 	pch = strtok(userInput, " ");
