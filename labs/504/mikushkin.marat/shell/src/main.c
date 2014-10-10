@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-
+/*
 int parseInput(char **argv) {
 	char * cstr;
 	char arg[20];
@@ -23,6 +23,39 @@ int parseInput(char **argv) {
 		}
 	}
 	argv[argc] = NULL;
+	return argc;
+}
+*/
+int parseInputTwo(char ** argv) {
+	char userInput[20];
+
+	if (fgets(userInput, 20, stdin) == NULL) {
+		return -1;
+	}
+
+	char * pch;
+	char * cstr;
+	pch = strtok(userInput, " ");
+	int argc = 0;
+	while (pch != NULL) {
+		if (pch[strlen(pch) - 1] == '\n') {
+			pch[strlen(pch) - 1] = '\0';
+		}
+
+
+		cstr = (char *) malloc (strlen(pch) + 1);
+		strcpy(cstr, pch);
+
+		if (strcmp(cstr, "exit") == 0) {
+			exit(0);
+		}
+
+		argv[argc++] = cstr;
+		pch = strtok(NULL, " ");
+	}
+
+	argv[argc] = NULL;
+
 	return argc;
 }
 
@@ -50,15 +83,20 @@ void execute(int argc, char** argv) {
 
 int main() {
 	char * argv[256];
-	int argc;
 
 	while (1) {
 		printf("$ ");
-		argc = parseInput(argv);
+		//argc = parseInput(argv);
+		int argc = parseInputTwo(argv);
+
 		execute(argc, argv);
+		/*
+
+
 		for (int i = 0; i < argc; i++) {
 			argv[i] = NULL;
 		}
+		*/
 	}
 
 	return 0;
