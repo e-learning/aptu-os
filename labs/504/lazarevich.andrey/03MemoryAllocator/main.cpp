@@ -37,7 +37,6 @@ void initialize_allocator(Allocator & allocator, size_t N)
     MCB init_mcb;
     init_mcb.bytes_before_next = N - sizeof(MCB);
     init_mcb.next_mcb = NULL;
-    init_mcb.next_mcb = NULL;
     init_mcb.is_free = true;
     memcpy(allocator.memory_block, &init_mcb, sizeof(init_mcb));
     allocator.free_size -= sizeof(MCB);
@@ -124,7 +123,7 @@ int alloc(Allocator & allocator, size_t S)
         if (return_offset != -1)
         {
             allocator.user_blocks++;
-            allocator.memory_allocated += S;
+            allocator.memory_allocated += ptr->bytes_before_next;
         }
     }
     return return_offset;

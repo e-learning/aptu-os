@@ -21,18 +21,18 @@ enum Commands
 
 struct MCB
 {
-    size_t  bytes_before_next; //ignore size of MCB
-    MCB*    next_mcb;
-    bool    is_free;
+    u_int16_t  bytes_before_next; //ignore size of MCB
+    MCB*      next_mcb;
+    bool      is_free;
 };
 
 struct Allocator
 {
     char*       memory_block;
-    size_t      free_size;
-    size_t      size;
-    size_t      user_blocks;
-    size_t      memory_allocated;
+    u_int16_t    free_size;
+    u_int16_t    size;
+    u_int16_t    user_blocks;
+    u_int16_t    memory_allocated;
 };
 
 #endif // COMMON_H
