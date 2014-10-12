@@ -17,26 +17,26 @@ int main()
 	while (true)
 	{
 		string answer;
-		cout << "Put command" << endl;
+		//cout << "Put command" << endl;
 		cin >> answer;
 		//transform(answer.begin(), answer.end(), answer.begin(), tolower);
 		if (answer == "exit")
 		{
 			break;
 		}
-		if (answer == "map")
+		if (answer == "MAP")
 		{
 			cout << alloc.map() << endl;
 			continue;
 		}
-		if (answer == "info")
+		if (answer == "INFO")
 		{
 			auto t = alloc.info();
 			cout << get<0>(t) << " " << get<1>(t)<< " " << get<2>(t) << endl;
 			continue;
 		}
 
-		if (answer == "alloc")
+		if (answer == "ALLOC")
 		{
 			unsigned bytes;
 			cin >> bytes;
@@ -52,7 +52,7 @@ int main()
 			continue;
 		}
 		
-		if (answer == "free")
+		if (answer == "FREE")
 		{
 			unsigned pointer;
 			cin >> pointer;
