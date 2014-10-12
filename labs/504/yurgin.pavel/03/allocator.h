@@ -4,7 +4,7 @@
 
 #define MAGIC_NUMBER 45
 #define BUSY 1
-#define FREE 2
+#define FREE 0
 
 struct MCB
 {
@@ -105,6 +105,7 @@ public:
 
         char *start_mcb = data + offset - sizeof(MCB);
         MCB *expected_mcb = reinterpret_cast<MCB *>(start_mcb);
+        //std::cout << "status : " << expected_mcb->status << std::endl;
         if (expected_mcb->magic_number == MAGIC_NUMBER &&  expected_mcb->status == BUSY)
         {
             if (expected_mcb->next != nullptr)
@@ -126,6 +127,7 @@ public:
         {
             std::cout << "-" << std::endl;
         }
+        //std::cout << "status : " << expected_mcb->status << std::endl;
     }
 
     std::string map()
@@ -217,11 +219,14 @@ private:
             }
             mcb = mcb->next;
         }
+        //std::cout << " ALL SIZE " <<  end - data << std::endl;
+        //std::cout << " to end " <<  end - end_mcb(mcb) << std::endl;
+        //std::cout << " size " <<  size << std::endl;
         if (min_gap.first != nullptr)
         {
             return min_gap.first;
         }
-        else if (static_cast<unsigned>(end - end_mcb(mcb)) >= size + sizeof(MCB))
+        else if (static_cast<unsigned>(end - end_mcb(mcb)) >= size)
         {
             return mcb;
         }
@@ -233,6 +238,7 @@ private:
 
     size_t max_alloc_size()
     {
+
         MCB * mcb = zero_MCB;
         size_t max_alloc_size = 0;
         while (mcb->next != nullptr)
@@ -244,11 +250,13 @@ private:
             }
             mcb = mcb->next;
         }
-        if (static_cast<unsigned>(end - end_mcb(mcb)) > max_alloc_size + sizeof(MCB))
+        //std::cout << " to end  " <<  end - end_mcb(mcb) << std::endl;
+
+        if (static_cast<unsigned>(end - end_mcb(mcb)) > max_alloc_size) //+ sizeof(MCB))
         {
             max_alloc_size = end - end_mcb(mcb);
         }
-        if (max_alloc_size != 0)
+        if (max_alloc_size != 0 && max_alloc_size > sizeof(MCB))
         {
             return max_alloc_size - sizeof(MCB);
         }
