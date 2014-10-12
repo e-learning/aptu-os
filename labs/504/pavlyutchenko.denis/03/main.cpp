@@ -73,7 +73,7 @@ public:
         unsigned int total_size = 0;
 
         auto it = memory.begin();
-        int current_index = 0;
+        unsigned int current_index = 0;
 
         while (it != memory.end())
         {
