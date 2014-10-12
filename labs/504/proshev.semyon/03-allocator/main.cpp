@@ -212,9 +212,6 @@ public:
 
 int main(int argc, char** argv)
 {
-    std::ifstream in("input.txt");
-    std::cin.rdbuf(in.rdbuf());
-
     size_t n;
 
     std::cin >> n;
