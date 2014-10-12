@@ -1,12 +1,14 @@
+#include "stdafx.h"
 #include "ToyAllocator.h"
-#include <new>
+//#include <new>
 
 ToyAllocator::ToyAllocator(unsigned int heap_size)
 {
 	max_heap_size = heap_size;
 	user_used = 0;
 
-	real_heap_size =  (AlignSize(heap_size))*2;
+	real_heap_size =  AlignSize(heap_size);
+	//real_heap_size = heap_size;
 	heap = new char[real_heap_size];
 
 	fill_MCB(&first_MCB, real_heap_size, nullptr, &last_MCB, true, 0);
