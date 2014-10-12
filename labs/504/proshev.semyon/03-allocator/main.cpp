@@ -61,16 +61,18 @@ public:
         {
             MCB* next = (MCB*) ((char*) (current + 1) + desired_size);
 
-            next->size = current->size - desired_size - sizeof(MCB);
-            next->used = false;
-            next->prev = current;
-            next->next = current->next;
+            if (current-> next != next) {
+                next->size = current->size - desired_size - sizeof(MCB);
+                next->used = false;
+                next->prev = current;
+                next->next = current->next;
 
-            if (current->next != nullptr) {
-                current->next->prev = next;
+                if (current->next != nullptr) {
+                    current->next->prev = next;
+                }
+
+                current->next = next;
             }
-
-            current->next = next;
         }
 
         current->size = desired_size + sizeof(MCB);
@@ -210,6 +212,9 @@ public:
 
 int main(int argc, char** argv)
 {
+    std::ifstream in("input.txt");
+    std::cin.rdbuf(in.rdbuf());
+
     size_t n;
 
     std::cin >> n;
