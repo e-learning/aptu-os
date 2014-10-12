@@ -151,9 +151,10 @@ public:
     }
     void info()
     {
-        std::cout << "reserved blocks " << reserved_blocks << std::endl;
-        std::cout << "used memory " << used_memory << std::endl;
-        std::cout << "max available " << max_alloc_size() << std::endl;
+        //std::cout << "reserved blocks " << reserved_blocks << std::endl;
+        //std::cout << "used memory " << used_memory << std::endl;
+        //std::cout << "max available " << max_alloc_size() << std::endl;
+        std::cout << reserved_blocks << " " << used_memory << " " << max_alloc_size() << std::endl;
     }
 
 private:

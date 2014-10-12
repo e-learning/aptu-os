@@ -54,8 +54,15 @@ int main()
                 std::cout << "Wrong command" << std::endl;
                 continue;
             }
-            std::cout << memory_allocator->allocate(s) << std::endl;
-            
+            int alloc_result = memory_allocator->allocate(s);
+	    if (alloc_result == -1)
+	    {
+	        std::cout << "-" << std::endl;
+	    }
+	    else
+	    {
+	        std::cout << "+ " << alloc_result << std::endl;
+	    }
         }
         else if (command == "FREE")
         {
