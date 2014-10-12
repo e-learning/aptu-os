@@ -10,7 +10,7 @@ using namespace std;
 
 int main()
 {
-	cout << "Put N" << endl;
+	//cout << "Put N" << endl;
 	unsigned N;
 	cin >> N;
 	ToyAllocator alloc(N);
