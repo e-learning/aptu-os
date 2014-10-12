@@ -90,6 +90,29 @@ public:
 
                 mcb.free();
 
+                //Если есть следующая MCB структура
+                if (current_index < memory.size() - 1)
+                {
+                    auto local_it = memory.begin();
+                    MCB& next = *std::next(local_it, current_index + 1);
+
+                    //Если следующая MCB структура свободна
+                    if (!next.is_occupied())
+                    {
+                        unsigned int next_mcb_block_size = next.get_size();
+
+                        //Увеличиваем текущий блок
+                        mcb.increase_size_of(next_mcb_block_size + mcb_size);
+
+                        ++it;
+
+                        //Удаляем следующий блок
+                        memory.erase(it++);
+
+                        --it;
+                    }
+                }
+
                 //Если предыдущая MCB структура существует
                 if (current_index >= 2)
                 {
@@ -294,7 +317,7 @@ std::vector<std::string> split(const std::string &s, char delim) {
 }
 
 int main(int argc, char** argv) {
-
+    
     int N;
     cin >> N;
 
