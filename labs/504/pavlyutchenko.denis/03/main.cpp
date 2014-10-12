@@ -73,7 +73,7 @@ public:
         unsigned int total_size = 0;
 
         auto it = memory.begin();
-        int current_index = 0;
+        unsigned int current_index = 0;
 
         while (it != memory.end())
         {
@@ -89,6 +89,50 @@ public:
                 }
 
                 mcb.free();
+
+                // Если это последний блок
+                if (current_index == memory.size() - 1)
+                {
+                    auto local_it = memory.begin();
+                    MCB& prev = *next(local_it, current_index - 1);
+
+                    //Удаляем текущий блок
+                    memory.erase(it++);
+
+                    //Если предыдущая MCB структура свободна
+                    if (!prev.is_occupied())
+                    {
+                        --it;
+
+                        //Удаляем предыдущий блок
+                        memory.erase(it++);
+                    }
+
+                    return "+";
+                }
+
+                //Если есть следующая MCB структура
+                if (current_index < memory.size() - 1)
+                {
+                    auto local_it = memory.begin();
+                    MCB& next = *std::next(local_it, current_index + 1);
+
+                    //Если следующая MCB структура свободна
+                    if (!next.is_occupied())
+                    {
+                        unsigned int next_mcb_block_size = next.get_size();
+
+                        //Увеличиваем текущий блок
+                        mcb.increase_size_of(next_mcb_block_size + mcb_size);
+
+                        ++it;
+
+                        //Удаляем следующий блок
+                        memory.erase(it++);
+
+                        --it;
+                    }
+                }
 
                 //Если предыдущая MCB структура существует
                 if (current_index >= 2)
@@ -158,8 +202,7 @@ public:
             current_index++;
         }
 
-        // 1 -- zero block
-        int free_space = memory_size - total_size - mcb_size - 1;
+        int free_space = memory_size - total_size - mcb_size - mcb_size;
         if (free_space < 0)
         {
             free_space = 0;
