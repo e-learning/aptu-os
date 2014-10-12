@@ -1,6 +1,5 @@
-#include "stdafx.h"
 #include "ToyAllocator.h"
-//#include <new>
+#include <new>
 
 ToyAllocator::ToyAllocator(unsigned int heap_size)
 {
