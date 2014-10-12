@@ -32,6 +32,7 @@ public:
         unsigned int mcb_size = get_MCB_size();
         unsigned int total_size = 0;
 
+        //Если есть какой-нибудь свободный блок, подходящий нам
         for (MCB& mcb : memory)
         {
             //Если текущий блок свободен
@@ -45,10 +46,11 @@ public:
                     return "+ " + to_string(total_size);
                 }
             }
-            
+
             total_size += mcb.get_size();
             total_size += mcb_size;
         }
+
 
         // Если мы можем выделить память в новом блоке памяти
         if (total_size + mcb_size + s <= memory_size)
@@ -57,6 +59,125 @@ public:
             memory.push_back(node);
 
             return "+ " + to_string(total_size);
+        }
+
+        //Возможно, можно смёржить несколько блоков
+
+        int out_index = 1;
+        int inner_index = 1;
+        int segment = 0;
+
+        int max_segment = 0;
+        int max_out_index = 0;
+        int max_inner_index = 0;
+
+        bool is_enough = false;
+
+        for (auto iterator = (++memory.begin()); iterator != memory.end(); ++iterator)
+        {
+            if (is_enough)
+            {
+                break;
+            }
+
+            segment = 0;
+            inner_index = out_index + 1;
+
+            //Этот элемент уже занят?
+            if ((*iterator).is_occupied())
+            {
+                out_index++;
+                continue;
+            }
+
+            segment = (*iterator).get_size();
+
+            auto tmp_it = iterator;
+
+            for (auto inner_itaretor = (++tmp_it); inner_itaretor != memory.end(); ++inner_itaretor)
+            {
+                // Этот элемент уже занят?
+                if ((*inner_itaretor).is_occupied())
+                {
+                    inner_index++;
+                    break;
+                }
+
+                segment += (*inner_itaretor).get_size();
+
+                if (segment > max_segment)
+                {
+                    max_segment = segment;
+                    max_out_index = out_index;
+                    max_inner_index = inner_index;
+
+                    unsigned int avaible_spase = max_segment + (max_inner_index - max_out_index) * mcb_size;
+
+                    if (avaible_spase >= s)
+                    {
+                        is_enough = true;
+                        break;
+                    }
+                }
+
+                inner_index++;
+            }
+
+            out_index++;
+        }
+
+        unsigned int avaible_spase = max_segment + (max_inner_index - max_out_index) * mcb_size;
+
+        if (avaible_spase < s)
+        {
+            return "-";
+        }
+
+        int current_index = 0;
+        total_size = 0;
+
+        int is_succesful = -1;
+
+        for (auto& mcb : memory)
+        {
+            if (current_index == max_out_index)
+            {
+                mcb.increase_size_of(avaible_spase - mcb.get_size());
+
+                if (mcb.get_size() >= s)
+                {
+                    mcb.occupy();
+                }
+
+                is_succesful = total_size;
+                break;
+            }
+
+            total_size += mcb.get_size();
+            total_size += mcb_size;
+
+            current_index++;
+        }
+
+        current_index = 0;
+
+        for (auto itr = memory.begin(); itr != memory.end();)
+        {
+            if (current_index > max_out_index && current_index <= max_inner_index)
+            {
+                itr = memory.erase(itr);
+            }
+            else
+            {
+                ++itr;
+            }
+
+            current_index++;
+        }
+
+        if (is_succesful > -1)
+        {
+            return "+ " + to_string(is_succesful);
         }
 
         return "-";
@@ -93,63 +214,18 @@ public:
                 // Если это последний блок
                 if (current_index == memory.size() - 1)
                 {
-                    auto local_it = memory.begin();
-                    MCB& prev = *next(local_it, current_index - 1);
-
                     //Удаляем текущий блок
                     memory.erase(it++);
 
-                    //Если предыдущая MCB структура свободна
-                    if (!prev.is_occupied())
-                    {
-                        --it;
+                    --it;
 
+                    //Пока предыдущая MCB структура свободна
+                    while (!(*it).is_occupied() && current_index >= 2)
+                    {
                         //Удаляем предыдущий блок
                         memory.erase(it++);
-                    }
-
-                    return "+";
-                }
-
-                //Если есть следующая MCB структура
-                if (current_index < memory.size() - 1)
-                {
-                    auto local_it = memory.begin();
-                    MCB& next = *std::next(local_it, current_index + 1);
-
-                    //Если следующая MCB структура свободна
-                    if (!next.is_occupied())
-                    {
-                        unsigned int next_mcb_block_size = next.get_size();
-
-                        //Увеличиваем текущий блок
-                        mcb.increase_size_of(next_mcb_block_size + mcb_size);
-
-                        ++it;
-
-                        //Удаляем следующий блок
-                        memory.erase(it++);
 
                         --it;
-                    }
-                }
-
-                //Если предыдущая MCB структура существует
-                if (current_index >= 2)
-                {
-                    auto local_it = memory.begin();
-                    MCB& prev = *next(local_it, current_index - 1);
-
-                    //Если предыдущая MCB структура свободна
-                    if (!prev.is_occupied())
-                    {
-                        unsigned int current_mcb_block_size = mcb.get_size();
-
-                        //Увеличиваем предыдущий блок
-                        prev.increase_size_of(current_mcb_block_size + mcb_size);
-
-                        //Удаляем текущий блок
-                        memory.erase(it++);  
                     }
                 }
 
@@ -160,10 +236,10 @@ public:
 
             total_size += mcb.get_size();
             total_size += mcb_size;
-            
+
             current_index += 1;
         }
-            
+
         return "-";
     }
 
@@ -209,6 +285,60 @@ public:
         }
 
         max_s = max(static_cast<unsigned int>(free_space), max_s);
+
+        //Мёржим различные блоки
+
+        int out_index = 1;
+        int inner_index = 1;
+        int segment = 0;
+
+        int max_segment = 0;
+        int max_out_index = 0;
+        int max_inner_index = 0;
+
+        for (auto iterator = (++memory.begin()); iterator != memory.end(); ++iterator)
+        {
+            segment = 0;
+            inner_index = out_index + 1;
+
+            //Этот элемент уже занят?
+            if ((*iterator).is_occupied())
+            {
+                out_index++;
+                continue;
+            }
+
+            segment = (*iterator).get_size();
+
+            auto tmp_it = iterator;
+
+            for (auto inner_itaretor = (++tmp_it); inner_itaretor != memory.end(); ++inner_itaretor)
+            {
+                // Этот элемент уже занят?
+                if ((*inner_itaretor).is_occupied())
+                {
+                    inner_index++;
+                    break;
+                }
+
+                segment += (*inner_itaretor).get_size();
+
+                if (segment > max_segment)
+                {
+                    max_segment = segment;
+                    max_out_index = out_index;
+                    max_inner_index = inner_index;
+                }
+
+                inner_index++;
+            }
+
+            out_index++;
+        }
+
+        unsigned int avaible_spase = max_segment + (max_inner_index - max_out_index) * mcb_size;
+
+        max_s = max(max_s, avaible_spase);
 
         return to_string(number_of_bloks) + " " + to_string(count_of_allocated_memory) + " " + to_string(max_s);
     }
