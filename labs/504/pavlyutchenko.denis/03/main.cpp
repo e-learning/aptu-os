@@ -159,7 +159,7 @@ public:
         }
 
         // 1 -- zero block
-        int free_space = memory_size - total_size - mcb_size - 1;
+        int free_space = memory_size - total_size - mcb_size - mcb_size - 1;
         if (free_space < 0)
         {
             free_space = 0;
