@@ -96,17 +96,17 @@ public:
                     auto local_it = memory.begin();
                     MCB& prev = *next(local_it, current_index - 1);
 
+                    //Удаляем текущий блок
+                    memory.erase(it++);
+
                     //Если предыдущая MCB структура свободна
                     if (!prev.is_occupied())
                     {
-                        unsigned int current_mcb_block_size = mcb.get_size();
+                        --it;
 
-                        //Увеличиваем предыдущий блок
-                        prev.increase_size_of(current_mcb_block_size + mcb_size);
+                        //Удаляем предыдущий блок
+                        memory.erase(it++);
                     }
-
-                    //Удаляем текущий блок
-                    memory.erase(it++);
 
                     return "+";
                 }
