@@ -37,13 +37,21 @@ unsigned ToyAllocator::allocate(unsigned size)
 			{
 				prev_idex = 0;
 			}
-
 			fill_MCB(&newNode, current->size - size - sizeof(MCB), current, current->next, true, prev_idex + size + sizeof(MCB));
 			writeMCBtoBlock(current->startIndex + size, &newNode);
 			current->size = size;
 			current->freeTag = false;
 			current->next = readMCBFromBlock(newNode.startIndex - sizeof(MCB));
 			return current->startIndex;
+		}
+		else
+		{
+			if (current->freeTag == true && current->size >= size)
+			{
+				user_used += size;
+				current->freeTag = false;
+				return current->startIndex;
+			}
 		}
 		current = current->next;
 	}
@@ -154,27 +162,35 @@ string ToyAllocator::map()
 
 tuple<unsigned, unsigned, unsigned> ToyAllocator::info()
 {
-	unsigned userBlocks = 0;
-	unsigned userAllocated = 0;
-	unsigned maxPossibleAlloc = max_heap_size;
-	MCB current = first_MCB;
-	while (current.next != NULL)
+	int userBlocks = 0;
+	int userAllocated = 0;
+	int maxPossibleAlloc = max_heap_size;
+	MCB *current = &first_MCB;
+	while (current->next != NULL)
 	{
-		if (current.freeTag == false)
+		if (current->freeTag == false)
 		{
 			userBlocks++;
-			userAllocated += current.size;
-			maxPossibleAlloc -= current.size;
+			userAllocated += current->size;
+			maxPossibleAlloc -= current->size;
+			if (current != &first_MCB && current != &last_MCB)
+			{
+				maxPossibleAlloc -= sizeof(MCB);
+			}
 		}
-		current = *current.next;
+		current = current->next;
 	}
-	if (maxPossibleAlloc < sizeof(MCB))
+	if (maxPossibleAlloc < (int)sizeof(MCB))
 	{
 		maxPossibleAlloc = 0;
 	}
 	if (maxPossibleAlloc % sizeof(MCB) != 0)
 	{
 		maxPossibleAlloc = AlignSize(maxPossibleAlloc) - 2 * sizeof(MCB);
+	}
+	if (maxPossibleAlloc > max_heap_size)
+	{
+		maxPossibleAlloc = max_heap_size;
 	}
 	return make_tuple(userBlocks, userAllocated, maxPossibleAlloc);
 }
