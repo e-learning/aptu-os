@@ -225,7 +225,7 @@ private:
 
     void merge_mcb_and_next_if_possible(MCB *mcb)
     {
-        if (mcb == nullptr || mcb->next == nullptr || mcb->next->used)
+        if (mcb == nullptr || mcb->next == nullptr || mcb->next->used || mcb->used)
         {
             return;
         }
