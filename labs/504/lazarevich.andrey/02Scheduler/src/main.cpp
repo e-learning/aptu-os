@@ -26,26 +26,24 @@ IO next_io_block(string const & task, int & start_space)
     IO io_task;
     io_task.start_io = 0;
     io_task.end_io = 0;
+    int space_counter = 0;
     if (static_cast<unsigned int>(start_space + 1) < task.length())
     {
         int next_space = start_space + 1;
         while (static_cast<unsigned int> (next_space) <= task.length())
         {
-            if (task[next_space] == ')')
+            if (task[next_space] == ' ')
+                ++space_counter;
+            if (space_counter == 2)
                 break;
             ++next_space;
         }
-        while (static_cast<unsigned int> (start_space) <= task.length())
-        {
-            if (task[start_space] == '(')
-                break;
-            ++start_space;
-        }
+
         string sub = task.substr(start_space + 1, next_space - start_space -1);
         std::stringstream ss(sub);
         string item;
         vector<string>elems;
-        while (getline(ss, item, ','))
+        while (getline(ss, item, ' '))
         {
                elems.push_back(item);
         }
