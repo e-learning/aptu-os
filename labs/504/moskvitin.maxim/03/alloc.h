@@ -10,7 +10,6 @@ typedef struct
 
 typedef struct
 {
-    char    magic;
     size_t  prev_offset;
     size_t  end_offset;
     size_t  next_offset;

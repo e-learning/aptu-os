@@ -12,7 +12,6 @@ alloc* create_allocator(size_t size)
     return allocator;
 }
 
-const char magic = 42;
 
 int allocate(alloc *allocator, size_t size, size_t *offset)
 {
@@ -22,7 +21,6 @@ int allocate(alloc *allocator, size_t size, size_t *offset)
         if (allocator->size >= size + sizeof(block))
         {
             new_block = (block*)allocator->buf;
-            new_block->magic = magic;
             new_block->end_offset = sizeof(block) + size;
             new_block->prev_offset = allocator->size;
             new_block->next_offset = allocator->size;
@@ -37,7 +35,6 @@ int allocate(alloc *allocator, size_t size, size_t *offset)
     {
         block* next_block = (block*) (allocator->buf + allocator->first_block);
         new_block = (block*)allocator->buf;
-        new_block->magic = magic;
         new_block->end_offset  = sizeof(block) + size;
         new_block->prev_offset = allocator->size;
         new_block->next_offset = allocator->first_block;
@@ -61,7 +58,6 @@ int allocate(alloc *allocator, size_t size, size_t *offset)
 
     *offset = current_block->end_offset;
     new_block  = (block*)(allocator->buf + *offset);
-    new_block->magic = magic;
     new_block->end_offset = sizeof(block) + (*offset) + size;
     new_block->next_offset = current_block->next_offset;
     new_block->prev_offset = current_offset;
