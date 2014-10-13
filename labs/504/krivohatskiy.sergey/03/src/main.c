@@ -3,6 +3,7 @@
 #include "allocator.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 char *my_getline(int *was_eof) {
     *was_eof = 0;
@@ -45,7 +46,10 @@ int main(void)
 {
     struct allocator allocator;
     unsigned int size = -1;
-    scanf("%d", &size);
+    if(!scanf("%d", &size))
+    {
+        return -1;
+    }
     if(init_allocator(&allocator, size))
     {
         return -1;
@@ -86,7 +90,7 @@ int main(void)
         ++space_pos;
         if(!strcmp("FREE", line))
         {
-            char *p = (char*) atoi(space_pos);
+            char *p = (char*) (intptr_t) atoi(space_pos);
             printf("%c\n", allocator_free(&allocator, p) ? '-' : '+');
             free(line);
             continue;
@@ -97,7 +101,7 @@ int main(void)
             char *p = alloc(&allocator, size);
             if(p)
             {
-                printf("+ %d\n", (int)p);
+                printf("+ %d\n", (int)(intptr_t)p);
             }
             else
             {
