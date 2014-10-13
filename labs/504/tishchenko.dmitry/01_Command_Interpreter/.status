@@ -1,0 +1,9 @@
+rejected
+
+* Build Error
+gcc -Wall -Werror -c shell.c -o shell.o
+shell.c: In function ‘ps’:
+shell.c:103:13: error: passing argument 2 of ‘getline’ from incompatible pointer type [-Werror]
+/usr/include/stdio.h:675:20: note: expected ‘size_t * __restrict__’ but argument is of type ‘unsigned int *’
+cc1: all warnings being treated as errors
+make: *** [shell.o] Error 1

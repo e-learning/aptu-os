@@ -12,6 +12,7 @@ void execUnknownCommand(const char* command, char * const args[]);
 char** parseExtern(const char* str, size_t* count);
 void pwd();
 int kill_proc(char * const args[]);
+void freeArg(char **args);
 
 main(int argc, char** argv)
 {
@@ -82,7 +83,8 @@ void parseAndExecCommand(const char* command)
 {
     size_t argC = 0;
     char** commandArgs = parseExtern(command, &argC);
-
+    if (argC == 0)
+        return;
     if (!strcmp(commandArgs[0], "exit"))
         exit(0);
     else if (!strcmp(commandArgs[0], "ls"))
@@ -95,6 +97,7 @@ void parseAndExecCommand(const char* command)
         kill_proc(commandArgs + 1);
     else
         execUnknownCommand(commandArgs[0], commandArgs);
+    freeArg(commandArgs);
 }
 
 void freeArg(char **argV)
@@ -129,6 +132,10 @@ char** parseExtern(const char* str, size_t* count)
     size_t len = strlen(str);
     *count = 0;
     size_t i;
+
+    if (len == 0)
+        return NULL;
+
     for (i = 0; i < len - 1; ++i)
     {
         if (str[i] == ' ')
