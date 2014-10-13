@@ -1,1 +1,8 @@
-done 
+rejected
+
+01_shell> make
+gcc -O2 -Wall -Werror  -c ./auxiliary.c -o obj/auxiliary.o
+Assembler messages:
+Fatal error: can't create obj/auxiliary.o: No such file or directory
+make: *** [obj/auxiliary.o] Error 1
+

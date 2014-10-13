@@ -5,9 +5,10 @@
 #define MAX_ARGS_LENGTH 255
 #define MAX_ARG_LENGTH 32
 
-int child( const char *name, char **argv)
+int child( const char *name, char **argv, pid_t *pid)
 {
 	printf("Now there is process PID:%d NAME:%s\n",getpid(), name); 
+	*pid = getpid();
 	return execvp(name, argv);
 }
 
@@ -26,7 +27,7 @@ char **copy_args(int argc, char *command_name)
 	char 		*substring;
 	const char	delimiters[] = " ";
 	
-	char **args = malloc(sizeof(char *) * (argc + 1));
+	char **args = (char**)calloc(argc + 1, sizeof(char*));
 	if (!args)
 		return (char **)NULL;
 		
@@ -37,13 +38,13 @@ char **copy_args(int argc, char *command_name)
 	for (i = 1; i < argc; i++)
 	{
 		substring = strtok(NULL, delimiters);
-		args[i] = malloc(sizeof(char) * MAX_ARG_LENGTH);
+		args[i] = (char *)calloc(MAX_ARG_LENGTH, sizeof(char));
 		strncpy(args[i], substring, strlen(substring) - 1);
 		//printf("<%s> - <%d> ", args[i], strlen(args[i]));
 	}
 	
 	args[argc] = (char *)NULL;
-	//printf("\n");
+	printf("\n");
 	return args;
 }
 
@@ -66,14 +67,21 @@ int parse_string_for_argv(char *arguments, int size)
 
 void try_run_programm(char *command_name)
 {
-	pid_t pid;
+	pid_t pid, exec_pid;
 	int status;
 	char arguments[256];
 	char *name;
+	int was_malloced = 0;
 	strcpy(arguments, command_name);
-	name = strtok(command_name, " ");
 	int argc = parse_string_for_argv(arguments, strlen(arguments));
-	//printf("ARGC:%d\n", argc);
+	if (argc == 1)
+	{
+		name = (char*)calloc(MAX_ARG_LENGTH, 1);
+		was_malloced = 1;
+		strncpy(name, command_name, strlen(command_name) - 1);
+	}
+	else
+		name = strtok(command_name, " ");
 	char **args = copy_args(argc, arguments);
 	if (!args)
 	{
@@ -88,15 +96,17 @@ void try_run_programm(char *command_name)
 		free_memory(args, argc);
 		return;
 	}
-		
-	if ((pid == 0) && child(name, args))
+	
+	if ((pid == 0) && child(name, args, &exec_pid))
 	{
 		perror("cannot exec child process");
+		kill( exec_pid, SIGTERM );
 		free_memory(args, argc);
 		return;
 	}
 	
 	waitpid(pid, &status, 0);
 	free_memory(args, argc);
-	
+	if (was_malloced == 1)
+		free(name);
 }

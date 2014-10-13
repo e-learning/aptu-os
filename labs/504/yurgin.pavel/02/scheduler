@@ -1,0 +1,129 @@
+#!/usr/bin/python
+
+import sys
+a=sys.stdin.readlines()
+
+
+class Task:
+    def __init__(self, task):
+        self._id = task[0]
+        self._t_s = int(task[1])
+        self._elapsed = int(task[2])
+        self._left = 0
+        self._status = 2 #0 - ready and has io in quantun range, 1 -ready,  2 - dont ready, 3 - done
+        self._io = list(reversed(list(zip(*[iter(task[3:])] * 2))))
+
+    def get_id(self):
+        return self._id
+
+    def has_io(self):
+        return bool(len(self._io))
+
+    def get_io(self):
+        if self.has_io():
+            return [int(i) for i in self._io[-1]]
+        else:
+            return [float("inf"), float("inf")]
+    def pop_io(self):
+        self._io.pop()
+
+    def get_status(self):
+        return self._status
+
+    def update_status(self, time, quant):
+        if (self._t_s <= time and  self.get_io()[0] - self._elapsed < quant):
+            #self._t_s = 0
+            self._status = 0
+        elif self._t_s <= time:
+            self._status = 1
+            #self._t_s = 0
+        elif self._elapsed == 0:
+            self._status = 3
+        else:
+            self._status = 2
+
+    def run(self, time, quant):
+        if self._status > 1:
+            raise Exception("Process is not ready")
+        if self._status == 1:
+            if self._elapsed <= quant:
+                self._status = -1
+                time += self._elapsed
+                self._left += self._elapsed
+                self._elapsed = 0
+                self._t_s = float("inf")
+                return time
+            else:
+                self._elapsed -= quant
+                self._left += quant
+                self._t_s += quant
+                return time + quant
+        elif self._status == 0:
+            time += self.get_io()[0]
+            self._elapsed -= -self._left + self.get_io()[0] + self.get_io()[1]
+            if self._left >= self.get_io()[0]:
+                self._left += self.get_io()[1]
+            else:
+                self._left += self.get_io()[1] + self.get_io()[0] - self._left
+            self._t_s += sum(self.get_io())
+            self.pop_io()
+            return time
+
+    def __gt__(self, other):
+        return (self._status, self._id) > (other._status, other._id)
+
+    def __eq__(self, other):
+        return (self._status, self._id) == (other._status, other._id)
+
+    def __str__(self):
+        return str((self._id, self._t_s, self._elapsed, self._io, self._left, "status: ", self._status))
+
+
+def scheduler(quant, tasks):
+    time = 0
+    log = []
+
+    def update_status(tasks, time, quant):
+        for task in tasks:
+            task.update_status(time, quant)
+
+    def new_task(tasks):
+        current_tast = tasks[0]
+        for task in tasks[1:]:
+            if task.get_status() < 3:
+                if task < current_tast:
+                    current_tast = task
+        if current_tast.get_status() == 3:
+            return None
+        else:
+            return current_tast
+
+    update_status(tasks, time, quant)
+    task = new_task(tasks)
+
+    while task:
+        if task.get_status() > 1:
+            log.append((time, "IDLE"))
+            time += task._t_s - time
+            update_status(tasks, time, quant)
+            task = new_task(tasks)
+            continue
+        log.append((time, task.get_id()))
+        time = task.run(time, quant)
+        update_status(tasks, time, quant)
+        task = new_task(tasks)
+    return log
+
+
+inp = a
+quant = int(inp[0])
+
+inp = [task.split() for task in inp]
+
+tasks = []
+for task in inp[1:]:
+    tasks.append(Task(task))
+
+log = scheduler(quant, tasks)
+for i in log:
+    print(str(i[0]) + ' ' + str(i[1]))

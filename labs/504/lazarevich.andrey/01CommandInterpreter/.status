@@ -1,1 +1,15 @@
-done
+accepted (4/7)
+
+* Shell is active after exit.
+
+  Steps:
+  * run <unknown_command>
+  * run exit
+  Output:
+	command: unknown_command
+
+	Now there is process PID:2696 NAME:unknown_command
+	cannot exec child process: No such file or directory
+	command: exit
+	Thank you, good bye
+	command: 
