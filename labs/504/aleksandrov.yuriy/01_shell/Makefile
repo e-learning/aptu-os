@@ -1,20 +1,14 @@
 FLAGS=-O2 -Wall -Werror 
 CC = gcc
 OUT = shell
-OBJDIR = obj
-SRCDIR = .
+DEPS = auxiliary.c commands.c shell.c
 
-all: $(OUT)
-$(OBJDIR)/auxiliary.o: $(SRCDIR)/auxiliary.c $(SRCDIR)/auxiliary.h
-	$(CC) $(FLAGS) -c $(SRCDIR)/auxiliary.c -o $(OBJDIR)/auxiliary.o
-$(OBJDIR)/commands.o: $(SRCDIR)/commands.c $(SRCDIR)/commands.h
-	$(CC) $(FLAGS) -c $(SRCDIR)/commands.c -o $(OBJDIR)/commands.o
-$(OBJDIR)/shell.o: $(SRCDIR)/shell.c $(SRCDIR)/auxiliary.h $(SRCDIR)/commands.h
-	$(CC) $(FLAGS) -c $(SRCDIR)/shell.c -o $(OBJDIR)/shell.o
-$(OUT): $(OBJDIR)/auxiliary.o $(OBJDIR)/commands.o $(OBJDIR)/shell.o
-	mkdir -p $(OBJDIR)
-	$(CC) $(FLAGS) $(OBJDIR)/auxiliary.o $(OBJDIR)/commands.o $(OBJDIR)/shell.o -o $(OUT)
 
+all: 
+	$(CC) $(FLAGS)  $(DEPS) -o $(OUT)
+valgrind:
+	$(CC) $(FLAGS)  -g -lm $(DEPS) -o $(OUT)
+	valgrind --tool=memcheck --leak-check=yes ./$(OUT)
 .PHONY: clean
 
 clean:

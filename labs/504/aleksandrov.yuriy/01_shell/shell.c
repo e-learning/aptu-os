@@ -13,11 +13,11 @@ int main()
 	size_t commandsnum; 
 	char commandbuf[MAXARGSLEN+1]; /* read stuff here */
 	
-	printf("Hello! Type your command:\n");
+	printf("Hello! Please type your command:\n");
 	while(1)
 	{
-		printf("\n $ ");
-		if (fgets(commandbuf, MAXARGSLEN+1, stdin))
+		printf(" $ "); // shell prompt
+		if (fgets(commandbuf, MAXARGSLEN+1, stdin) && strlen(commandbuf) > 1)
 		{
 			commandlist = split_str(commandbuf, &commandsnum);
 			size_t i = 0;
