@@ -105,13 +105,13 @@ int main()
         uint32_t page_directory_size;
         cin >> dec >> page_directory_size;
         vector<uint64_t> page_directory(page_directory_size);
-        for (int i = 0; i < page_directory_size; ++i)
+        for (uint32_t i = 0; i < page_directory_size; ++i)
             cin >> hex >> page_directory[i];
         
         uint32_t page_table_size;
         cin >> dec >> page_table_size;
         vector<uint64_t> page_table(page_table_size);
-        for (int i = 0; i < page_table_size; ++i)
+        for (uint32_t i = 0; i < page_table_size; ++i)
             cin >> hex >> page_table[i];
         
         log_addr_to_lin_addr(log_addr, GDT, LDT, lin_addr);
