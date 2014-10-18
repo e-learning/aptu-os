@@ -14,11 +14,11 @@ int execute(char** arglist)
 	{
 		case -1:
 			perror("fork failed");
-			return 1;
+			exit(1);
 		case 0:
 			execvp(arglist[0], arglist);
 			perror("execvp failed");
-			return 1;
+			exit(1);
 		default:
 			while (wait(&exitstatus) != pid);
 			//printf("child exited with status: exit=%d, sig=%d\n",
@@ -63,7 +63,7 @@ char** split_str(char* str, size_t* arg_number)
 	size_t arg = 0, argindex = 0;
 	size_t currarglen;
 	i = 0;
-	while (str[i] == ' ' && str[i] != '\0')
+	while (str[i] == ' ' && str[i+1] != '\0')
 		++i;
     while( str[i] != '\0')
     {
@@ -83,7 +83,7 @@ char** split_str(char* str, size_t* arg_number)
 				++currarglen;
 			}
 			
-			splitted_str[arg] = (char*)malloc(currarglen);
+			splitted_str[arg] = (char*)malloc(currarglen+1);
 			i -= currarglen;
 			splitted_str[arg][argindex++] = ch; 
 			while( str[i] != '\0' && str[i] != ch )
@@ -98,14 +98,14 @@ char** split_str(char* str, size_t* arg_number)
 			break;
 		default:
 			if ( arg < argsnum ) {
-				while( str[i] != ' ' )
+				while( str[i] != ' ' && str[i] != '\0' )
 				{
 					++i;
 					++currarglen;
 				}
-				splitted_str[arg] = (char*)malloc(currarglen);
+				splitted_str[arg] = (char*)malloc(currarglen+1);
 				i -= currarglen;
-				while( str[i] != ' ' )
+				while( str[i] != ' ' && str[i] != '\0' )
 				{
 					splitted_str[arg][argindex++] = str[i++]; 
 				}
