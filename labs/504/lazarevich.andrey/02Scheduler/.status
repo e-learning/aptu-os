@@ -1,0 +1,19 @@
+rejected
+
+* Failed test:
+
+Given:
+5
+PROC1 0 5
+PROC2 0 6
+
+Output:
+0 PROC1
+4 PROC2
+8 PROC2
+9 IDLE
+
+Expected:
+0 PROC1
+5 PROC2
+10 PROC2

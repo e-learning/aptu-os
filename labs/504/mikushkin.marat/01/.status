@@ -1,1 +1,4 @@
-done
+accepted (2/5)
+
+* ps doesn't work as expected
+* implement ls, pwd, ps manually
