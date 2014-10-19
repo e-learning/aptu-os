@@ -48,6 +48,10 @@ int parse_input(char ** arguments) {
 }
 
 void execute(int number_of_arguments, char ** arguments) {
+	if (number_of_arguments == 0) {
+		return;
+	}
+
 	if (strcmp(arguments[0], "ls") == 0) {
 		ls();
 		return;
@@ -57,8 +61,11 @@ void execute(int number_of_arguments, char ** arguments) {
 	} else if (strcmp(arguments[0], "pwd") == 0) {
 		pwd();
 		return;
-	} else if (strcmp(arguments[0], "kill") == 0) {
-		kill_by_pid(atoi(arguments[1]));
+	} else if (strcmp(arguments[0], "kill") == 0 && number_of_arguments > 1) {
+		int pid = atoi(arguments[1]);
+		if (pid > 0) {
+			kill_by_pid(pid);
+		}
 		return;
 	}
 
