@@ -92,6 +92,7 @@ int main()
         cout << invalid << endl;
         return -1;
     }
+
     uint64_t segment_descriptor = 0;
     if (TI)
     {
@@ -135,7 +136,13 @@ int main()
     bool is_valid_dir_entry = get_bit_at(page_dir_entry, 0);
     bool is_valid_table_entry = get_bit_at(page_table_entry, 0);
 
-    if (!is_valid_table_entry && !is_valid_dir_entry)
+    if (!is_valid_table_entry || page_dir_num >= page_dir.size())
+    {
+        cout << invalid << endl;
+        return -1;
+    }
+
+    if (!is_valid_dir_entry || page_table_num >= page_table.size())
     {
         cout << invalid << endl;
         return -1;
