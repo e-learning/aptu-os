@@ -6,7 +6,7 @@ ToyAllocator::ToyAllocator(unsigned int heap_size)
 	max_heap_size = heap_size;
 	user_used = 0;
 
-	real_heap_size =  AlignSize(heap_size);
+	real_heap_size =  heap_size;
 	//real_heap_size = heap_size;
 	heap = new char[real_heap_size];
 
@@ -179,6 +179,10 @@ tuple<unsigned, unsigned, unsigned> ToyAllocator::info()
 			}
 		}
 		current = current->next;
+	}
+	if (userBlocks >= 2)
+	{
+		maxPossibleAlloc -= sizeof(MCB);
 	}
 	if (maxPossibleAlloc < (int)sizeof(MCB))
 	{

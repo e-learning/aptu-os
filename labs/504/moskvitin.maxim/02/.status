@@ -1,1 +1,15 @@
-done
+rejected
+
+* Failed test:
+
+Given:
+5
+PROC 4 1
+
+Output:
+0 IDLE
+5 PROC
+
+Expected:
+0 IDLE
+4 PROC

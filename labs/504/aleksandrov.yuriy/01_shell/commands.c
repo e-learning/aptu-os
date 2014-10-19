@@ -48,14 +48,13 @@ void exec_ls(char ** arguments)
 		int col_num = w.ws_col / (maxlen + 2);
 		
 		// print names
-		entry = 0;
 		int entries_row = 0;
 		int entries_rows_num = (entries_num % col_num == 0)?  entries_num / col_num : entries_num / col_num + 1;
 		int col;
 		while(entries_row < entries_rows_num)
 		{
 			col = 0;
-			entry = entries_row++;
+			entry = 2+entries_row++;
 			while (col++ < col_num && entry < entries_num)
 			{
 				switch (namelist[entry] -> d_type)

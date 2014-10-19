@@ -1,1 +1,4 @@
 done
+
+* understood manually as separately
+* additionaly checked for memory leaks using: valgrind --tool=memcheck --leak-check=full ./shell

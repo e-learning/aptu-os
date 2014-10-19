@@ -1,31 +1,9 @@
 #include "auxiliary.h"
 
 #include <stdio.h> // perror, fgets, printf, fprintf
-#include <unistd.h> // execvp
 #include <string.h> // strlen, strcpy
 #include <stdlib.h> // exit, malloc
-#include <sys/wait.h> // wait, waitpid
 
-int execute(char** arglist)
-{
-	int pid, exitstatus;
-	pid = fork();
-	switch(pid)
-	{
-		case -1:
-			perror("fork failed");
-			exit(1);
-		case 0:
-			execvp(arglist[0], arglist);
-			perror("execvp failed");
-			exit(1);
-		default:
-			while (wait(&exitstatus) != pid);
-			//printf("child exited with status: exit=%d, sig=%d\n",
-			//		exitstatus >> 8, exitstatus & 0377);
-			return 0;
-	}
-}
 
 char** split_str(char* str, size_t* arg_number)
 {
@@ -124,3 +102,11 @@ char** split_str(char* str, size_t* arg_number)
 	return splitted_str;
 }
 
+
+void free_commandlist(char** commandlist, size_t commandsnum)
+{
+	size_t i = 0;
+	while (i < commandsnum+1)
+		free(commandlist[i++]);
+	free(commandlist);
+}
