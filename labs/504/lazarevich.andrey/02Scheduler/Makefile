@@ -1,7 +1,7 @@
 SRC = ./src/main.cpp
-OBJ = ./src/main.o
+OBJ = ./main.o
 HPP = ./src/common.hpp
-TARGET = ./bin/scheduler
+TARGET = ./scheduler
 FLAGS = -Wall -Werror -std=c++11
 
 all: $(TARGET)
