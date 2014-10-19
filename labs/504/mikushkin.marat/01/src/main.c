@@ -7,65 +7,80 @@
 #include <dirent.h>
 #include <signal.h>
 
-#define MAX_USER_COMMAND_LEN 100
-#define EXEC_SUCCESS 0
-#define EXEC_FAILURE -1
+#define MAX_USER_COMMAND_LEN 256
 #define MAX_LEN_PROC_PATH 100
 #define MAX_LEN_PROC_NAME 100
 
 char * get_current_dir_name();
+int kill(pid_t pid, int sig);
 
-int parse_input(char ** argv) {
+void ls();
+void pwd();
+void ps();
+void kill_by_pid(int pid);
+
+int parse_input(char ** arguments) {
 	char user_input[MAX_USER_COMMAND_LEN];
 
 	if (fgets(user_input, MAX_USER_COMMAND_LEN, stdin) == NULL) {
-		return EXEC_FAILURE;
+		return -1;
 	}
 
 	if (strcmp(user_input, "\n") == 0) {
-		return EXEC_SUCCESS;
+		return 0;
 	}
 
 	char * token = strtok(user_input, " ");
-	int argc = 0;
+	int number_of_arguments = 0;
 	for (; token != NULL; token = strtok(NULL, " ")) {
 		if (token[strlen(token) - 1] == '\n') {
 			token[strlen(token) - 1] = '\0';
 		}
-		argv[argc] = (char *) malloc(strlen(token) + 1);
-		strcpy(argv[argc++], token);
-		if (strcmp(argv[argc - 1], "exit") == 0) {
+		arguments[number_of_arguments] = (char *) malloc(strlen(token) + 1);
+		strcpy(arguments[number_of_arguments++], token);
+		if (strcmp(arguments[number_of_arguments - 1], "exit") == 0) {
 			exit(0);
 		}
 	}
-	argv[argc] = NULL;
-	return argc;
+	arguments[number_of_arguments] = NULL;
+	free(token);
+	return number_of_arguments;
 }
 
-void execute(int argc, char ** argv) {
+void execute(int number_of_arguments, char ** arguments) {
+	if (strcmp(arguments[0], "ls") == 0) {
+		ls();
+		return;
+	} else if (strcmp(arguments[0], "ps") == 0) {
+		ps();
+		return;
+	} else if (strcmp(arguments[0], "pwd") == 0) {
+		pwd();
+		return;
+	} else if (strcmp(arguments[0], "kill") == 0) {
+		kill_by_pid(atoi(arguments[1]));
+		return;
+	}
+
 	pid_t pid;
-	int found_ampersand = (strcmp(argv[argc - 1], "&") == 0);
-
+	int found_ampersand = (strcmp(arguments[number_of_arguments - 1], "&") == 0);
 	pid = fork();
-
 	if (pid < 0) {
 		perror("Error: pid < 0");
 	} else if (pid == 0) {
 		if (found_ampersand) {
-			argv[argc - 1] = NULL;
-			argc--;
+			arguments[number_of_arguments - 1] = NULL;
+			number_of_arguments--;
 		}
-
-		if (execvp(argv[0], argv) == -1) {
+		if (execvp(arguments[0], arguments) == -1) {
 			exit(0);
 		}
-
 	} else if (!found_ampersand) {
 		waitpid(pid, NULL, 0);
 	}
 }
 
-int ls() {
+void ls() {
 	DIR * directory;
 
 	if ((directory = opendir("."))) {
@@ -80,17 +95,17 @@ int ls() {
 		free(content);
 	} else {
 		free(directory);
-		return EXEC_FAILURE;
+		perror("");
 	}
-	return EXEC_SUCCESS;
 }
 
-int pwd() {
-	printf("%s\n", get_current_dir_name());
-	return EXEC_SUCCESS;
+void pwd() {
+	char * directory = get_current_dir_name();
+	printf("%s\n", directory);
+	free(directory);
 }
 
-int ps() {
+void ps() {
 	DIR * directory;
 
 	if ((directory = opendir("/proc"))) {
@@ -116,17 +131,14 @@ int ps() {
 		closedir(directory);
 	} else {
 		free(directory);
-		return EXEC_FAILURE;
+		perror("");
 	}
-
-	return EXEC_SUCCESS;
 }
 
-int kill_by_pid(int pid) {
+void kill_by_pid(int pid) {
 	if (kill(pid, 9) == -1) {
-		return EXEC_FAILURE;
+		perror("");
 	}
-	return EXEC_SUCCESS;
 }
 
 int main() {
@@ -134,19 +146,11 @@ int main() {
 
 	while (1) {
 		printf("$ ");
-
 		int number_of_arguments = parse_input(arguments);
+		execute(number_of_arguments, arguments);
 
-		if (strcmp(arguments[0], "ls") == 0) {
-			ls();
-		} else if (strcmp(arguments[0], "ps") == 0) {
-			ps();
-		} else if (strcmp(arguments[0], "pwd") == 0) {
-			pwd();
-		} else if (strcmp(arguments[0], "kill") == 0) {
-			kill_by_pid(atoi(arguments[0]));
-		} else {
-			execute(number_of_arguments, arguments);
+		for (int i = 0; i < number_of_arguments; ++i) {
+			free(arguments[i]);
 		}
 	}
 
