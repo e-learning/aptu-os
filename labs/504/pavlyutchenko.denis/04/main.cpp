@@ -64,9 +64,25 @@ uint64_t translate_linear_adress_to_physical_adress(uint64_t linear_adress, vect
         exit(0);
     }
 
+    uint64_t PDE = (page_directory[page_directory_index] & 1);
+
+    if (PDE == 0)
+    {
+        cout << INVALID << endl;
+        exit(0);
+    }
+
     size_t page_table_index = static_cast<size_t>((linear_adress >> 12) & 0x3FF);
 
     if (page_table_index >= page_directory.size())
+    {
+        cout << INVALID << endl;
+        exit(0);
+    }
+
+    uint64_t PTE = (page_table[page_table_index] & 1);
+
+    if (PTE == 0)
     {
         cout << INVALID << endl;
         exit(0);
