@@ -1,1 +1,11 @@
-done
+rejected
+
+1000
+ALLOC 10
++ 21082168
+ALLOC 20
++ 21082218
+FREE 21082168
++
+MAP
+Segmentation fault (core dumped)
