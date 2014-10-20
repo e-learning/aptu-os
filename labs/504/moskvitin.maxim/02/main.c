@@ -94,6 +94,10 @@ int main()
 
         int time_to_event = quantum;
 
+        if (current_process_id == -1 && locked && locked->key - time < time_to_event)
+        {
+            time_to_event = locked->key - time;
+        }
 
         if (current_process_id != -1)
         {
@@ -106,7 +110,7 @@ int main()
 
         if (current_process_id != -1 && ProcessGetDurationToLock(curProcess) == 0)
         {
-            if (curProcess->next_lock < curProcess->locks->size)
+            if ((size_t)curProcess->next_lock < curProcess->locks->size)
             {
                 locked = HeapInsert(locked, time + time_to_event +
                         ProcessGetDurationToReady(curProcess), current_process_id);
