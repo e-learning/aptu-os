@@ -54,19 +54,19 @@ bool extract_bit_uint64(const uint64_t uint64, const size_t position)
 
 void print_and_exit()
 {
-    std::cout << MESSAGE << std::endl;
+    std::cout << MESSAGE;
     exit(-1);
 }
 
-uint64_t extract_limit(const uint64_t seg_desc)
+uint64_t extract_segment_limit(const uint64_t segment_descriptor)
 {
     uint64_t result = 0;
 
-    result |= extract_bits_uint64(seg_desc, 48, 52);
+    result |= extract_bits_uint64(segment_descriptor, 48, 52);
     result = result << 16;
-    result |= extract_bits_uint64(seg_desc, 0, 16);
+    result |= extract_bits_uint64(segment_descriptor, 0, 16);
 
-    if (extract_bit_uint64(seg_desc, 55))
+    if (extract_bit_uint64(segment_descriptor, 55)) // G flag
     {
         result = result << 12;
     }
@@ -74,40 +74,41 @@ uint64_t extract_limit(const uint64_t seg_desc)
     return result;
 }
 
-uint64_t extract_base(const uint64_t seg_desc)
+uint64_t extract_segment_base(const uint64_t segment_descriptor)
 {
     uint64_t result = 0;
 
-    result |= extract_bits_uint64(seg_desc, 56, 64);
-    result |= extract_bits_uint64(seg_desc, 16, 40);
+    result |= extract_bits_uint64(segment_descriptor, 56, 64);
+    result = result << 24;
+    result |= extract_bits_uint64(segment_descriptor, 16, 40);
 
     return result;
 }
 
-uint64_t calc_seg_desc(const uint16_t sel, const std::vector<uint64_t>& gdt, const std::vector<uint64_t>& ldt)
+uint64_t calc_segment_descriptor(const uint16_t segment_selector, const std::vector<uint64_t>& gdt, const std::vector<uint64_t>& ldt)
 {
-    if (sel == 0) {
+    if (segment_selector == 0) {
         print_and_exit();
     }
 
-    uint16_t index = extract_bits_uint16(sel, 3, 16);
-    bool table_indicator = extract_bit_uint16(sel, 2);
+    bool table_indicator = extract_bit_uint16(segment_selector, 2);
+    uint16_t position = extract_bits_uint16(segment_selector, 3, 16);
 
-    if (table_indicator == 0 && index == 0)
+    if (table_indicator == 0 && position == 0)
     {
         print_and_exit();
     }
 
     const std::vector<uint64_t>& table = table_indicator ? ldt : gdt;
 
-    if (table.size() <= index)
+    if (table.size() <= position)
     {
         print_and_exit();
     }
 
-    uint64_t seg_desc = table[index];
+    uint64_t seg_desc = table[position];
 
-    if (!extract_bit_uint64(seg_desc, 47))
+    if (!extract_bit_uint64(seg_desc, 47)) // P flag
     {
         print_and_exit();
     }
@@ -115,53 +116,53 @@ uint64_t calc_seg_desc(const uint16_t sel, const std::vector<uint64_t>& gdt, con
     return seg_desc;
 }
 
-uint64_t calc_addr(const uint64_t seg_desc, const uint32_t log_addr)
+uint64_t calc_linear_address(const uint64_t segment_descriptor, const uint32_t offset)
 {
-    if (log_addr > extract_limit(seg_desc))
+    if (offset > extract_segment_limit(segment_descriptor))
     {
         print_and_exit();
     }
 
-    return extract_base(seg_desc) + log_addr;
+    return extract_segment_base(segment_descriptor) + offset;
 }
 
-void check_pd(const std::vector<uint32_t> pd, const uint64_t addr)
+void check_page(const std::vector<uint32_t>& page_directory, const uint64_t addr)
 {
-    uint64_t pd_n = extract_bits_uint64(addr, 22, 32);
+    uint64_t pos = extract_bits_uint64(addr, 22, 32);
 
-    if (pd_n >= pd.size() || !extract_bit_uint64(pd[pd_n], 0))
+    if (pos >= page_directory.size() || !extract_bit_uint64(page_directory[pos], 0))
     {
         print_and_exit();
     }
 }
 
-uint64_t get_p_addr(const uint64_t addr, const std::vector<uint32_t> pt)
+uint64_t calc_page_address(const uint64_t linear_address, const std::vector<uint32_t>& page_table)
 {
-    uint64_t pt_n = extract_bits_uint64(addr, 12, 22);
+    uint64_t pos = extract_bits_uint64(linear_address, 12, 22);
 
-    if (pt_n >= pt.size() || !extract_bit_uint64(pt[pt_n], 0))
+    if (pos >= page_table.size() || !extract_bit_uint64(page_table[pos], 0))
     {
         print_and_exit();
     }
 
-    return extract_bits_uint64(pt[pt_n], 12, 32);
+    return extract_bits_uint64(page_table[pos], 12, 32);
 }
 
-uint64_t get_result(uint64_t ph_add, uint64_t offset)
+uint64_t calc_result(const uint64_t page_address, const uint64_t offset)
 {
     uint64_t result = 0;
 
-    result = (ph_add << 12);
+    result = (page_address << 12);
     result |= offset;
 
     return result;
 }
 
 int main() {
-    uint32_t log_addr = 0;
-    uint16_t sel = 0;
+    uint32_t offset = 0;
+    uint16_t segment_selector = 0;
 
-    std::cin >> std::hex >> log_addr >> sel;
+    std::cin >> std::hex >> offset >> segment_selector;
 
     std::vector<uint64_t> gdt;
     std::vector<uint64_t> ldt;
@@ -169,19 +170,19 @@ int main() {
     read_uint64s(gdt, std::cin);
     read_uint64s(ldt, std::cin);
 
-    std::vector<uint32_t> pd;
-    std::vector<uint32_t> pt;
+    std::vector<uint32_t> page_directory;
+    std::vector<uint32_t> page_table;
 
-    read_uint32s(pd, std::cin);
-    read_uint32s(pt, std::cin);
+    read_uint32s(page_directory, std::cin);
+    read_uint32s(page_table, std::cin);
 
-    uint64_t addr = calc_addr(calc_seg_desc(sel, gdt, ldt), log_addr);
+    uint64_t linear_address = calc_linear_address(calc_segment_descriptor(segment_selector, gdt, ldt), offset);
 
-    check_pd(pd, addr);
+    check_page(page_directory, linear_address);
 
-    uint64_t result = get_result(
-            get_p_addr(addr, pt),
-            extract_bits_uint64(addr, 0, 12)
+    uint64_t result = calc_result(
+            calc_page_address(linear_address, page_table),
+            extract_bits_uint64(linear_address, 0, 12)
     );
 
     std::cout << std::hex << result << std::endl;
