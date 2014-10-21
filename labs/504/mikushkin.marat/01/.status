@@ -1,4 +1,4 @@
-accepted (2/5)
+done
 
-* ps doesn't work as expected
-* implement ls, pwd, ps manually
+* understood manually as separately
+* additionaly checked for memory leaks using: valgrind --tool=memcheck --leak-check=full ./shell

@@ -1,0 +1,1 @@
+Second sample is INVALID, because offset is 0x02407000, but granularity bit is not seted and segment limit is 0xfffff. If offset is greater than segment size address has been invalidated.

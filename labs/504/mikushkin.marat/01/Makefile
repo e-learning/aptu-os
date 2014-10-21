@@ -1,2 +1,2 @@
 all:
-	gcc -Wall -std=c99 src/main.c -o shell
+	gcc -Wall src/main.c -std=c99 -o shell
