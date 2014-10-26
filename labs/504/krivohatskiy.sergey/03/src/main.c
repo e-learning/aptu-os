@@ -90,7 +90,7 @@ int main(void)
         ++space_pos;
         if(!strcmp("FREE", line))
         {
-            char *p = (char*) (intptr_t) atoi(space_pos);
+            int p = atoi(space_pos);
             printf("%c\n", allocator_free(&allocator, p) ? '-' : '+');
             free(line);
             continue;
@@ -98,10 +98,10 @@ int main(void)
         if(!strcmp("ALLOC", line))
         {
             int size = atoi(space_pos);
-            char *p = alloc(&allocator, size);
+            int p = alloc(&allocator, size);
             if(p)
             {
-                printf("+ %d\n", (int)(intptr_t)p);
+                printf("+ %d\n", p);
             }
             else
             {

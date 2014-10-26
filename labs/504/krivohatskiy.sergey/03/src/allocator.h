@@ -1,12 +1,12 @@
 #ifndef ALLOCATOR_H
 #define ALLOCATOR_H
 
+struct full_block_header;
 struct allocator
 {
     char *buffer;
     unsigned int size;
-    char *first_empty;
-    char *first_full;
+    struct full_block_header *first_full;
 };
 
 struct stat
@@ -20,9 +20,11 @@ int init_allocator(struct allocator *allocator, unsigned int buffer_size);
 
 void destroy_allocator(struct allocator *allocator);
 
-char* alloc(struct allocator *allocator, unsigned int size);
+void defrag(struct allocator *allocator);
 
-int allocator_free(struct allocator *allocator, char *p);
+int alloc(struct allocator *allocator, unsigned int size);
+
+int allocator_free(struct allocator *allocator, int p);
 
 struct stat info(struct allocator *allocator);
 
