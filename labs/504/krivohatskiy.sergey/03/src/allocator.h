@@ -7,6 +7,9 @@ struct allocator
     char *buffer;
     unsigned int size;
     struct full_block_header *first_full;
+    struct full_block_header *last_full;
+    int full_blocks;
+    int allocated_blocks;
 };
 
 struct stat
@@ -25,6 +28,8 @@ void defrag(struct allocator *allocator);
 int alloc(struct allocator *allocator, unsigned int size);
 
 int allocator_free(struct allocator *allocator, int p);
+
+char* allocator_get_pointer(struct allocator *allocator, int p);
 
 struct stat info(struct allocator *allocator);
 
