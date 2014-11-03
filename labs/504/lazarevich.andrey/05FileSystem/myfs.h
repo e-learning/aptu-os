@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <string.h>
-#define MAX_DISK_SIZE 5242880
+#define MAX_DISK_SIZE 52428800
 #define MIN_BLOCK_SIZE 1024
 
 struct MyFile
