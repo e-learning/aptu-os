@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "fs_t.h"
 #include "file_buffer.h"
 
@@ -40,13 +41,17 @@ size_t fs_t::block_size() const {
     return block_size_;
 }
 
+string fs_t::create_filename(size_t index) {
+    return path_ + BLOCK_FILENAME + to_string(index);
+}
+
 string fs_t::block_path(uint32_t index) {
-    return path_ + to_string(index);
+    return path_ + BLOCK_FILENAME + to_string(index);
 }
 
 void fs_t::init() {
     for (size_t i = 0; i < blocks_count_; i++) {
-        ofstream out(path_ + to_string(i), ios::trunc);
+        ofstream out(create_filename(i), ios::trunc);
         out.flush();
     }
 }
@@ -389,7 +394,7 @@ void fs_t::read_config_file() {
 }
 
 void fs_t::read_metadata_file() {
-    ifstream in(path_ + to_string(blocks_count_));
+    ifstream in(create_filename(blocks_count_));
 
     if (in.is_open()) {
         in >> root_;
@@ -397,7 +402,7 @@ void fs_t::read_metadata_file() {
 }
 
 void fs_t::read_bitmap_file() {
-    ifstream in(path_ + to_string(blocks_count_ + 1), ios::binary);
+    ifstream in(create_filename(blocks_count_ + 1), ios::binary);
     bitmap_.assign(istream_iterator<char>(in),
                     istream_iterator<char>());
 
@@ -407,13 +412,13 @@ void fs_t::read_bitmap_file() {
 }
 
 void fs_t::write_metadata_file() {
-    ofstream out(path_ + to_string(blocks_count_), ios::trunc);
+    ofstream out(create_filename(blocks_count_), ios::trunc);
 
     out << root_;
 }
 
 void fs_t::write_bitmap_file() {
-    ofstream out(path_ + to_string(blocks_count_ + 1), ios::trunc | ios::binary);
+    ofstream out(create_filename(blocks_count_ + 1), ios::trunc | ios::binary);
 
     ostream_iterator<char> out_it(out);
     std::copy(bitmap_.begin(), bitmap_.end(), out_it);

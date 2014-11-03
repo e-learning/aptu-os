@@ -43,7 +43,8 @@ private:
     friend class out_file_buffer;
     friend class in_file_buffer;
 
-    const string CONFIG_FILENAME   = "config";
+    const string BLOCK_FILENAME = "block";
+    const string CONFIG_FILENAME = "config";
 
     static const uint32_t NO_FREE_BLOCKS = -1;
     static const size_t MIN_BLOCK_SIZE = 1024;
@@ -57,6 +58,8 @@ private:
 
     directory_t root_;
     vector<char> bitmap_;
+
+    string create_filename(size_t);
 
     size_t block_size() const;
     string block_path(uint32_t index);
