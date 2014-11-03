@@ -66,15 +66,15 @@ void MyFS::rewrite_file_info(MyFile file)
         write_data_in_block(out, &file, descriptor_table[file.fd], sizeof(file), 0);
         return;
     }
-    size_t buf_size = file.file_size > super_block.block_size ? super_block.block_size - sizeof(file) :
+    size_t buf_size = file.file_size > super_block.block_size - sizeof(file) ? super_block.block_size - sizeof(file) :
                                                                 file.file_size;
     MyFile buf_file;
     char buf[buf_size];
-    ifstream in((root_path + get_block_name_by_id(descriptor_table[file.fd])).c_str(), ios::binary);
+    ifstream in(root_path + get_block_name_by_id(descriptor_table[file.fd]), ios::binary);
     in.read((char *)&buf_file, sizeof(buf_file));
     in.read((char *)buf, sizeof(buf));
     in.close();
-    ofstream out((root_path + get_block_name_by_id(descriptor_table[file.fd])).c_str(), ios::binary);
+    ofstream out(root_path + get_block_name_by_id(descriptor_table[file.fd]), ios::binary);
     write_data_in_block(out, &file, descriptor_table[file.fd], sizeof(file), 0);
     write_data_in_block(out, &buf, descriptor_table[file.fd], sizeof(buf), sizeof(file));
 }
@@ -82,7 +82,7 @@ void MyFS::rewrite_file_info(MyFile file)
 void MyFS::write_new_file(MyFile file, ifstream & in)
 {
     size_t size_left = file.file_size;
-    ofstream out((root_path + get_block_name_by_id(descriptor_table[file.fd])).c_str(), ios::binary);
+    ofstream out(root_path + get_block_name_by_id(descriptor_table[file.fd]), ios::binary);
     write_data_in_block(out, &file, descriptor_table[file.fd], sizeof(file), 0);
     size_t buf_size = (file.file_size > super_block.block_size - sizeof(file)) ? super_block.block_size - sizeof(file) : file.file_size;
     char buf[buf_size];
@@ -294,7 +294,7 @@ int32_t MyFS::get_fd_by_name(MyFile &file, const char *name)
 }
 
 
-int32_t MyFS::write_file_into_fs(ifstream & in, MyFile &file, const char *file_name, size_t blocks_n,
+int32_t MyFS::write_file_into_fs(ifstream & in, MyFile &dir, const char *file_name, size_t blocks_n,
                                  size_t file_size, bool is_dir)
 {
     size_t current_block = first_free_block();
@@ -303,11 +303,11 @@ int32_t MyFS::write_file_into_fs(ifstream & in, MyFile &file, const char *file_n
     descriptor_table[file_fd] = current_block;
     int32_t cur_fd = -1;
     MyFile write_file;
-    if ((cur_fd = file.first_file_id) == -1)
+    if ((cur_fd = dir.first_file_id) == -1)
     {
-        file.first_file_id = file_fd;
+        dir.first_file_id = file_fd;
         write_file.fd = file_fd;
-        write_file.parent = file.fd;
+        write_file.parent = dir.fd;
         write_file.is_dir = is_dir;
         write_file.next_file = -1;
         write_file.prev_file = -1;
@@ -316,7 +316,7 @@ int32_t MyFS::write_file_into_fs(ifstream & in, MyFile &file, const char *file_n
         write_file.num_of_blocks = blocks_n;
         write_file.file_size = file_size;
         strncpy(write_file.name, file_name, sizeof(write_file.name));
-        rewrite_file_info(file);
+        rewrite_file_info(dir);
         if (!is_dir)
             write_new_file(write_file, in);
         else
@@ -324,30 +324,26 @@ int32_t MyFS::write_file_into_fs(ifstream & in, MyFile &file, const char *file_n
     }
     else
     {
-        MyFile cur_file = read_file_info_by_id(descriptor_table[cur_fd]);
-        while(cur_file.next_file != -1)
-        {
-            cur_fd = cur_file.next_file;
-            cur_file = read_file_info_by_id(descriptor_table[cur_fd]);
-        }
-        write_file.next_file = cur_file.next_file;
-        cur_file.next_file = file_fd;
-        write_file.parent = file.fd;
+        MyFile first_file = read_file_info_by_id(descriptor_table[cur_fd]);
+        write_file.next_file = first_file.fd;
+        first_file.prev_file = file_fd;
+        write_file.parent = dir.fd;
         write_file.is_dir = is_dir;
-        write_file.prev_file = cur_file.fd;
+        write_file.prev_file = first_file.fd;
         write_file.first_file_id = -1;
         write_file.num_of_blocks = blocks_n;
         write_file.next_block = file_size > super_block.block_size - sizeof(write_file) ? first_free_block() : -1;
         write_file.file_size = file_size;
         write_file.fd = file_fd;
+        dir.first_file_id = write_file.fd;
         strcpy(write_file.name, file_name);
-        rewrite_file_info(cur_file);
+        rewrite_file_info(first_file);
+        rewrite_file_info(dir);
         if (!is_dir)
             write_new_file(write_file, in);
         else
             write_new_dir(write_file);
     }
-    free_blocks_num -= write_file.num_of_blocks;
     write_descriptor_table();
     write_free_blocks_map();
     return file_fd;
@@ -606,6 +602,8 @@ int MyFS::move(const char *from, const char *to)
 {
     MyFile cur_dir;
     const char *file_name = file_preparation(from, cur_dir);
+    if (file_exist(file_name, cur_dir))
+        return -1;
     MyFile old_parent = cur_dir;
     int fd = get_fd_by_name(cur_dir, file_name);
     MyFile file = read_file_info_by_id(descriptor_table[fd]);
@@ -654,6 +652,7 @@ int MyFS::move(const char *from, const char *to)
     }
     new_parent_dir.first_file_id = file.fd;
     strncpy(file.name, new_name, strlen(new_name));
+    file.name[strlen(new_name)] = '\0';
     file.parent = new_parent_dir.fd;
     file.prev_file = -1;
     rewrite_file_info(file);
@@ -666,13 +665,18 @@ int MyFS::copy(const char *from, const char *to)
     MyFile src_file;
     MyFile dst_file;
     const char *src_name = file_preparation(from, src_file);
+    const char *dst_name = file_preparation(to, dst_file);
+    if (file_exist(dst_name, dst_file))
+    {
+        std::cout << "File already exist in dst directory" << std::endl;
+        return -1;
+    }
     int src_fd = get_fd_by_name(src_file, src_name);
     if (src_fd < 0)
     {
         std::cout << "File doesn't exist" << std::endl;
         return -1;
     }
-    const char *dst_name = file_preparation(to, dst_file);
     if ( copy(src_file, dst_file, dst_name) < 0)
     {
         std::cout << "Copy error" << std::endl;
@@ -751,6 +755,7 @@ int MyFS::copy_file_to_dir(MyFile &file, MyFile &dir, const char *new_name)
     copy_file.parent = dir.fd;
     copy_file.fd = first_free_fd();
     strncpy(copy_file.name, new_name, strlen(new_name));
+    copy_file.name[strlen(new_name)] = '\0';
     int32_t current_block = first_free_block();
     descriptor_table[copy_file.fd] = current_block;
     blocks_map[current_block] = true;
@@ -960,7 +965,7 @@ void MyFS::write_descriptor_table()
                     out.write((char *)&descriptor_table[current_index], sizeof(u_int32_t));
                     ++current_index;
                 }
-            }\
+            }
         }
     }
 }
@@ -987,7 +992,7 @@ ofstream & MyFS::write_data_in_block(ofstream & out, void * data, int id, size_t
     if (out.tellp() < (int)super_block.block_size)
     {
         char c = '\0';
-        out.write((char *)&c, super_block.block_size - length);
+        out.write((char *)&c, super_block.block_size - out.tellp()); // IMPORTANT
     }
     return out;
 }
