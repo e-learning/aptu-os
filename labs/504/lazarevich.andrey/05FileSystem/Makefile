@@ -1,4 +1,4 @@
-FLAGS=-Wall -Werror
+FLAGS=-Wall
 TARGETS=init format import export ls copy move rm mkdir
 FS=myfs.o
 all: 
