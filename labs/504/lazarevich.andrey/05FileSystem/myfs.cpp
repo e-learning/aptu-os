@@ -689,6 +689,11 @@ int MyFS::copy(const char *from, const char *to)
         std::cout << "File doesn't exist" << std::endl;
         return -1;
     }
+    if (file_exist(dst_name, dst_file))
+    {
+        std::cout << "File already exist in dst directory" << std::endl;
+        return -1;
+    }
     src_file = read_file_info_by_id(descriptor_table[src_fd]);        
     if (dst_name == NULL)
     {
@@ -707,11 +712,6 @@ int MyFS::copy(const char *from, const char *to)
         dst_name[strlen(to) - start_pos] = '\0';
         if (dir_fd >= 0)
             dst_file = read_file_info_by_id(descriptor_table[dir_fd]);
-    }
-    if (file_exist(dst_name, dst_file))
-    {
-        std::cout << "File already exist in dst directory" << std::endl;
-        return -1;
     }
     if ( copy(src_file, dst_file, dst_name) < 0)
     {
