@@ -472,14 +472,8 @@ int MyFS::export_file(const char *from, const char *to)
     return write_file_from_fs(out, fd);
 }
 
-int MyFS::mkdir(const char *path)
+int MyFS::make_dir(MyFile cur_dir, const char *dir_name)
 {
-    MyFile cur_dir;
-    const char *dir_name = file_preparation(path, cur_dir);
-    if (dir_name == nullptr)
-        return -1;
-    if (file_exist(dir_name, cur_dir))
-        return -1;
     MyFile dir;
     dir.fd = first_free_fd();
     if (dir.fd < 0)
@@ -494,6 +488,7 @@ int MyFS::mkdir(const char *path)
     dir.parent = cur_dir.fd;
     dir.file_size = 0;
     strncpy(dir.name, dir_name, strlen(dir_name));
+    dir.name[strlen(dir_name)] = '\0';
     dir.prev_file = -1;
     if (cur_dir.first_file_id != -1)
     {
@@ -507,9 +502,52 @@ int MyFS::mkdir(const char *path)
     rewrite_file_info(cur_dir);
     ofstream out(root_path + get_block_name_by_id(descriptor_table[dir.fd]), ios::binary);
     write_data_in_block(out, &dir, descriptor_table[dir.fd], sizeof(dir), 0);
+    return dir.fd;
+}
+
+
+int MyFS::mkdir(const char *path)
+{
+    MyFile cur_dir = read_file_info_by_id(super_block.root_id);
+    size_t start_pos = 1;
+    int fd = 0;
+    int cur_pos = 0;
+    while ((cur_pos = find_next_slash(path, start_pos)) != 0)
+    {
+        char dir_name[10];
+        strncpy(dir_name, &path[start_pos], cur_pos - start_pos);
+        dir_name[cur_pos - start_pos] = '\0';
+        start_pos = cur_pos + 1;
+        if (file_exist(dir_name, cur_dir))
+        {
+            MyFile buf = cur_dir;
+            int cur_fd = get_fd_by_name(buf, dir_name);
+            cur_dir = read_file_info_by_id(descriptor_table[cur_fd]);
+        }
+        else
+        {
+            fd = make_dir(cur_dir, dir_name);
+            if (fd < 0)
+                return -1;
+            cur_dir = read_file_info_by_id(descriptor_table[fd]);
+        }
+    }
+    char dir_name[10];
+    strncpy(dir_name, &path[start_pos], strlen(path) - start_pos);
+    dir_name[strlen(path) - start_pos] = '\0';
+    if (file_exist(dir_name, cur_dir))
+    {
+        return -1;
+    }
+    else
+    {
+        fd = make_dir(cur_dir, dir_name);
+        if (fd < 0)
+            return -1;
+    }
     write_descriptor_table();
     write_free_blocks_map();
-    return dir.fd;
+    return fd;
 }
 
 std::string MyFS::ls(const char *path)

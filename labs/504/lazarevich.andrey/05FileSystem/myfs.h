@@ -96,6 +96,7 @@ private:
     void                            rm(MyFile &);
     int                             copy(MyFile &, MyFile &, const char *);
     int                             copy_file_to_dir(MyFile &, MyFile&, const char *);
+    int                             make_dir(MyFile, const char *);
 };
 
 size_t find_next_slash(const char *, size_t);
