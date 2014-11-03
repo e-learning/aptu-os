@@ -26,7 +26,7 @@ public:
 
     bool is_valid() const;
 
-    string info(size_t) const;
+    string info() const;
 
     friend std::istream &operator>>(std::istream&, file_t&);
     friend std::ostream &operator<<(std::ostream&, const file_t&);

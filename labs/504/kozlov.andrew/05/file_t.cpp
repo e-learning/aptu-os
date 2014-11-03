@@ -56,9 +56,9 @@ bool file_t::is_valid() const {
     return name_is_valid(name_);
 }
 
-string file_t::info(size_t block_size) const {
+string file_t::info() const {
     std::ostringstream ss;
-    ss << std::setw(MAX_NAME_LENGTH + 1) << name_ << " f " << size_ / block_size << std::endl;
+    ss << std::setw(MAX_NAME_LENGTH + 1) << name_ << " f" << std::endl;
 
     return ss.str();
 }
