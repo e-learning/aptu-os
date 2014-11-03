@@ -892,7 +892,7 @@ ofstream & MyFS::write_data_in_block(ofstream & out, void * data, int id, size_t
     }
     out.seekp(pos);
     out.write((char *)data, length);
-    if (out.tellp() < super_block.block_size)
+    if (out.tellp() < (int)super_block.block_size)
     {
         char c = '\0';
         out.write((char *)&c, super_block.block_size - length);
