@@ -235,7 +235,8 @@ const char *MyFS::file_preparation(const char *path, MyFile & cur_dir)
         strncpy(cur_name, &path[start_pos], pos - start_pos);
         cur_name[pos-start_pos] = '\0';
         int fd = get_fd_by_name(cur_dir, cur_name);
-        if (strncmp(read_file_info_by_id(descriptor_table[fd]).name, cur_name, strlen(cur_name)) != 0)
+        cur_dir = read_file_info_by_id(descriptor_table[fd]);
+        if (strcmp(cur_dir.name, cur_name) != 0)
             return nullptr;
         if (fd < 0)
         {
@@ -265,7 +266,7 @@ MyFile MyFS::read_file_info_by_id(size_t id)
     return file;
 }
 
-int32_t MyFS::get_fd_by_name(MyFile &file, const char *name)
+int32_t MyFS::get_fd_by_name(MyFile file, const char *name)
 {
     int32_t fd = -1;
     if ((fd = file.first_file_id) == -1)
@@ -277,14 +278,14 @@ int32_t MyFS::get_fd_by_name(MyFile &file, const char *name)
     do
     {
         next = file.next_file;
-        if (strncmp(name, file.name, strlen(file.name)) == 0)
+        if (strcmp(name, file.name) == 0)
         {
             break;
         }
         else
         {
-            file = read_file_info_by_id(descriptor_table[file.next_file]);
-            if (file.next_file == -1 && strncmp(file.name, name, strlen(file.name)))
+            file = read_file_info_by_id(descriptor_table[next]);
+            if (file.next_file == -1 && strcmp(file.name, name))
                 return -1;
             fd = file.fd;
         }
@@ -436,8 +437,9 @@ int MyFS::import_file(const char *from, const char *to)
     ifstream source(from, ios::ate | ios::binary);
     size_t file_size = source.tellg();
     size_t blocks_req = memory_to_write(file_size);
-    if (blocks_req > free_blocks_num)
+    if (blocks_req > count_free_blocks_num())
     {
+        std::cout << "Cannot write file. Not enough free space" << std::endl;
         return -1;
     }
     else
@@ -552,7 +554,7 @@ std::string MyFS::ls(const char *path)
     MyFile cur_dir;
     const char *file_name = file_preparation(path, cur_dir);
     int fd = 0;
-    if (strncmp(path, "/", strlen(path)))
+    if (strcmp(path, "/"))
     {
         if (file_name == nullptr)
             return 0;
@@ -576,14 +578,14 @@ std::string MyFS::ls(const char *path)
             MyFile cur_file;
             while ((cur_file = read_file_info_by_id(descriptor_table[cur_fd])).next_file != -1)
             {
-                if (cur_file.parent == cur_dir.fd)
+                if (cur_file.parent == file.fd)
                 {
                     result += string(cur_file.name);
                     result += cur_file.is_dir ? string(" d\n") : string(" f\n");
                     cur_fd = cur_file.next_file;
                 }
             }
-            if (cur_file.parent == cur_dir.fd)
+            if (cur_file.parent == file.fd)
             {
                 cur_file = read_file_info_by_id(descriptor_table[cur_fd]);
                 result += string(cur_file.name);
@@ -602,8 +604,11 @@ int MyFS::move(const char *from, const char *to)
 {
     MyFile cur_dir;
     const char *file_name = file_preparation(from, cur_dir);
-    if (file_exist(file_name, cur_dir))
+    if (!file_exist(file_name, cur_dir))
+    {
+        std::cout << "File doesn't exist" << std::endl;
         return -1;
+    }
     MyFile old_parent = cur_dir;
     int fd = get_fd_by_name(cur_dir, file_name);
     MyFile file = read_file_info_by_id(descriptor_table[fd]);
@@ -677,6 +682,7 @@ int MyFS::copy(const char *from, const char *to)
         std::cout << "File doesn't exist" << std::endl;
         return -1;
     }
+    src_file = read_file_info_by_id(descriptor_table[src_fd]);
     if ( copy(src_file, dst_file, dst_name) < 0)
     {
         std::cout << "Copy error" << std::endl;
