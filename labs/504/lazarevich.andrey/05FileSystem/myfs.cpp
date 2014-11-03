@@ -221,7 +221,7 @@ int32_t MyFS::first_free_fd()
         return i;
 }
 
-const char *MyFS::file_preparation(const char *path, MyFile & cur_dir)
+char *MyFS::file_preparation(const char *path, MyFile & cur_dir)
 {
     if (path[0] != '/')
     {
@@ -682,24 +682,37 @@ int MyFS::copy(const char *from, const char *to)
     MyFile src_file;
     MyFile dst_file;
     const char *src_name = file_preparation(from, src_file);
-    const char *dst_name = file_preparation(to, dst_file);
-    if (dst_name == NULL)
-    {
-        std::cout << "Dest directory doesn't exist. Please, create it." << std::endl;
-        return -1;
-    }
-    if (file_exist(dst_name, dst_file))
-    {
-        std::cout << "File already exist in dst directory" << std::endl;
-        return -1;
-    }
+    char *dst_name = file_preparation(to, dst_file);
     int src_fd = get_fd_by_name(src_file, src_name);
     if (src_fd < 0)
     {
         std::cout << "File doesn't exist" << std::endl;
         return -1;
     }
-    src_file = read_file_info_by_id(descriptor_table[src_fd]);
+    src_file = read_file_info_by_id(descriptor_table[src_fd]);        
+    if (dst_name == NULL)
+    {
+        size_t start_pos = 1;
+        size_t end_pos = 1;
+        while ((end_pos = find_next_slash(to, start_pos)) != 0)
+        {
+            start_pos = end_pos + 1;
+        }
+        char dir_name[50];
+        strncpy(dir_name, to, start_pos - 1);
+        dir_name[start_pos - 1] = '\0';
+        int dir_fd = mkdir(dir_name);
+        dst_name = new char[10];
+        strncpy(dst_name, &to[start_pos], strlen(to) - start_pos);
+        dst_name[strlen(to) - start_pos] = '\0';
+        if (dir_fd >= 0)
+            dst_file = read_file_info_by_id(descriptor_table[dir_fd]);
+    }
+    if (file_exist(dst_name, dst_file))
+    {
+        std::cout << "File already exist in dst directory" << std::endl;
+        return -1;
+    }
     if ( copy(src_file, dst_file, dst_name) < 0)
     {
         std::cout << "Copy error" << std::endl;
@@ -837,6 +850,11 @@ int MyFS::rm(const char *path)
     MyFile cur_dir;
     const char *name = file_preparation(path, cur_dir);
     int fd = get_fd_by_name(cur_dir, name);
+    if (strcmp(path, "/") == 0)
+    {
+        std::cout << "You are trying to delete root dir" << std::endl;
+        return -1;
+    }
     if (fd < 0)
         return -1;
     MyFile file = read_file_info_by_id(descriptor_table[fd]);
