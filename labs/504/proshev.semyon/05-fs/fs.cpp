@@ -593,14 +593,20 @@ private:
                 }
                 else
                 {
-                    delete_fd_if_not_root(current_parent);
+                    if (current_parent != root)
+                    {
+                        delete_fd_if_not_root(current_parent);
+                    }
 
                     current_parent = read_file_descriptor(root_path, (uint32_t) new_child_id);
                 }
             }
             else
             {
-                delete_fd_if_not_root(current_parent);
+                if (current_parent != root)
+                {
+                    delete_fd_if_not_root(current_parent);
+                }
 
                 current_parent = read_file_descriptor(root_path, (uint32_t) child_id);
             }
@@ -608,7 +614,10 @@ private:
 
         int64_t result = current_parent->id;
 
-        delete_fd_if_not_root(current_parent);
+        if (current_parent != root)
+        {
+            delete_fd_if_not_root(current_parent);
+        }
 
         return result;
     }
@@ -719,7 +728,8 @@ private:
 
     std::vector<std::string> extract_path_elements(const std::string& path)
     {
-        std::stringstream path_stream(path.substr(1, path.size())); // remove leading '/'
+        const std::string& new_path = path[0] == '/' ? path.substr(1, path.size()) : path; // remove leading '/'
+        std::stringstream path_stream(new_path);
         std::string element;
 
         std::vector<std::string> result;
@@ -1080,8 +1090,8 @@ private:
 
                 child_id = child_fd->next_id;
 
-                // delete_fd_if_not_root(child_fd);
-                // delete_fd_if_not_root(new_fd);
+                delete_fd_if_not_root(child_fd);
+                delete_fd_if_not_root(new_fd);
 
                 if (result < 0)
                 {
