@@ -273,6 +273,10 @@ int32_t MyFS::get_fd_by_name(MyFile file, const char *name)
     {
         return fd;
     }
+    if (file.fd >= int(descriptor_table.size()))
+    {
+        return -1;
+    }
     file = read_file_info_by_id(descriptor_table[fd]);
     int next = file.next_file;
     do
@@ -671,6 +675,11 @@ int MyFS::copy(const char *from, const char *to)
     MyFile dst_file;
     const char *src_name = file_preparation(from, src_file);
     const char *dst_name = file_preparation(to, dst_file);
+    if (dst_name == NULL)
+    {
+        std::cout << "Dest directory doesn't exist. Please, create it." << std::endl;
+        return -1;
+    }
     if (file_exist(dst_name, dst_file))
     {
         std::cout << "File already exist in dst directory" << std::endl;
