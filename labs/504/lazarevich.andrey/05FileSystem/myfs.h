@@ -79,6 +79,7 @@ private:
     void                            write_new_dir(MyFile);
     void                            delete_file(MyFile &);
     void                            free_resources(MyFile &);
+    bool                            file_exist(const char *, MyFile);
     size_t                          count_free_blocks_num();
     size_t                          first_free_block();
     int32_t                         first_free_fd();

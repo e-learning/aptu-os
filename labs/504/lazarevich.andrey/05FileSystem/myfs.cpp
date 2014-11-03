@@ -64,8 +64,8 @@ void MyFS::rewrite_file_info(MyFile file)
     {
         ofstream out(root_path + get_block_name_by_id(descriptor_table[file.fd]), ios::binary);
         write_data_in_block(out, &file, descriptor_table[file.fd], sizeof(file), 0);
+        return;
     }
-
     size_t buf_size = file.file_size > super_block.block_size ? super_block.block_size - sizeof(file) :
                                                                 file.file_size;
     MyFile buf_file;
@@ -153,6 +153,8 @@ void MyFS::delete_file(MyFile &file)
         prev.next_file = -1;
         rewrite_file_info(prev);
     }
+    file.parent = -1;
+    rewrite_file_info(file);
     free_resources(file);
 }
 
@@ -170,6 +172,14 @@ void MyFS::free_resources(MyFile &file)
     if (current_block != -1)
         blocks_map[current_block] = false;
     descriptor_table[file.fd] = -1;
+}
+
+bool MyFS::file_exist(const char *name, MyFile dir)
+{
+    if (get_fd_by_name(dir, name) < 0)
+        return false;
+    else
+         return true;
 }
 
 size_t MyFS::count_free_blocks_num()
@@ -205,7 +215,10 @@ int32_t MyFS::first_free_fd()
             break;
         }
     }
-    return i;
+    if (descriptor_table[i] != max_value)
+        return -1;
+    else
+        return i;
 }
 
 const char *MyFS::file_preparation(const char *path, MyFile & cur_dir)
@@ -260,8 +273,10 @@ int32_t MyFS::get_fd_by_name(MyFile &file, const char *name)
         return fd;
     }
     file = read_file_info_by_id(descriptor_table[fd]);
-    while (file.next_file != -1)
+    int next = file.next_file;
+    do
     {
+        next = file.next_file;
         if (strncmp(name, file.name, strlen(file.name)) == 0)
         {
             break;
@@ -274,6 +289,7 @@ int32_t MyFS::get_fd_by_name(MyFile &file, const char *name)
             fd = file.fd;
         }
     }
+    while (next != -1);
     return fd;
 }
 
@@ -405,6 +421,7 @@ int MyFS::format()
     root_dir.prev_file = -1;
     root_dir.num_of_blocks = 1;
     root_dir.parent = -1;
+    root_dir.file_size = 0;
     descriptor_table[0] = 2 + blockn_for_descriptor_table;
     blocks_map[descriptor_table[0]] = true;
     write_free_blocks_map();
@@ -461,9 +478,38 @@ int MyFS::mkdir(const char *path)
     const char *dir_name = file_preparation(path, cur_dir);
     if (dir_name == nullptr)
         return -1;
-    ifstream empty_stream("/", ios::binary);
-    int32_t fd = write_file_into_fs(empty_stream, cur_dir, dir_name, 1, sizeof(MyFile), true);
-    return fd;
+    if (file_exist(dir_name, cur_dir))
+        return -1;
+    MyFile dir;
+    dir.fd = first_free_fd();
+    if (dir.fd < 0)
+        return -1;
+    descriptor_table[dir.fd] = first_free_block();
+    blocks_map[descriptor_table[dir.fd]] = true;
+    dir.next_block = -1;
+    dir.next_file = -1;
+    dir.first_file_id = -1;
+    dir.is_dir = true;
+    dir.num_of_blocks = 1;
+    dir.parent = cur_dir.fd;
+    dir.file_size = 0;
+    strncpy(dir.name, dir_name, strlen(dir_name));
+    dir.prev_file = -1;
+    if (cur_dir.first_file_id != -1)
+    {
+        int cur_fd = cur_dir.first_file_id;
+        MyFile first_file = read_file_info_by_id(descriptor_table[cur_fd]);
+        first_file.prev_file = dir.fd;
+        dir.next_file = first_file.fd;
+        rewrite_file_info(first_file);
+    }
+    cur_dir.first_file_id = dir.fd;
+    rewrite_file_info(cur_dir);
+    ofstream out(root_path + get_block_name_by_id(descriptor_table[dir.fd]), ios::binary);
+    write_data_in_block(out, &dir, descriptor_table[dir.fd], sizeof(dir), 0);
+    write_descriptor_table();
+    write_free_blocks_map();
+    return dir.fd;
 }
 
 std::string MyFS::ls(const char *path)
@@ -496,13 +542,19 @@ std::string MyFS::ls(const char *path)
             MyFile cur_file;
             while ((cur_file = read_file_info_by_id(descriptor_table[cur_fd])).next_file != -1)
             {
-                result += string(cur_file.name);
-                result += cur_file.is_dir ? string(" d\n") : string(" f\n");
-                cur_fd = cur_file.next_file;
+                if (cur_file.parent == cur_dir.fd)
+                {
+                    result += string(cur_file.name);
+                    result += cur_file.is_dir ? string(" d\n") : string(" f\n");
+                    cur_fd = cur_file.next_file;
+                }
             }
-            cur_file = read_file_info_by_id(descriptor_table[cur_fd]);
-            result += string(cur_file.name);
-            result += cur_file.is_dir ? string(" d") : string(" f");
+            if (cur_file.parent == cur_dir.fd)
+            {
+                cur_file = read_file_info_by_id(descriptor_table[cur_fd]);
+                result += string(cur_file.name);
+                result += cur_file.is_dir ? string(" d") : string(" f");
+            }
         }
     }
     else
@@ -579,11 +631,15 @@ int MyFS::copy(const char *from, const char *to)
     int src_fd = get_fd_by_name(src_file, src_name);
     if (src_fd < 0)
     {
+        std::cout << "File doesn't exist" << std::endl;
         return -1;
     }
     const char *dst_name = file_preparation(to, dst_file);
     if ( copy(src_file, dst_file, dst_name) < 0)
+    {
+        std::cout << "Copy error" << std::endl;
         return -1;
+    }
     write_descriptor_table();
     write_free_blocks_map();
     return 0;
@@ -716,9 +772,7 @@ int MyFS::rm(const char *path)
     const char *name = file_preparation(path, cur_dir);
     int fd = get_fd_by_name(cur_dir, name);
     if (fd < 0)
-    {
         return -1;
-    }
     MyFile file = read_file_info_by_id(descriptor_table[fd]);
     rm(file);
     write_descriptor_table();
@@ -892,7 +946,7 @@ ofstream & MyFS::write_data_in_block(ofstream & out, void * data, int id, size_t
     }
     out.seekp(pos);
     out.write((char *)data, length);
-    if (out.tellp() < (int)super_block.block_size)
+    if (out.tellp() < super_block.block_size)
     {
         char c = '\0';
         out.write((char *)&c, super_block.block_size - length);
@@ -915,7 +969,7 @@ size_t find_next_slash(const char *path, size_t cur_pos)
             break;
         ++cur_pos;
     }
-    if (cur_pos == strlen(path))
+    if (cur_pos >= strlen(path))
     {
         return 0;
     }
