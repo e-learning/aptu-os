@@ -1080,8 +1080,8 @@ private:
 
                 child_id = child_fd->next_id;
 
-                delete_fd_if_not_root(child_fd);
-                delete_fd_if_not_root(new_fd);
+                // delete_fd_if_not_root(child_fd);
+                // delete_fd_if_not_root(new_fd);
 
                 if (result < 0)
                 {
