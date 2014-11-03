@@ -38,7 +38,7 @@ public:
     vector<file_t> files();
     vector<directory_t> directories();
 
-    string info() const;
+    string info(size_t block_size) const;
 
     friend std::istream &operator>>(std::istream&, directory_t&);
     friend std::ostream &operator<<(std::ostream&, const directory_t&);

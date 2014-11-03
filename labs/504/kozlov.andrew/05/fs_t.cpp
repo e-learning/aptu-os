@@ -125,12 +125,12 @@ string fs_t::ls(const string &path) {
     }
 
     if (directory) {
-        return directory->info();
+        return directory->info(block_size_);
     }
 
     file_t* file = item->find_file(split_path.second);
     if (file) {
-        return file->info();
+        return file->info(block_size_);
     } else {
         throw fs_error("no such item");
     }
