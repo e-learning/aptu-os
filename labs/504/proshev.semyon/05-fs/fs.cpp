@@ -321,6 +321,10 @@ public:
             return -1;
         }
 
+        delete_fd_if_not_root(src_fd);
+
+        src_fd = read_file_descriptor(root_path_, (uint32_t) src_id);
+
         FD* dest_fd = read_file_descriptor(root_path_, (uint32_t) dest_id);
 
         int result = move(root_path_, src_fd, dest_fd, blocks_using_, block_data_size_);
@@ -920,10 +924,14 @@ private:
 
         if (fd->prev_id < 0)
         {
-            if (fd->next_id < 0) {
+            if (fd->next_id < 0)
+            {
                 FD* parent_fd = read_file_descriptor(root_path, (uint32_t) fd->parent_id);
 
-                parent_fd->first_child_id = -1;
+                if (parent_fd->first_child_id == fd->id)
+                {
+                    parent_fd->first_child_id = -1;
+                }
 
                 write_file_descriptor(root_path, parent_fd);
 
