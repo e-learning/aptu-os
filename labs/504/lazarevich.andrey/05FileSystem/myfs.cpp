@@ -582,15 +582,10 @@ int MyFS::copy(const char *from, const char *to)
         return -1;
     }
     const char *dst_name = file_preparation(to, dst_file);
-    if (!src_file.is_dir)
-    {
-        copy_file_to_dir(src_file, dst_file, dst_name);
-    }
-    else
-    {
-        if ( copy(src_file, dst_file, dst_name) < 0)
-            return -1;
-    }
+    if ( copy(src_file, dst_file, dst_name) < 0)
+        return -1;
+    write_descriptor_table();
+    write_free_blocks_map();
     return 0;
 }
 
