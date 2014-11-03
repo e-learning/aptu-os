@@ -1,4 +1,4 @@
-FLAGS=-Wall
+FLAGS=-Wall -g -rdynamic
 TARGETS=init format import export ls copy move rm mkdir
 FS=myfs.o
 all: 
