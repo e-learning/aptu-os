@@ -477,9 +477,17 @@ int MyFS::export_file(const char *from, const char *to)
 int MyFS::make_dir(MyFile cur_dir, const char *dir_name)
 {
     MyFile dir;
+    if (count_free_blocks_num() == 0)
+    {
+        std::cout << "Not enough memory to create dir." << std::endl;
+        return -1;
+    }
     dir.fd = first_free_fd();
     if (dir.fd < 0)
+    {
+        std::cout << "Directory cannot be created. No free file descriptors." << std::endl;
         return -1;
+    }
     descriptor_table[dir.fd] = first_free_block();
     blocks_map[descriptor_table[dir.fd]] = true;
     dir.next_block = -1;
