@@ -7,7 +7,7 @@
 
 using namespace std;
 
-vector<bool> S;
+vector<char> S;
 u_int64_t n;
 bool debug = false;
 
@@ -60,7 +60,7 @@ void sieve()
         {
             for (u_int64_t j = i * i; j < n; j += i)
             {
-                S[j] = false;
+                S[j] = 0;
             }
         }
     }
@@ -70,10 +70,10 @@ void sieve()
 int main(int argc, char **argv)
 {
     parse_cmd(argc, argv);
-    S = vector<bool>(n);
-    S[0] = false;
-    S[1] = false;
-    fill(S.begin() + 2, S.end(), true);
+    S = vector<char>(n);
+    S[0] = 0;
+    S[1] = 0;
+    fill(S.begin() + 2, S.end(), 1);
     chrono::high_resolution_clock clock;
 
     chrono::time_point<chrono::high_resolution_clock> start = clock.now();

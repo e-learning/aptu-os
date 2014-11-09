@@ -9,7 +9,7 @@
 
 using namespace std;
 
-vector<bool> S;
+vector<char> S;
 size_t thread_number;
 u_int64_t n;
 atomic <u_int64_t> current_number;
@@ -83,7 +83,7 @@ void sieve()
         if (S[sieve_number])
         {
             for (u_int64_t j = sieve_number * sieve_number; j < n; j += sieve_number)
-                S[j] = false;
+                S[j] = 0;
         }
     }
 }
@@ -93,14 +93,14 @@ int main(int argc, char **argv)
 {
     parse_cmd(argc, argv);
     current_number.store(2);
-    S = vector<bool>(n);
-    S[0] = false;
-    S[1] = false;
-    fill(S.begin() + 2, S.end(), true);
-    vector<thread> threads(thread_number);
+    S = vector<char>(n);
+    S[0] = 0;
+    S[1] = 0;
+    fill(S.begin() + 2, S.end(), 1);
     chrono::high_resolution_clock clock;
 
     chrono::time_point<chrono::high_resolution_clock> start = clock.now();
+    vector<thread> threads(thread_number);
     for (size_t i = 0; i < thread_number; ++i)
     {
         threads[i] = thread(sieve);
