@@ -4,13 +4,14 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <vector>
 
 using namespace std;
 
 int n = 0, t = 0;           /* n = nums[] array size, t = number of threads, from command line */
-long int *nums = NULL;      /* nums[] is the array of numbers */
-int *done_sw = NULL;        /* indicates that all threads are complete */
-int *did_work_sw = NULL;    /* indicates which threads actually did work */
+vector<long int> numbers;
+vector<int> done_sw;
+vector<int> did_work_sw;
 
 void *zero_multiples(void *threadid)
 {
@@ -24,16 +25,16 @@ void *zero_multiples(void *threadid)
          then continues looping looking for positive (prime) numbers */
     for(i = 0; i*i <= n; i++) /* read nums[] until locate a positive number or until sqrt(n) */
     {
-        prime = nums[i];
+        prime = numbers[i];
         i_prime = i;
 
         if(prime>0) /* if locate a positive number, it must be prime */
         {
             did_work_sw[(intptr_t) threadid]=1; /* indicates that this thread did some work */
-            nums[i_prime] = -nums[i_prime]; /* set current prime to negative */
+            numbers[i_prime] = -numbers[i_prime]; /* set current prime to negative */
             for (k = i_prime + prime; k < n; k = k + prime) /* mark multiples to 0 */
             {
-                nums[k] = 0;
+                numbers[k] = 0;
             }
         }
     }
@@ -103,22 +104,23 @@ int main (int argc, char *argv[])
         }
     }
 
-    if(debug_level) printf("n=%d, t=%d\n", n, t);   /* print n and t */
+    //if(debug_level) printf("n=%d, t=%d\n", n, t);   /* print n and t */
 
-    nums = (long int *)malloc(n * sizeof(long int));    /* allocate nums[] array */
-    if(nums == NULL){fprintf(stderr, "nums Out of memory!\n");exit( EXIT_FAILURE );}
+    numbers.resize(n);
 
     /* population nums[] array from 1 to n */
-    for(i=1; i<n; i++) {nums[i]=i+1;}   /* start at index 1 so that number 1 starts zeroed out */
+    for(i=1; i<n; i++) {numbers[i]=i+1;}   /* start at index 1 so that number 1 starts zeroed out */
 
     threads = (pthread_t *)malloc(t * sizeof(pthread_t));   /* allocate threads[] structure array */
     if(threads == NULL){fprintf(stderr, "threads Out of memory!\n");exit( EXIT_FAILURE );}
 
-    done_sw = (int *)malloc(t * sizeof(int));               /* allocate done_sw[] array */
-    if(done_sw == NULL){fprintf(stderr, "done_sw Out of memory!\n");exit( EXIT_FAILURE );}
+    //done_sw = (int *)malloc(t * sizeof(int));               /* allocate done_sw[] array */
+    //if(done_sw == NULL){fprintf(stderr, "done_sw Out of memory!\n");exit( EXIT_FAILURE );}
+    done_sw.resize(t);
 
-    did_work_sw = (int *)malloc(t * sizeof(int));           /* allocate did_work_sw[] array */
-    if(did_work_sw == NULL){fprintf(stderr, "did_work_sw Out of memory!\n");exit( EXIT_FAILURE );}
+    //did_work_sw = (int *)malloc(t * sizeof(int));           /* allocate did_work_sw[] array */
+    did_work_sw.resize(t);
+    //if(did_work_sw == NULL){fprintf(stderr, "did_work_sw Out of memory!\n");exit( EXIT_FAILURE );}
 
     /* create threads and run zero_multiples */
     for(i=0; i<t; i++){
@@ -148,7 +150,7 @@ int main (int argc, char *argv[])
         n_primes = 0;
         for(k=0; k < n; k++)
         {
-            if(nums[k] != 0){n_primes++;} /* primes are all the non 0 numbers remaining in nums[] */
+            if(numbers[k] != 0){n_primes++;} /* primes are all the non 0 numbers remaining in nums[] */
         }
         printf("n_primes=%d\n", n_primes);
     }
