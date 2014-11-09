@@ -7,7 +7,6 @@
 
 using namespace std;
 
-size_t t = 0;           /* n = nums[] array size, t = number of threads, from command line */
 vector<long int> numbers;
 vector<int> done_sw;
 vector<int> did_work_sw;
@@ -82,33 +81,32 @@ int main (int argc, char *argv[])
 
     size_t done_sw_main = 0;       /* used to check if all the threads have finished */
     int did_work_howmany = 0;   /* tallies how many threads actually did work */
-    //int n_primes = 0;           /* tallies the number of primes found */
 
-    t = atoi(argv[2]);
+    size_t number_of_threads = atoi(argv[2]);
     gettimeofday(&tv_1, 0);
     numbers.resize(atoi(argv[1]));
 
     /* population nums[] array from 1 to n */
     for(size_t i=1; i<numbers.size(); i++) {numbers[i]=i+1;}   /* start at index 1 so that number 1 starts zeroed out */
 
-    threads = (pthread_t *)malloc(t * sizeof(pthread_t));   /* allocate threads[] structure array */
+    threads = (pthread_t *)malloc(number_of_threads * sizeof(pthread_t));   /* allocate threads[] structure array */
     if(threads == NULL){fprintf(stderr, "threads Out of memory!\n");exit( EXIT_FAILURE );}
 
-    done_sw.resize(t);
-    did_work_sw.resize(t);
+    done_sw.resize(number_of_threads);
+    did_work_sw.resize(number_of_threads);
 
     /* create threads and run zero_multiples */
-    for(size_t i=0; i<t; i++){
+    for(size_t i=0; i<number_of_threads; i++){
         //if(debug_level>1) printf("Creating thread %d\n", i);
         rc = pthread_create(&threads[i], NULL, zero_multiples, (void *)(intptr_t)i); /* create thread to run zero_multiples() */
         if (rc){printf("ERROR; return code from pthread_create() is %d\n", rc);exit(-1);}
     }
 
     /* main program wait until all threads are complete */
-    while(done_sw_main < t) /* exit only when all threads have set their done_sw */
+    while(done_sw_main < number_of_threads) /* exit only when all threads have set their done_sw */
     {
         done_sw_main = 0;
-        for(size_t i=0; i<t; i++)
+        for(size_t i=0; i<number_of_threads; i++)
         {
             done_sw_main = done_sw_main + done_sw[i];   /* count how many threads are done */
         }
@@ -116,7 +114,7 @@ int main (int argc, char *argv[])
 
     /* count number of threads that did work */
     did_work_howmany = 0;
-    for(size_t i=0; i<t; i++){did_work_howmany = did_work_howmany + did_work_sw[i];}
+    for(size_t i=0; i<number_of_threads; i++){did_work_howmany = did_work_howmany + did_work_sw[i];}
 
     if(true)
     {
