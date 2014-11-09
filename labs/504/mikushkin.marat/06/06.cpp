@@ -7,12 +7,9 @@
 
 using namespace std;
 
-int n = 0, t = 0;           /* n = nums[] array size, t = number of threads, from command line */
-//long int *nums = NULL;      /* nums[] is the array of numbers */
+size_t t = 0;           /* n = nums[] array size, t = number of threads, from command line */
 vector<long int> nums;
-//int *done_sw = NULL;        /* indicates that all threads are complete */
 vector<int> done_sw;
-//int *did_work_sw = NULL;    /* indicates which threads actually did work */
 vector<int> did_work_sw;
 
 /* Function that each thread executes to zero out multiples of primes they find */
@@ -20,13 +17,13 @@ void *zero_multiples(void *threadid)
 {
     int prime = 0;  /* current prime */
     int i_prime= 0; /* current prime index in nums[] */
-    int i, k;       /* for looping */
+    //int i, k;       /* for looping */
 
     /* Each thread reads nums[] up to sqrt(n)
        If a positive number is encountered, it is prime:
          the number is negated, and all multiples are zeroed
          then continues looping looking for positive (prime) numbers */
-    for(i = 0; i*i <= n; i++) /* read nums[] until locate a positive number or until sqrt(n) */
+    for(size_t i = 0; i*i <= nums.size(); i++) /* read nums[] until locate a positive number or until sqrt(n) */
     {
         prime = nums[i];
         i_prime = i;
@@ -35,7 +32,7 @@ void *zero_multiples(void *threadid)
         {
             did_work_sw[(intptr_t) threadid]=1; /* indicates that this thread did some work */
             nums[i_prime] = -nums[i_prime]; /* set current prime to negative */
-            for (k = i_prime + prime; k < n; k = k + prime) /* mark multiples to 0 */
+            for (size_t k = i_prime + prime; k < nums.size(); k = k + prime) /* mark multiples to 0 */
             {
                 nums[k] = 0;
             }
@@ -79,20 +76,21 @@ int main (int argc, char *argv[])
     pthread_t *threads = NULL;  /* threads structure */
     int rc;                     /* return code for pthread_create() */
 
-    int c = 0;                  /* command line arguments */
-    int i = 0, k = 0;           /* for loops */
+    //int c = 0;                  /* command line arguments */
+    //int i = 0, k = 0;           /* for loops */
     struct timeval tv_1;        /* time before */
     struct timeval tv_2;        /* time after */
     struct timeval result;      /* time result */
     //int status;                 /* time of day */
 
     int debug_level = 0;        /* used for verbose messaging to screen */
-    int done_sw_main = 0;       /* used to check if all the threads have finished */
+    size_t done_sw_main = 0;       /* used to check if all the threads have finished */
     int did_work_howmany = 0;   /* tallies how many threads actually did work */
 
     int n_primes = 0;           /* tallies the number of primes found */
 
     /*** Parse command line arguments *****************/
+    /*
     while( (c = getopt( argc, argv,  "n:t:v" )) != EOF )
     {
         switch( c )
@@ -107,15 +105,19 @@ int main (int argc, char *argv[])
             break;
         }
     }
+    */
+    //n = atoi(argv[1]);
 
-    if(debug_level) printf("n=%d, t=%d\n", n, t);   /* print n and t */
+    t = atoi(argv[2]);
+
+    //if(debug_level) printf("n=%d, t=%d\n", n, t);   /* print n and t */
 
     gettimeofday(&tv_1, 0);                  /* start timer */
 
-    nums.resize(n);
+    nums.resize(atoi(argv[1]));
 
     /* population nums[] array from 1 to n */
-    for(i=1; i<n; i++) {nums[i]=i+1;}   /* start at index 1 so that number 1 starts zeroed out */
+    for(size_t i=1; i<nums.size(); i++) {nums[i]=i+1;}   /* start at index 1 so that number 1 starts zeroed out */
 
     threads = (pthread_t *)malloc(t * sizeof(pthread_t));   /* allocate threads[] structure array */
     if(threads == NULL){fprintf(stderr, "threads Out of memory!\n");exit( EXIT_FAILURE );}
@@ -124,7 +126,7 @@ int main (int argc, char *argv[])
     did_work_sw.resize(t);
 
     /* create threads and run zero_multiples */
-    for(i=0; i<t; i++){
+    for(size_t i=0; i<t; i++){
         //if(debug_level>1) printf("Creating thread %d\n", i);
         rc = pthread_create(&threads[i], NULL, zero_multiples, (void *)(intptr_t)i); /* create thread to run zero_multiples() */
         if (rc){printf("ERROR; return code from pthread_create() is %d\n", rc);exit(-1);}
@@ -134,7 +136,7 @@ int main (int argc, char *argv[])
     while(done_sw_main < t) /* exit only when all threads have set their done_sw */
     {
         done_sw_main = 0;
-        for(i=0; i<t; i++)
+        for(size_t i=0; i<t; i++)
         {
             done_sw_main = done_sw_main + done_sw[i];   /* count how many threads are done */
         }
@@ -142,13 +144,13 @@ int main (int argc, char *argv[])
 
     /* count number of threads that did work */
     did_work_howmany = 0;
-    for(i=0; i<t; i++){did_work_howmany = did_work_howmany + did_work_sw[i];}
+    for(size_t i=0; i<t; i++){did_work_howmany = did_work_howmany + did_work_sw[i];}
 
     /* count the number of primes found */
-    if(debug_level)
+    if(true)
     {
         n_primes = 0;
-        for(k=0; k < n; k++)
+        for(size_t k=0; k < nums.size(); k++)
         {
             if(nums[k] != 0)
             {
