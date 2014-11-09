@@ -8,7 +8,7 @@
 using namespace std;
 
 size_t t = 0;           /* n = nums[] array size, t = number of threads, from command line */
-vector<long int> nums;
+vector<long int> numbers;
 vector<int> done_sw;
 vector<int> did_work_sw;
 
@@ -23,18 +23,18 @@ void *zero_multiples(void *threadid)
        If a positive number is encountered, it is prime:
          the number is negated, and all multiples are zeroed
          then continues looping looking for positive (prime) numbers */
-    for(size_t i = 0; i*i <= nums.size(); i++) /* read nums[] until locate a positive number or until sqrt(n) */
+    for(size_t i = 0; i*i <= numbers.size(); i++) /* read nums[] until locate a positive number or until sqrt(n) */
     {
-        prime = nums[i];
+        prime = numbers[i];
         i_prime = i;
 
         if(prime>0) /* if locate a positive number, it must be prime */
         {
             did_work_sw[(intptr_t) threadid]=1; /* indicates that this thread did some work */
-            nums[i_prime] = -nums[i_prime]; /* set current prime to negative */
-            for (size_t k = i_prime + prime; k < nums.size(); k = k + prime) /* mark multiples to 0 */
+            numbers[i_prime] = -numbers[i_prime]; /* set current prime to negative */
+            for (size_t k = i_prime + prime; k < numbers.size(); k = k + prime) /* mark multiples to 0 */
             {
-                nums[k] = 0;
+                numbers[k] = 0;
             }
         }
     }
@@ -76,48 +76,20 @@ int main (int argc, char *argv[])
     pthread_t *threads = NULL;  /* threads structure */
     int rc;                     /* return code for pthread_create() */
 
-    //int c = 0;                  /* command line arguments */
-    //int i = 0, k = 0;           /* for loops */
     struct timeval tv_1;        /* time before */
     struct timeval tv_2;        /* time after */
     struct timeval result;      /* time result */
-    //int status;                 /* time of day */
 
-    int debug_level = 0;        /* used for verbose messaging to screen */
     size_t done_sw_main = 0;       /* used to check if all the threads have finished */
     int did_work_howmany = 0;   /* tallies how many threads actually did work */
-
-    int n_primes = 0;           /* tallies the number of primes found */
-
-    /*** Parse command line arguments *****************/
-    /*
-    while( (c = getopt( argc, argv,  "n:t:v" )) != EOF )
-    {
-        switch( c )
-        {
-            case 'n': n = strtol( optarg, (char **)NULL, 10 );
-            break;
-
-            case 't': t = strtol( optarg, (char **)NULL, 10 );
-            break;
-
-            case 'v': debug_level++;
-            break;
-        }
-    }
-    */
-    //n = atoi(argv[1]);
+    //int n_primes = 0;           /* tallies the number of primes found */
 
     t = atoi(argv[2]);
-
-    //if(debug_level) printf("n=%d, t=%d\n", n, t);   /* print n and t */
-
-    gettimeofday(&tv_1, 0);                  /* start timer */
-
-    nums.resize(atoi(argv[1]));
+    gettimeofday(&tv_1, 0);
+    numbers.resize(atoi(argv[1]));
 
     /* population nums[] array from 1 to n */
-    for(size_t i=1; i<nums.size(); i++) {nums[i]=i+1;}   /* start at index 1 so that number 1 starts zeroed out */
+    for(size_t i=1; i<numbers.size(); i++) {numbers[i]=i+1;}   /* start at index 1 so that number 1 starts zeroed out */
 
     threads = (pthread_t *)malloc(t * sizeof(pthread_t));   /* allocate threads[] structure array */
     if(threads == NULL){fprintf(stderr, "threads Out of memory!\n");exit( EXIT_FAILURE );}
@@ -146,26 +118,19 @@ int main (int argc, char *argv[])
     did_work_howmany = 0;
     for(size_t i=0; i<t; i++){did_work_howmany = did_work_howmany + did_work_sw[i];}
 
-    /* count the number of primes found */
     if(true)
     {
-        n_primes = 0;
-        for(size_t k=0; k < nums.size(); k++)
+        for(size_t k=0; k < numbers.size(); k++)
         {
-            if(nums[k] != 0)
+            if(numbers[k] != 0)
             {
-            	n_primes++;
-            	printf("%d\n", abs(nums[k]));
-            } /* primes are all the non 0 numbers remaining in nums[] */
+            	printf("%d\n", abs(numbers[k]));
+            }
         }
-        printf("n_primes=%d\n", n_primes);
     }
 
     gettimeofday(&tv_2,0);           /* stop timer */
     timeval_subtract(&result,&tv_2,&tv_1);  /* calculate elapsed time */
-
-    /* report results */
-    //printf("%d %d %d %d %d.%06d\n", n, t, did_work_howmany, n_primes, result.tv_sec, result.tv_usec);
 
     pthread_exit(NULL); /* all done */
 }
