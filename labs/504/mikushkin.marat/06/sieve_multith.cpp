@@ -37,7 +37,7 @@ void *zero_multiples(void *threadid) {
 
 void print_usage() {
     cout << "usage:" << endl;
-    cout << "./sieve_unith N M -p" << endl;
+    cout << "./sieve_multith N M -p" << endl;
     cout << "where:" << endl;
     cout << " N <-- sieve limit" << endl;
     cout << " M <-- number of threads" << endl;
