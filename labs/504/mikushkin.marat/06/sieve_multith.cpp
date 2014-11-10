@@ -87,6 +87,7 @@ int main(int argc, char *argv[]) {
 
 	end = clock();
 	float exec_time((float) end - (float) start);
+	exec_time /= (CLOCKS_PER_SEC / 1000);
 	if (string(argv[1]) != "-p") {
 		cout << exec_time << endl;
 	}
