@@ -43,6 +43,9 @@ void print_usage() {
 }
 
 int main(int argc, char *argv[]) {
+	clock_t start, end;
+	start = clock();
+
 	if (argc < 3) {
 		print_usage();
 		return 0;
@@ -80,6 +83,12 @@ int main(int argc, char *argv[]) {
 				cout << abs(numbers[k]) << endl;
 			}
 		}
+	}
+
+	end = clock();
+	float exec_time((float) end - (float) start);
+	if (string(argv[1]) != "-p") {
+		cout << exec_time << endl;
 	}
 
 	pthread_exit(NULL);
