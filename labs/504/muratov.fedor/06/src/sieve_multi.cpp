@@ -6,26 +6,25 @@
 #include <mutex>
 using namespace std;
 
+typedef long long llong;
+
 bool print = false;
 unsigned long long N = 0;
 int M = 0;
-atomic<int> threadQuantity;
-vector<bool> arr;
+atomic <llong> currentNum;
+vector<char> arr;
 mutex mtx;
 
-typedef long long llong;
-void calculateMultiSieve();
-void deleteMultiples(llong multiplayer);
-void calculateSingleSieve(vector<bool> &arr);
+
+void calculateOneThreadSieve();
 
 int main(int argc, char* argv[])
 {
-	threadQuantity = 0;
 	if (argc == 1)
 	{
 		cout << "Single thread version of Sieve of Eratosthenes" << endl;
 		cout << "First parameter -p (optional). If specifed, than print sieve" << endl;
-		cout << "Parameter N - quantity of sieve"<<endl;
+		cout << "Parameter N - quantity of sieve";
 		getchar();
 		return 0;
 	}
@@ -43,8 +42,18 @@ int main(int argc, char* argv[])
 			M = atoi(argv[3]);
 		}
 	}
-	arr = vector<bool>(N, true);
-	calculateMultiSieve();
+	currentNum = 2;
+	arr = vector<char>(N, 1);
+	vector<thread> threads(M);
+	for (int th_num = 0; th_num < M; ++th_num)
+	{
+		threads[th_num] = thread(calculateOneThreadSieve);
+	}
+	for (int th_num = 0; th_num < M; ++th_num)
+	{
+		threads[th_num].join();
+	}
+
 	if (print)
 	{
 		for (int i = 0; i < arr.size(); ++i)
@@ -52,47 +61,29 @@ int main(int argc, char* argv[])
 			if (arr[i])
 				cout << i << " ";
 		}
-		getchar();	
+		getchar();
 	}
-
+	
 	return 0;
 }
 
-void calculateMultiSieve()
-{
-	
-	arr[0] = arr[1] = false;
-	for (llong i = 2; i*i < N; ++i)
+void calculateOneThreadSieve()
+{	
+	while (true)
 	{
-		if (arr[i])
+		llong currentMultiplayer = currentNum.fetch_add(1);
+		if (currentMultiplayer * currentMultiplayer >= N)
 		{
-			while (threadQuantity > M);
-			thread newThread = thread(deleteMultiples, i);
-			newThread.detach();
+			return;
+		}
+		if (arr[currentMultiplayer])
+		{
+			for (llong currentValue = currentMultiplayer * currentMultiplayer; currentValue < N; currentValue += currentMultiplayer)
+				arr[currentValue] = 0;
 		}
 	}
-	while (threadQuantity != 0);
 }
 
 
-void deleteMultiples(llong multiplayer)
-{
-	++threadQuantity;
-	for (llong j = multiplayer*multiplayer; j < N; j += multiplayer)
-	{
-		mtx.lock();
-		arr[j] = false;
-		mtx.unlock();
-	}
-	--threadQuantity;
-	
-}
 
-void calculateSingleSieve(vector<bool> &arr)
-{
-	arr[0] = arr[1] = false;
-	for (llong i = 2; i*i < N; ++i)
-	if (arr[i])
-	for (llong j = i*i; j < N; j += i)
-		arr[j] = false;
-}
+
