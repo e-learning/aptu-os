@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "" > TASK1_DATA
-for m in 1 2 4 8 16
+for m in 1 2 4 6 8 10 12 14 16 18 20
 do
 	for n in 1000 10000 100000 1000000 10000000
 	do
