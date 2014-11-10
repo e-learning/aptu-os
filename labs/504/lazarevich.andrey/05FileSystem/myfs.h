@@ -83,10 +83,10 @@ private:
     size_t                          count_free_blocks_num();
     size_t                          first_free_block();
     int32_t                         first_free_fd();
-    const char *                    file_preparation(const char *, MyFile &);
+    char *                          file_preparation(const char *, MyFile &);
     MyFile                          read_file_info_by_id(size_t);
     BlockHeader                     read_block_by_id(size_t id);
-    int32_t                         get_fd_by_name(MyFile &, const char *);
+    int32_t                         get_fd_by_name(MyFile, const char *);
     int32_t                         write_file_into_fs(std::ifstream &, MyFile &, const char *, size_t, size_t, bool);
     int32_t                         write_file_from_fs(std::ofstream &, int32_t);
     size_t                          memory_to_write(int32_t);

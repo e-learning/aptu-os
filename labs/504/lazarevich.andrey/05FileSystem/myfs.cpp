@@ -221,7 +221,7 @@ int32_t MyFS::first_free_fd()
         return i;
 }
 
-const char *MyFS::file_preparation(const char *path, MyFile & cur_dir)
+char *MyFS::file_preparation(const char *path, MyFile & cur_dir)
 {
     if (path[0] != '/')
     {
@@ -235,7 +235,8 @@ const char *MyFS::file_preparation(const char *path, MyFile & cur_dir)
         strncpy(cur_name, &path[start_pos], pos - start_pos);
         cur_name[pos-start_pos] = '\0';
         int fd = get_fd_by_name(cur_dir, cur_name);
-        if (strncmp(read_file_info_by_id(descriptor_table[fd]).name, cur_name, strlen(cur_name)) != 0)
+        cur_dir = read_file_info_by_id(descriptor_table[fd]);
+        if (strcmp(cur_dir.name, cur_name) != 0)
             return nullptr;
         if (fd < 0)
         {
@@ -265,26 +266,30 @@ MyFile MyFS::read_file_info_by_id(size_t id)
     return file;
 }
 
-int32_t MyFS::get_fd_by_name(MyFile &file, const char *name)
+int32_t MyFS::get_fd_by_name(MyFile file, const char *name)
 {
     int32_t fd = -1;
     if ((fd = file.first_file_id) == -1)
     {
         return fd;
     }
+    if (file.fd >= int(descriptor_table.size()))
+    {
+        return -1;
+    }
     file = read_file_info_by_id(descriptor_table[fd]);
     int next = file.next_file;
     do
     {
         next = file.next_file;
-        if (strncmp(name, file.name, strlen(file.name)) == 0)
+        if (strcmp(name, file.name) == 0)
         {
             break;
         }
         else
         {
-            file = read_file_info_by_id(descriptor_table[file.next_file]);
-            if (file.next_file == -1 && strncmp(file.name, name, strlen(file.name)))
+            file = read_file_info_by_id(descriptor_table[next]);
+            if (file.next_file == -1 && strcmp(file.name, name))
                 return -1;
             fd = file.fd;
         }
@@ -436,8 +441,9 @@ int MyFS::import_file(const char *from, const char *to)
     ifstream source(from, ios::ate | ios::binary);
     size_t file_size = source.tellg();
     size_t blocks_req = memory_to_write(file_size);
-    if (blocks_req > free_blocks_num)
+    if (blocks_req > count_free_blocks_num())
     {
+        std::cout << "Cannot write file. Not enough free space" << std::endl;
         return -1;
     }
     else
@@ -471,9 +477,17 @@ int MyFS::export_file(const char *from, const char *to)
 int MyFS::make_dir(MyFile cur_dir, const char *dir_name)
 {
     MyFile dir;
+    if (count_free_blocks_num() == 0)
+    {
+        std::cout << "Not enough memory to create dir." << std::endl;
+        return -1;
+    }
     dir.fd = first_free_fd();
     if (dir.fd < 0)
+    {
+        std::cout << "Directory cannot be created. No free file descriptors." << std::endl;
         return -1;
+    }
     descriptor_table[dir.fd] = first_free_block();
     blocks_map[descriptor_table[dir.fd]] = true;
     dir.next_block = -1;
@@ -552,7 +566,7 @@ std::string MyFS::ls(const char *path)
     MyFile cur_dir;
     const char *file_name = file_preparation(path, cur_dir);
     int fd = 0;
-    if (strncmp(path, "/", strlen(path)))
+    if (strcmp(path, "/"))
     {
         if (file_name == nullptr)
             return 0;
@@ -576,14 +590,14 @@ std::string MyFS::ls(const char *path)
             MyFile cur_file;
             while ((cur_file = read_file_info_by_id(descriptor_table[cur_fd])).next_file != -1)
             {
-                if (cur_file.parent == cur_dir.fd)
+                if (cur_file.parent == file.fd)
                 {
                     result += string(cur_file.name);
                     result += cur_file.is_dir ? string(" d\n") : string(" f\n");
                     cur_fd = cur_file.next_file;
                 }
             }
-            if (cur_file.parent == cur_dir.fd)
+            if (cur_file.parent == file.fd)
             {
                 cur_file = read_file_info_by_id(descriptor_table[cur_fd]);
                 result += string(cur_file.name);
@@ -602,8 +616,11 @@ int MyFS::move(const char *from, const char *to)
 {
     MyFile cur_dir;
     const char *file_name = file_preparation(from, cur_dir);
-    if (file_exist(file_name, cur_dir))
+    if (!file_exist(file_name, cur_dir))
+    {
+        std::cout << "File doesn't exist" << std::endl;
         return -1;
+    }
     MyFile old_parent = cur_dir;
     int fd = get_fd_by_name(cur_dir, file_name);
     MyFile file = read_file_info_by_id(descriptor_table[fd]);
@@ -665,17 +682,36 @@ int MyFS::copy(const char *from, const char *to)
     MyFile src_file;
     MyFile dst_file;
     const char *src_name = file_preparation(from, src_file);
-    const char *dst_name = file_preparation(to, dst_file);
-    if (file_exist(dst_name, dst_file))
-    {
-        std::cout << "File already exist in dst directory" << std::endl;
-        return -1;
-    }
+    char *dst_name = file_preparation(to, dst_file);
     int src_fd = get_fd_by_name(src_file, src_name);
     if (src_fd < 0)
     {
         std::cout << "File doesn't exist" << std::endl;
         return -1;
+    }
+    if (file_exist(dst_name, dst_file))
+    {
+        std::cout << "File already exist in dst directory" << std::endl;
+        return -1;
+    }
+    src_file = read_file_info_by_id(descriptor_table[src_fd]);        
+    if (dst_name == NULL)
+    {
+        size_t start_pos = 1;
+        size_t end_pos = 1;
+        while ((end_pos = find_next_slash(to, start_pos)) != 0)
+        {
+            start_pos = end_pos + 1;
+        }
+        char dir_name[50];
+        strncpy(dir_name, to, start_pos - 1);
+        dir_name[start_pos - 1] = '\0';
+        int dir_fd = mkdir(dir_name);
+        dst_name = new char[10];
+        strncpy(dst_name, &to[start_pos], strlen(to) - start_pos);
+        dst_name[strlen(to) - start_pos] = '\0';
+        if (dir_fd >= 0)
+            dst_file = read_file_info_by_id(descriptor_table[dir_fd]);
     }
     if ( copy(src_file, dst_file, dst_name) < 0)
     {
@@ -814,6 +850,11 @@ int MyFS::rm(const char *path)
     MyFile cur_dir;
     const char *name = file_preparation(path, cur_dir);
     int fd = get_fd_by_name(cur_dir, name);
+    if (strcmp(path, "/") == 0)
+    {
+        std::cout << "You are trying to delete root dir" << std::endl;
+        return -1;
+    }
     if (fd < 0)
         return -1;
     MyFile file = read_file_info_by_id(descriptor_table[fd]);
