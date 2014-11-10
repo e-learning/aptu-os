@@ -8,8 +8,8 @@
 using namespace std;
 
 vector<long int> numbers;
-vector<int> done_sw;
-vector<int> did_work_sw;
+vector<int> thread_is_done;
+vector<int> thread_did_work;
 
 void *zero_multiples(void *threadid) {
 	int prime = 0;
@@ -21,7 +21,7 @@ void *zero_multiples(void *threadid) {
 
 		if (prime > 0)
 		{
-			did_work_sw[(intptr_t) threadid] = 1;
+			thread_did_work[(intptr_t) threadid] = 1;
 			numbers[prime_ind] = -numbers[prime_ind];
 			for (size_t k = prime_ind + prime; k < numbers.size(); k = k + prime)
 			{
@@ -30,7 +30,7 @@ void *zero_multiples(void *threadid) {
 		}
 	}
 
-	done_sw[(intptr_t) threadid] = 1;
+	thread_is_done[(intptr_t) threadid] = 1;
 
 	pthread_exit(NULL);
 }
@@ -39,15 +39,10 @@ int main(int argc, char *argv[]) {
 	vector<pthread_t> threads;
 	int rc;
 
-	struct timeval tv_1;
-	struct timeval tv_2;
-	//struct timeval result;
-
-	size_t done_sw_main = 0; /* used to check if all the threads have finished */
-	int did_work_howmany = 0; /* tallies how many threads actually did work */
+	size_t is_all_thread_done = 0;
+	int number_of_active_threads = 0;
 
 	size_t number_of_threads = atoi(argv[2]);
-	gettimeofday(&tv_1, 0);
 	numbers.resize(atoi(argv[1]));
 
 	for (size_t i = 1; i < numbers.size(); i++) {
@@ -56,8 +51,8 @@ int main(int argc, char *argv[]) {
 
 	threads.resize(number_of_threads);
 
-	done_sw.resize(number_of_threads);
-	did_work_sw.resize(number_of_threads);
+	thread_is_done.resize(number_of_threads);
+	thread_did_work.resize(number_of_threads);
 
 	/* create threads and run zero_multiples */
 	for (size_t i = 0; i < number_of_threads; i++) {
@@ -70,18 +65,18 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* main program wait until all threads are complete */
-	while (done_sw_main < number_of_threads) /* exit only when all threads have set their done_sw */
+	while (is_all_thread_done < number_of_threads) /* exit only when all threads have set their done_sw */
 	{
-		done_sw_main = 0;
+		is_all_thread_done = 0;
 		for (size_t i = 0; i < number_of_threads; i++) {
-			done_sw_main = done_sw_main + done_sw[i]; /* count how many threads are done */
+			is_all_thread_done = is_all_thread_done + thread_is_done[i]; /* count how many threads are done */
 		}
 	}
 
 	/* count number of threads that did work */
-	did_work_howmany = 0;
+	number_of_active_threads = 0;
 	for (size_t i = 0; i < number_of_threads; i++) {
-		did_work_howmany = did_work_howmany + did_work_sw[i];
+		number_of_active_threads = number_of_active_threads + thread_did_work[i];
 	}
 
 	if (true) {
@@ -91,9 +86,6 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
-
-	gettimeofday(&tv_2, 0);
-	//timeval_subtract(&result, &tv_2, &tv_1);
 
 	pthread_exit(NULL);
 }
