@@ -1,0 +1,2 @@
+ #!/bin/bash
+java -Xms1024m -Xmx4g SieveUniThread $1 $2
