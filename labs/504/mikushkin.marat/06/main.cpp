@@ -34,7 +34,21 @@ void *zero_multiples(void *threadid) {
 	pthread_exit(NULL);
 }
 
+void print_usage() {
+    cout << "usage:" << endl;
+    cout << "./sieve_unith N M -p" << endl;
+    cout << "where:" << endl;
+    cout << " N <-- sieve limit" << endl;
+    cout << " M <-- number of threads" << endl;
+    cout << "-p <-- print finded primes, optional parameter" << endl;
+}
+
 int main(int argc, char *argv[]) {
+	if (argc < 3) {
+		print_usage();
+		return 0;
+	}
+
 	vector<pthread_t> threads;
 
 	numbers.resize(atoi(argv[1]));
@@ -62,7 +76,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if (true) {
+	if (argc >= 4 && string(argv[3]) == "-p") {
 		for (size_t k = 0; k < numbers.size(); k++) {
 			if (numbers[k] != 0) {
 				cout << abs(numbers[k]) << endl;
