@@ -1,0 +1,7 @@
+#!/bin/bash
+if (($# != 1))
+then
+echo "Print ip address of destination host"
+else
+sudo python2.7 main.py $1
+fi
