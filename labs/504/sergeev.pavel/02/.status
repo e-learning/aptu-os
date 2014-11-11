@@ -1,5 +1,18 @@
 rejected
 
-* Seg. fault on the 1st example (from wiki-page with task)
+The following test failed:
 
-//fix seg. fault error
+Input:
+5
+PROC1 4 5
+PROC2 5 5
+
+Output:
+0 IDLE
+5 PROC1
+10 PROC2
+
+Expected:
+0 IDLE
+4 PROC1 
+9 PROC2

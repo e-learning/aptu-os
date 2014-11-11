@@ -1,4 +1,4 @@
-ok (5/5)
+accepted (5/5)
 
 * understood manually as separately
 * additionaly checked for memory leaks using: valgrind --tool=memcheck --leak-check=full ./shell
