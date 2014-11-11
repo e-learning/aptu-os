@@ -1,15 +1,20 @@
-
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
+#include <atomic>
+#include <thread>
+#include <mutex>
 using namespace std;
 
+typedef long long llong;
+
 bool print = false;
-unsigned long long N = 0;
+llong N = 0;
+llong currentNum = 2;
+vector<char> arr;
 
-vector<bool> arr;
 
-void calculateSingleSieve(vector<bool> &arr);
+void calculateOneThreadSieve();
 
 int main(int argc, char* argv[])
 {
@@ -17,7 +22,7 @@ int main(int argc, char* argv[])
 	{
 		cout << "Single thread version of Sieve of Eratosthenes" << endl;
 		cout << "First parameter -p (optional). If specifed, than print sieve" << endl;
-		cout << "Parameter N - quantity of sieve"<<endl;
+		cout << "Parameter N - quantity of sieve";
 		getchar();
 		return 0;
 	}
@@ -33,8 +38,10 @@ int main(int argc, char* argv[])
 			N = atoll(argv[2]);
 		}
 	}
-	arr = vector<bool>(N, true);
-	calculateSingleSieve(arr);
+	arr = vector<char>(N, 1);
+
+	calculateOneThreadSieve();
+
 	if (print)
 	{
 		for (int i = 0; i < arr.size(); ++i)
@@ -48,12 +55,23 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-void calculateSingleSieve(vector<bool> &arr)
-{
-	arr[0] = arr[1] = false;
-	for (int i = 2; i*i < arr.size(); ++i)
-	if (arr[i])
-	for (int j = i*i; j < arr.size(); j += i)
-		arr[j] = false;
+void calculateOneThreadSieve()
+{	
+	while (true)
+	{
+		llong currentMultiplayer = currentNum++;
+		if (currentMultiplayer * currentMultiplayer >= N)
+		{
+			return;
+		}
+		if (arr[currentMultiplayer])
+		{
+			for (llong currentValue = currentMultiplayer * currentMultiplayer; currentValue < N; currentValue += currentMultiplayer)
+				arr[currentValue] = 0;
+		}
+	}
 }
+
+
+
 
