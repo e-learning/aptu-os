@@ -15,6 +15,8 @@ def nth_addr(dest_addr, ttl):
     out_socket.setsockopt(socket.SOL_IP, socket.IP_TTL, ttl)
 
     in_socket.bind((bytes("", 'UTF-8'), port))
+    in_socket.settimeout(60)
+
     out_socket.sendto(bytes("", 'UTF-8'), (dest_addr, port))
 
     try:
