@@ -36,37 +36,39 @@ struct Settings read_settings(int argc, char** argv)
 	return settings;
 }
 
+
+struct Task
+{
+	unsigned long long base;
+	unsigned long long step;
+	pthread_mutex_t task_seted_mutex;
+	pthread_cond_t task_ready;
+	pthread_mutex_t task_ready_mutex;
+};
+
+pthread_cond_t tasks_seted;
+struct Task* tasks;
+int* thread_num;
 int m;
 char* primes;
-unsigned long long next_prime;
 unsigned long long n;
 unsigned long long sqrt_n;
-pthread_mutex_t next_prime_lock;
+
 
 void* thread_function(void* arg)
 {
-	unsigned long long i;
-	unsigned long long j;
+	// waiting tasks ready
+	int thread_num = *arg;
 	while (1)
 	{
-		pthread_mutex_lock(&next_prime_lock);
-		while (!primes[next_prime] && next_prime <= sqrt_n) next_prime++;
-		if (next_prime > sqrt_n)
-		{
-			pthread_mutex_unlock(&next_prime_lock);
-			return NULL;
-		}
-		i = next_prime;
-		next_prime++;
-		pthread_mutex_unlock(&next_prime_lock);
-		if (primes[i])
-		{
-			for (j = i * i; j < n; j += i)
-			{
-				primes[j] = 0;
-			}
-		}
+		pthread_mutex_lock(&(tasks[i].task_seted_mutex));
+		pthread_cond_wait(&tasks_seted, &(tasks[i].task_seted_mutex));
+	
+
+
+		pthread_mutex_unlock(&(tasks[i].task_seted_mutex));
 	}
+	return NULL;
 }
 
 
@@ -74,9 +76,18 @@ pthread_t* start_threads(int count)
 {
 	int i;
 	pthread_t* threads = (pthread_t*)malloc(count * sizeof(pthread_t));
+	tasks = (struct Task*)malloc(count * sizeof(struct Task));
+	thread_num = (int*)malloc(count * sizeof(int));
 	for (i = 0; i < count; i++)
 	{
-		pthread_create(threads + i, NULL, thread_function, NULL);
+		pthread_mutex_init(&(tasks[i].task_seted_mutex), NULL);
+		pthread_mutex_init(&(tasks[i].task_ready_mutex), NULL);
+		pthread_cond_init(&(tasks_seted), NULL);
+		// pthread_cond_init(&(tasks[i].task_seted), NULL);
+		// pthread_cond_init(&(tasks[i].task_ready), NULL);
+		//pthread_mutex_lock(&(tasks[i].task_ready_mutex));
+		thread_num[i] = i;
+		pthread_create(threads + i, &(thread_num[i]), thread_function, NULL);
 	}
 	return threads;
 }
@@ -88,23 +99,52 @@ void join_threads(int count, pthread_t* threads)
 	for (i = 0; i < count; i++)
 	{
 		pthread_join(threads[i], NULL);
+		pthread_mutex_destroy(&(tasks[i].task_seted_mutex));
+		pthread_mutex_destroy(&(tasks[i].task_ready_mutex));
+		pthread_cond_destroy(&(tasks_seted));
+		// pthread_cond_destroy(&(tasks[i].task_seted));
+		// pthread_cond_destroy(&(tasks[i].task_ready));
 	}
 	free(threads);
+	free(tasks);
+	free(thread_num);
+}
+
+
+void set_tasks()
+{
+
+}
+
+
+void wait_tasks_completition()
+{
+	
 }
 
 
 char* eratosthenes_sieve()
 {
+	int i;
 	sqrt_n = (unsigned long long)sqrt((double)n);
 	primes = (char*)malloc(n + 1);
 	memset(primes, 0x01, n + 1);
 	primes[0] = 0;
 	primes[1] = 0;
-	next_prime = 2;
-	pthread_mutex_init(&next_prime_lock, NULL);
 	pthread_t* threads = start_threads(m);
+
+	for (i = 2; i <= sqrt_n; i++)
+	{
+		//waiting all threads
+		if (primes[i])
+		{
+			set_tasks();
+			pthread_cond_broad_cast(&tasks_seted);
+			wait_tasks_completition();
+		}
+	}
+
 	join_threads(m, threads);
-	pthread_mutex_destroy(&next_prime_lock);
   	return primes;
 }
 

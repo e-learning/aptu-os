@@ -1,6 +1,6 @@
 SRC =src
 CC=gcc
-CFLAGS=-I$(SRC) -Wall -Werror -lm -O2
+CFLAGS=-I$(SRC) -Wall -Werror -lm
 
 BIN=bin
 
@@ -14,7 +14,6 @@ $(BIN)/sieve_unith: $(BIN)/sieve_unith.o
 
 $(BIN)/sieve_multith: $(BIN)/sieve_multith.o
 	$(CC) -o $@ $^ $(CFLAGS) -lpthread
-
 
 .PHONY: clean
 
