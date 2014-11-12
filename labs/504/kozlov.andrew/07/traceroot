@@ -20,7 +20,7 @@ def init_sockets(address, ttl, port=5000, timeout=30):
 
 	return (receive_socket, send_socket)
 
-def get_trace_route(host_name, attempts=10, receive_bytes=512):
+def get_trace_route(host_name, attempts=256, receive_bytes=512):
 	current = None
 
 	destination = socket.gethostbyname(host_name)
