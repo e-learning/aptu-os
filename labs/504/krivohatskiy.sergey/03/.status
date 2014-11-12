@@ -1,9 +1,2 @@
-rejected
-
-1000
-FREE 1
--
-FREE 0
-+ (?!)
-
-"0" ptr hasn't been allocated.
+done
+defragmentation implemented
