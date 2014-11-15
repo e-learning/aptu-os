@@ -5,7 +5,8 @@ import os
 
 
 def ping(address):
-    return os.system("ping -w 1 " + address)
+    params = "ping -w 1 " + address + " >/dev/null"
+    return os.system(params)
 
 
 def trace(address):
@@ -16,10 +17,10 @@ def trace(address):
     upd = socket.getprotobyname('udp')
     traceWay = []
     wrongs = 0
-    print("hop ")
+    #print("hop ")
     while ttl < max_ttl:
-        print("{0}".format(ttl), end=" ")
-        sys.stdout.flush()
+        # print("{0}".format(ttl), end=" ")
+        # sys.stdout.flush()
         senderSocket = socket.socket(type=socket.SOCK_DGRAM, proto=upd)
         recieverSocket = socket.socket(type=socket.SOCK_RAW, proto=icmp)
         senderSocket.setsockopt(socket.SOL_IP, socket.IP_TTL, ttl)
@@ -44,21 +45,21 @@ def trace(address):
             break
         else:
             ttl += 1
-    print()
+    # print()
     return traceWay
 
 
 if __name__ == '__main__':
     try:
         ip_addr = sys.argv[1]
-        print("ping {0}".format(ip_addr))
+        # print("ping {0}".format(ip_addr))
         ans = ping(ip_addr)
         if not ans:
             print("trace to {0}".format(ip_addr))
             ans = trace(ip_addr)
-            print("trace:")
+            # print("trace:")
             for hop in ans:
-                print("\t", hop)
+                print(hop)
         else:
             print("wrong ping, try latter")
     except IndexError:
