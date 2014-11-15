@@ -20,7 +20,7 @@ if __name__ == '__main__':
     else:
         iterations = 50
         cores = generation.report(False)
-        acceptable = [1, cores, cores + 1, cores * 2, cores * 2 + 1]
+        acceptable = list(range(1, 2 * cores + 2))
         averages = []
         for core in acceptable:
             sum_ = 0
