@@ -7,23 +7,36 @@ import datetime
 list_N = [10 ** 2, 10 ** 5, 2 * 10 ** 7]
 file_task1 = "TASK1_DATA"
 max_thread = 21
-def task1():
+
+
+def computeSieve(nums, threads):
     """
     TASK1_DATA
     """
-    file = open(file_task1, "w")
-    for quantityTHreads in range(1, max_thread):
-        for n in list_N:
-            startTime = datetime.datetime.now()
-            if quantityTHreads == 1:
-                os.system("./sieve_unith" + " " + str(n))
-            else:
-                os.system("./sieve_multith" + " " + str(n) + " " + str(quantityTHreads))
-            end = datetime.datetime.now()
-            elapsed = end - startTime
-            elapsedMS = int(elapsed.total_seconds() * 1000)
-            file.write(str(quantityTHreads) + "; " + str(n) + "; " + str(elapsedMS) + "\n")
-            # print("\tlasted {0} {1}".format(quantityTHreads, n))
+    arg = ""
+    if threads == 1:
+        arg = "./sieve_unith "
+    else:
+        arg = "./sieve_multith "
+    arg += str(nums) + " "
+    if threads != 1:
+        arg += str(threads)
+    start = datetime.datetime.now()
+    os.system(arg)
+    end = datetime.datetime.now()
+    elapsed = end - start
+    elapsedMS = int(elapsed.total_seconds() * 1000)
+    return elapsedMS
+
+
+def task1(fileName, threads, nums):
+    with open(fileName, "w") as file:
+        for thread_num in threads:
+            for num in nums:
+                ms = computeSieve(num, thread_num)
+                toWrite = "{0}; {1}; {2};\n".format(thread_num, num, ms)
+                file.write(toWrite)
+                print(toWrite)
 
 
 def task2():
@@ -49,7 +62,7 @@ def task2():
         # print("\tlasted {0}".format(n))
 
 
-def report():
+def report(writeis=True):
     """
     REPORT
     """
@@ -64,14 +77,15 @@ def report():
                     model_name = line.rstrip('\n').split(':')[1]
                     model += model_name + "\n"
                     l = model.split("\n")
-                    file.write("Processor type: " + l[0] + "\n")
-                    file.write("Cores: " + str(len(l)))
-                    break
+                    if writeis:
+                        file.write("Processor type: " + l[0] + "\n")
+                        file.write("Cores: " + str(len(l)))
+                    return len(l)
 
 
 if __name__ == '__main__':
     print("task1")
-    task1()
+    task1("TASK1_DATA", list(range(1, 21)), [10 ** 2, 10 ** 5, 10 ** 8])
     print("task2")
     task2()
     print("report")
