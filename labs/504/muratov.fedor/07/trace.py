@@ -1,4 +1,4 @@
-#/usr/bin/env python3
+#!/usr/bin/env python3
 import socket
 import sys
 import os
@@ -19,6 +19,7 @@ def trace(address):
     print("hop ")
     while ttl < max_ttl:
         print("{0}".format(ttl), end=" ")
+        sys.stdout.flush()
         senderSocket = socket.socket(type=socket.SOCK_DGRAM, proto=upd)
         recieverSocket = socket.socket(type=socket.SOCK_RAW, proto=icmp)
         senderSocket.setsockopt(socket.SOL_IP, socket.IP_TTL, ttl)
