@@ -8,16 +8,11 @@
 #include <string.h> // strlen
 #include <unistd.h> // getcwd 
 #include <signal.h>
-#include <pwd.h>
-#include <sys/stat.h>
-#include <errno.h>
 
 #define KBLU  "\x1B[34m" // blue text
 #define RESET "\033[0m" // normal color (white) text
 #define ENBOLD "\033[1m" // enable bold
 #define DISBOLD "\033[0m" // disable bold
-#define USER_WIDTH 20
-#define PID_WIDTH 10
 
 
 #define LONGSPACESTR "                                          "
@@ -35,11 +30,7 @@ void exec_ls(char ** arguments)
 	
 	
 	entries_num = scandir(dirname, &namelist, NULL, alphasort);
-    if (entry == 0)
-    {
-		fprintf(stderr, "ls: cannot access %s: No such file or directory\n", dirname);
-    }
-	else if (entry < 0)
+    if (entries_num < 0)
     {
 		fprintf(stderr, "ls: cannot scan %s\n", dirname);
     }
@@ -86,7 +77,6 @@ void exec_ls(char ** arguments)
 			printf("\n");
 		}
         
-        fprintf(stderr, "now free namelist...\n");
 		free(namelist);
 	}
 }
@@ -137,61 +127,4 @@ void exec_kill(char ** arglist)
 	}
 }
 
-void exec_ps()
-{
-    DIR *pd = opendir("/proc");
-    if (!pd)
-    {
-        fprintf(stderr, "ps: Cannot access /proc\n");
-        return;
-    }
 
-    struct dirent* dent = readdir(pd);
-    struct stat user_info;
-    printf("USER%.*sPID%.*sCOMMAND", USER_WIDTH-4, LONGSPACESTR, PID_WIDTH-3, LONGSPACESTR);
-    while (dent != 0)
-    {
-        if (strcmp(dent->d_name, "self") == 0) {
-            dent = readdir(pd);
-            continue;
-        }
-
-        char user_info_fpath[PATH_MAX];
-        char info_fpath[PATH_MAX];
-        strcpy(user_info_fpath, "/proc/");
-        strcat(user_info_fpath, dent->d_name);
-        strcpy(info_fpath, user_info_fpath);
-        strcat(info_fpath, "/comm");
-
-        FILE *info = fopen(info_fpath, "r");
-        
-        if (info)
-        {
-            if (stat(user_info_fpath, &user_info) == -1)
-            {
-                fprintf(stderr, "ps: error %s: %s\n", user_info_fpath, strerror(errno));
-                return;
-            } 
-            struct passwd *pw = getpwuid(user_info.st_uid);
-            if (!pw)
-            {
-                fprintf(stderr, "ps error: %s\n", strerror(errno));
-                return;
-            }
-            char *cmdline = NULL;
-            size_t _ = 0;
-            if (!getline(&cmdline, &_, info))
-            {
-                fprintf(stderr, "ps: Cannot access %s\n", info_fpath);
-            }
-            printf("%s%.*s%s%.*s%s", pw->pw_name, USER_WIDTH-(int)strlen(pw->pw_name), LONGSPACESTR,
-                                     dent->d_name, PID_WIDTH-(int)strlen(dent->d_name), LONGSPACESTR,
-                                     cmdline);
-            free(cmdline);
-            fclose(info);
-        }
-
-        dent = readdir(pd);
-    }
-    closedir(pd);
-}
