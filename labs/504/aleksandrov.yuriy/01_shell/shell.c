@@ -28,7 +28,7 @@ int main()
 				} else if (strcmp(commandlist[0], "pwd") == 0) {
 					exec_pwd();
 				} else if ( strcmp(commandlist[0], "ps") == 0) {
-					execute(commandlist);
+					exec_ps();
 				} else if (strcmp(commandlist[0], "kill") == 0) {
 					exec_kill(commandlist+1);
 				} else if (strcmp(commandlist[0], "exit") == 0) {
