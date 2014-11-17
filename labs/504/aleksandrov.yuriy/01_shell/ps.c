@@ -24,7 +24,7 @@ void exec_ps()
 
     struct dirent* dent = readdir(pd);
     struct stat user_info;
-    printf("USER%.*sPID%.*sCOMMAND", USER_WIDTH-4, LONGSPACESTR, PID_WIDTH-3, LONGSPACESTR);
+    printf("USER%.*sPID%.*sCOMMAND\n", USER_WIDTH-4, LONGSPACESTR, PID_WIDTH-3, LONGSPACESTR);
     while (dent != 0)
     {
         if (strcmp(dent->d_name, "self") == 0) {
