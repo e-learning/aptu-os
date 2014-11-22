@@ -1,2 +1,8 @@
-done
+rejected
 defragmentation implemented
+
+Bugs (don't delete this list):
+* ./allocator
+1000
+FREE 0
++ (?!, must be -)
