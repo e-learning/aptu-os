@@ -1,2 +1,4 @@
-done
+rejected
+
+Some tests aren't passed. Looks like you don't check "P" bit for a page.
 
