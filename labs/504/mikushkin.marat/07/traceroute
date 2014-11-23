@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+import socket
+import sys
+
+def traceroute(hostName):
+    hostAddress = socket.gethostbyname(hostName)
+    port = 33434
+    hopsLimit = 30
+    icmp = socket.getprotobyname('icmp')
+    udp = socket.getprotobyname('udp')
+    ttl = 1
+    
+    while True:
+        receivingSocket = socket.socket(socket.AF_INET, socket.SOCK_RAW, icmp)
+        sendingSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, udp)
+        sendingSocket.setsockopt(socket.SOL_IP, socket.IP_TTL, ttl)
+        receivingSocket.bind(("", port))
+        sendingSocket.sendto(b"", (hostName, port))
+        currentHostAddress = None
+        currentHostName = None
+        try:
+            _, currentHostAddress = receivingSocket.recvfrom(512)
+            currentHostAddress = currentHostAddress[0]
+            try:
+                currentHostName = socket.gethostbyaddr(currentHostAddress)[0]
+            except socket.error:
+                currentHostName = currentHostAddress
+        except socket.error:
+            pass
+        finally:
+            sendingSocket.close()
+            receivingSocket.close()
+
+        if currentHostAddress != None:
+            currentHost = "%s (%s)" % (currentHostName, currentHostAddress)
+        else:
+            currentHost = "*"
+        print("%d\t%s" % (ttl, currentHost))
+
+        ttl += 1
+        if currentHostAddress == hostAddress or ttl > hopsLimit:
+            break
+
+if __name__ == "__main__":
+    traceroute(sys.argv[1])
