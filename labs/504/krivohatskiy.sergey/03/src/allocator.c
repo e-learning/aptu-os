@@ -97,10 +97,6 @@ char* allocator_get_pointer(struct allocator *allocator, int p)
 
 int allocator_free(struct allocator *allocator, int p)
 {
-    if(!p)
-    {
-        return 0;
-    }
     if(p < 1 || p > allocator->allocated_blocks)
     {
         return -1;
