@@ -1,1 +1,14 @@
-done
+rejected
+
+* solution contains memory leak
+* solution definitely has the following bug:
+Input: echo 1000 | ./find_optimum.py 
+Output:
+*** Error in `./sieve_multith': free(): invalid pointer: 0x0000000002279400 ***
+Traceback (most recent call last):
+  File "./find_optimum.py", line 20, in <module>
+    mintime = get_time(n, 1)
+  File "./find_optimum.py", line 13, in get_time
+    return int(out[0].split()[0])
+IndexError: list index out of range
+
