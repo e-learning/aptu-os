@@ -1,1 +1,9 @@
-done
+rejected
+
+* Looks like init command is broken:
+
+echo -e "100\n100" >config
+mkdir test
+./init test
+
+# init hangs; more than 6+k files are created.
