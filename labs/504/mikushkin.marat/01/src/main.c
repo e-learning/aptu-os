@@ -19,6 +19,11 @@ void pwd();
 void ps();
 void kill_by_pid(int pid);
 
+void handler() {
+    puts("\nCtrl-C was pressed.");
+}
+
+
 int parse_input(char ** arguments) {
 	char user_input[MAX_USER_COMMAND_LEN];
 
@@ -149,7 +154,9 @@ void kill_by_pid(int pid) {
 }
 
 int main() {
-    char * arguments[MAX_USER_COMMAND_LEN];
+	signal(SIGINT, handler);
+
+	char * arguments[MAX_USER_COMMAND_LEN];
 
 	while (1) {
 		printf("$ ");
