@@ -51,12 +51,10 @@ def find_best_M():
 if __name__ == '__main__':
     #fill_task1_data()
     #fill_task2_data()
-    best_M = find_best_M()
-    print(best_M)
     
-    M_average = 0
+    best_M_average = 0
     for i in range(10):
-        M_average += find_best_M()
+        best_M_average += find_best_M()
         #print(M_average)
-    M_average /= 10
-    print(M_average)
+    best_M_average /= 10
+    print(best_M_average)
