@@ -114,3 +114,5 @@ power management:
 
 2. TASK2_DATA:
 	test_sieve_unith test_sieve_multith работают приерно одинаково при M = 1.
+
+Q1: Please explain your result (I've measured the same and noticed a difference).

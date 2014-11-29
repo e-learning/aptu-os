@@ -1,62 +1,30 @@
 #!/usr/bin/env python3
 
-import os
-import multiprocessing
-import subprocess
+import sys
+import generate_results
 
-def get_time(n, m):
-    if m == 1:
-        out = subprocess.Popen(['./sieve_unith', str(n)], stdout=subprocess.PIPE).communicate()
-    else:
-        out = subprocess.Popen(['./sieve_multith', str(n), str(m)], stdout=subprocess.PIPE).communicate()
-    return float(out[0].split()[0])
-
-def get_time_multith(n, m):
-    out = subprocess.Popen(['./sieve_multith', str(n), str(m)], stdout=subprocess.PIPE).communicate()
-    return float(out[0].split()[0])
-
-def fill_task1_data():
-    task1_data_file = open("TASK1_DATA", "w")
-
+def find_best_M(N):
+    best_M = 1
+    best_result = float("inf")
     for M in range(1, 20 + 1):
-        for N in range(1, 10**5, 1000):
-            result = get_time(N, M)
-            task1_data_file.write(str(M) + "; " + str(N) + "; " + str(result) + "\n")
+        result = generate_results.get_time_multith(N, M)
+        if result < best_result:
+            best_result = result
+            best_M = M
+    return best_M
 
-def fill_task2_data():
-    task1_data_file = open("TASK2_DATA", "w")
-    for N in range(1, 10**5, 1000):
-        result_unith = get_time(N, 1)
-        result_multith = get_time_multith(N, 1)
-        task1_data_file.write(str(result_unith) + " | " + str(result_multith) + "; " + str(N) + "\n")
-
-def find_best_M():
-    task1_data_file = open("TASK1_DATA", "w")
-    
-    M_sum = 0
-    
-    for N in range(1, 10**5 + 1, 1000):
-        best_M = 1
-        best_result = float("inf")
-        for M in range(1, 20 + 1):
-            result = get_time_multith(N, M)
-            if result < best_result:
-                best_result = result
-                best_M = M
-            task1_data_file.write(str(M) + "; " + str(N) + "; " + str(result) + "\n")
-        M_sum += best_M
-    M_average = M_sum / 100
-    return M_average
+def find_best_M_average(N, iterations):
+    best_M_array = []
+    for i in range(iterations):
+        best_M_array.append(find_best_M(N))
+    best_M_array = sorted(best_M_array)
+    #print(best_M_array)
+    return max(set(best_M_array), key = best_M_array.count)
 
 if __name__ == '__main__':
-    #fill_task1_data()
-    #fill_task2_data()
-    best_M = find_best_M()
-    print(best_M)
+    if len(sys.argv) < 2:
+        print("usage: ./find_best_M.py N")
+        exit()
     
-    M_average = 0
-    for i in range(10):
-        M_average += find_best_M()
-        #print(M_average)
-    M_average /= 10
-    print(M_average)
+    N = int(sys.argv[1])
+    print(find_best_M_average(N, 20))

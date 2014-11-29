@@ -119,6 +119,11 @@ unsigned int get_linear_address(uint32_t &offset, uint32_t segment_selector, des
         }
         segment_descriptor = gdt.table[index];
     }
+    uint64_t segment_present_mask = (uint64_t) 0x0000a00000000000;
+
+    if(!(segment_descriptor&segment_present_mask)>>47){
+        throw address_translation_exception();
+    }
     uint64_t base_address_mask1 = (uint64_t) 0x000000ffffff0000;
     uint64_t base_address_mask2 = (uint64_t) 0xff00000000000000;
 

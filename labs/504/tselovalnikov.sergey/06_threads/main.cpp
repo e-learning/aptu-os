@@ -13,7 +13,7 @@ using namespace std;
 bool *prime;
 
 void init_prime(uint64_t n) {
-    memset(prime, true, n * sizeof(*prime));
+    memset(prime, true, (n+1) * sizeof(*prime));
     prime[0] = prime[1] = false;
 }
 
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    prime = (bool *) malloc(N * sizeof(*prime));
+    prime = (bool *) malloc((N+1) * sizeof(*prime));
 
     auto start = chrono::high_resolution_clock::now();
     if (single_thread) {
@@ -153,5 +153,7 @@ int main(int argc, char *argv[]) {
         testIt(N);
     }
     cout << chrono::duration_cast<chrono::microseconds>(finish - start).count() / iterations << " mks\n";
+    if(prime)
+        free(prime);
     return 0;
 }
