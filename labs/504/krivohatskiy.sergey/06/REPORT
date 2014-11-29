@@ -29,15 +29,6 @@ H/W path       Device     Class          Description
 /0/100/1f.2               storage        Lynx Point-LP SATA Controller 1 [AHCI mode]
 /0/100/1f.3               bus            Lynx Point-LP SMBus Controller
 /0/100/1f.6               generic        Lynx Point-LP Thermal
-/0/1           scsi0      storage        
-/0/1/0.0.0     /dev/sda   disk           1TB WDC WD10SPCX-80K
-/0/1/0.0.0/1   /dev/sda1  volume         99MiB Windows FAT volume
-/0/1/0.0.0/2   /dev/sda2  volume         899MiB Windows NTFS volume
-/0/1/0.0.0/3   /dev/sda3  volume         127MiB reserved partition
-/0/1/0.0.0/4   /dev/sda4  volume         372GiB Windows NTFS volume
-/0/1/0.0.0/5   /dev/sda5  volume         59GiB EXT4 volume
-/0/1/0.0.0/6   /dev/sda6  volume         478GiB Windows NTFS volume
-/0/1/0.0.0/7   /dev/sda7  volume         20GiB Windows NTFS volume
 
 
 lscpu
@@ -62,5 +53,3 @@ L1i cache:             32K
 L2 cache:              256K
 L3 cache:              3072K
 NUMA node0 CPU(s):     0-3
-
-Т.к. способ распараллеливание- разбиение массива на блоки, в каждом из которых числа зачеркивает "свой" поток, выйгрыш достигается лишь для больших N. Т.к. иначе затраты на синхронизацию велики по сравнению с временем работы потоков. Оптимальное количество потоков 3- 4. 

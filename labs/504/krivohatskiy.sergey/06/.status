@@ -1,4 +1,4 @@
-rejected
+done
 
 Number of explicitly created threads is bounded by M.
 Your implementation violates this restriction.
