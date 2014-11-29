@@ -34,6 +34,9 @@ if __name__ == '__main__':
     
     plot = subprocess.Popen(['gnuplot'], stdin=subprocess.PIPE)
     plot.communicate(b"""
+    set xlabel "M"
+    set ylabel "N"
+    set zlabel "time"
     splot 'TASK1_DATA' using 1:2:3 '%lf;%lf;%lf' with linespoints pt 0 ps 1 lw 1
     pause 100
     """)
