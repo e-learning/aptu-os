@@ -5,11 +5,13 @@ import generate_results
 
 N_array = generate_results.getNarray()
 
+cores = 4
 def find_best_M(N):
     best_M = 1
     best_result = generate_results.get_time(N, 1)
-    for M in range(1, 20 + 1):
-        result = generate_results.get_time_multith(N, M)
+    for M in range(1, (cores + 1) + 1):
+        #result = generate_results.get_time_multith(N, M)
+        result = sum([generate_results.get_time_multith(N, M) for _ in range(5)]) / 5
         #results = [generate_results.get_time_multith(N, M) for _ in range(21)]
         #results = sorted(results)
         #print(results)
