@@ -2,6 +2,9 @@
 
 import subprocess
 
+def getNarray():
+    return [1 * 10**4, 1 * 10**5, 2 * 10**7, 5 * 10**7] 
+
 def get_time(n, m):
     if m == 1:
         out = subprocess.Popen(['./sieve_unith', str(n)], stdout=subprocess.PIPE).communicate()
@@ -16,14 +19,19 @@ def get_time_multith(n, m):
 def fill_task1_data():
     task1_data_file = open("TASK1_DATA", "w")
 
+    N_array = getNarray()
+
     for M in range(1, 20 + 1):
-        for N in range(1, 10**5, 1000):
+        for N in N_array:
             result = get_time(N, M)
             task1_data_file.write(str(M) + "; " + str(N) + "; " + str(result) + "\n")
 
 def fill_task2_data():
     task1_data_file = open("TASK2_DATA", "w")
-    for N in range(1, 10**5, 1000):
+    
+    N_array = getNarray()
+    
+    for N in N_array:
         result_unith = get_time(N, 1)
         result_multith = get_time_multith(N, 1)
         task1_data_file.write(str(result_unith) + " | " + str(result_multith) + "; " + str(N) + "\n")
