@@ -1,25 +1,29 @@
 #!/usr/bin/env python3
 
 import sys
+import multiprocessing
 import generate_results
+
+N_array = generate_results.getNarray()
+
+cores = multiprocessing.cpu_count()
 
 def find_best_M(N):
     best_M = 1
-    best_result = float("inf")
-    for M in range(1, 20 + 1):
+    best_result = generate_results.get_time(N, 1)
+    for M in range(1, cores + 1):
         result = generate_results.get_time_multith(N, M)
+        #results = [generate_results.get_time_multith(N, M) for _ in range(40)]
+        #result = max(set(results), key = results.count)
+        #results = [generate_results.get_time_multith(N, M) for _ in range(21)]
+        #results = sorted(results)
+        #print(results)
+        #result = results[10]
+        #print(str(M) + " " + str(result))
         if result < best_result:
             best_result = result
             best_M = M
     return best_M
-
-def find_best_M_average(N, iterations):
-    best_M_array = []
-    for i in range(iterations):
-        best_M_array.append(find_best_M(N))
-    best_M_array = sorted(best_M_array)
-    #print(best_M_array)
-    return max(set(best_M_array), key = best_M_array.count)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -27,4 +31,4 @@ if __name__ == '__main__':
         exit()
     
     N = int(sys.argv[1])
-    print(find_best_M_average(N, 20))
+    print(find_best_M(N))
