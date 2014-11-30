@@ -91,7 +91,7 @@ int logical_address_translation(unsigned address, unsigned* logical_address)
 	base |= (segment_discriptor >> 16)& 0x00ffffff;
 	base |= ((segment_discriptor >> 24) & 0x000000ff) << 24;
 	unsigned short P = (segment_discriptor >> 47) & 0x00000001;
-	unsigned short G = (segment_discriptor >> 23) & 0x00000001;
+	unsigned short G = (segment_discriptor >> (23 + 32)) & 0x00000001;
 	if (P == 0) return -1;
 	unsigned max_offset;
 	if (G)

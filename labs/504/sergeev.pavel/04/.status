@@ -6,3 +6,5 @@ A: AFAIU granularity bit is set. Run in terminal the following (obtain the 55th 
 36028797018963968
 
 FYI committed implementation is false-negative (returns INVALID even if address can be calculated).
+
+fixed.
