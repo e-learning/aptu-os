@@ -239,8 +239,8 @@ unsigned idle(FILE* output, unsigned time)
 			min_dur = dur;
 		}
 	}
-	update_io_tasks(dur);
-	return dur;
+	update_io_tasks(min_dur);
+	return min_dur;
 }
 
 int all_tasks_complited()
@@ -262,14 +262,14 @@ void run_scheduler(FILE* output)
 	{
 		update_statuses(current_time);
 		if (all_tasks_complited()) break;
-		task=select_task(current_time);
+		task = select_task(current_time);
 		if (task)
 		{
-			current_time+=run_task(output, current_time, task);
+			current_time += run_task(output, current_time, task);
 		}
 		else
 		{
-			current_time+=idle(output, current_time);
+			current_time += idle(output, current_time);
 		}
 	}
 }
