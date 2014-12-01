@@ -5,16 +5,14 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
+
 #include "constants.h"
 #include "ps.h"
 #include "ls.h"
 #include "parse_input.h"
+#include "pwd.h"
 
-char * get_current_dir_name();
 int kill(pid_t pid, int sig);
-
-void pwd();
-//void ps();
 void kill_by_pid(int pid);
 
 void handler() {
@@ -59,12 +57,6 @@ void execute(int number_of_arguments, char ** arguments) {
 	} else if (!found_ampersand) {
 		waitpid(pid, NULL, 0);
 	}
-}
-
-void pwd() {
-	char * directory = get_current_dir_name();
-	printf("%s\n", directory);
-	free(directory);
 }
 
 void kill_by_pid(int pid) {
