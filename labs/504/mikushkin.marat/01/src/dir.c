@@ -1,9 +1,16 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/wait.h>
 #include "dir.h"
+#include "constants.h"
 
-void out_dir()
+void out_dir(char * cmd1, char * cmd2)
 {
 	pid_t pid;
-	char buf[BUFSIZE];
 	int fd;
 
 	pid = fork();
@@ -13,10 +20,12 @@ void out_dir()
 		dup(fd);
 		execlp(cmd1,cmd1,NULL);
 	} else {
-		wait();
+		//wait();
+		wait(NULL);
 	}
 }
-void in_dir()
+
+void in_dir(char * cmd1, char * cmd2)
 {
 
 	pid_t pid;
@@ -30,6 +39,7 @@ void in_dir()
 		dup(fd);
 		execlp(cmd1,cmd1,NULL);
 		}
-	else
+	else {
 		wait(pid);
+	}
 }

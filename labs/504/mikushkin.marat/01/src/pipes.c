@@ -1,6 +1,13 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
 #include "pipes.h"
 
-void pipes()
+void pipes(char * cmd1, char * cmd2)
 {
 	pid_t pid,pid1;
 	int pip_fd[2];

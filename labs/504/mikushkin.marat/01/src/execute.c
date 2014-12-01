@@ -11,16 +11,24 @@
 #include "ls.h"
 #include "ps.h"
 
-void execute(int number_of_arguments, char * cmd1, char * cmd2)
+void execute1(char * cmd1)
 {
 	pid_t pid;
 	pid = fork();
 	if(pid == 0) {
-		if (number_of_arguments == 4) {
-			execlp(cmd1,cmd1,cmd2,NULL);
-		} else if (number_of_arguments == 3) {
-			execlp(cmd1,cmd1,NULL);
-		}
+		execlp(cmd1,cmd1,NULL);
+	}
+	else {
+		wait(pid);
+	}
+}
+
+void execute2(char * cmd1, char * cmd2)
+{
+	pid_t pid;
+	pid = fork();
+	if(pid == 0) {
+		execlp(cmd1,cmd1,cmd2,NULL);
 	}
 	else {
 		wait(pid);

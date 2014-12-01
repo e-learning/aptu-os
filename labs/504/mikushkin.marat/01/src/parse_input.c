@@ -5,7 +5,7 @@
 #include "parse_input.h"
 #include "constants.h"
 
-int parse_input()
+int parse_input(char * inp_buf, char * cmd1, char * cmd2)
 {
 	int i = 0 ,j = 0, k = 0, val;
 	while(inp_buf[i] != '>' && inp_buf[i] != '<' && inp_buf[i] != '|' && inp_buf[i] != '\n' && inp_buf[i] != ' ') {
