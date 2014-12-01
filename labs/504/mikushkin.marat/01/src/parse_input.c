@@ -5,30 +5,41 @@
 #include "parse_input.h"
 #include "constants.h"
 
-int parse_input(char ** arguments) {
-	char user_input[MAX_USER_COMMAND_LEN];
+int parse_input()
+{
+	int i = 0 ,j = 0, k = 0, val;
+	while(inp_buf[i] != '>' && inp_buf[i] != '<' && inp_buf[i] != '|' && inp_buf[i] != '\n' && inp_buf[i] != ' ') {
+		cmd1[k++] = inp_buf[i++];
+	}
+	cmd1[k] = '\0';
 
-	if (fgets(user_input, MAX_USER_COMMAND_LEN, stdin) == NULL) {
-		return -1;
+	if(inp_buf[i] == '\n') {
+			val = 1;
+			return val;
 	}
 
-	if (strcmp(user_input, "\n") == 0) {
-		return 0;
-	}
-
-	char * token = strtok(user_input, " ");
-	int number_of_arguments = 0;
-	for (; token != NULL; token = strtok(NULL, " ")) {
-		if (token[strlen(token) - 1] == '\n') {
-			token[strlen(token) - 1] = '\0';
+	printf("%s",cmd1);
+	if(inp_buf[i] == ' ')
+		i++;
+	if(inp_buf[i] == '>' || inp_buf[i] == '<' || inp_buf[i] == '|') {
+		switch(inp_buf[i++]) {
+		case '>': val = 2;
+		break;
+		case '<': val = 3;
+		break;
+		case '|': val = 4;
+		break;
 		}
-		arguments[number_of_arguments] = (char *) malloc(strlen(token) + 1);
-		strcpy(arguments[number_of_arguments++], token);
-		if (strcmp(arguments[number_of_arguments - 1], "exit") == 0) {
-			exit(0);
-		}
+	} else {
+		val = 5;
 	}
-	arguments[number_of_arguments] = NULL;
-	free(token);
-	return number_of_arguments;
+
+	if(inp_buf[i] == ' ')
+		i++;
+	while(inp_buf[i] != '\n')
+		cmd2[j++] = inp_buf[i++];
+	cmd2[j] = '\0';
+	printf("%s",cmd2);
+	return val;
+
 }
