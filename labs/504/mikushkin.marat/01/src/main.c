@@ -9,6 +9,9 @@
 #include "handler.h"
 
 int main() {
+	char cmd1[MAX];
+	char cmd2[MAX];
+
 	signal(SIGINT, handler);
 
 	char * arguments[MAX_USER_COMMAND_LEN];
