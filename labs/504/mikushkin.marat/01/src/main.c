@@ -10,10 +10,7 @@
 #include "parse_input.h"
 #include "execute.h"
 #include "kill_by_pid.h"
-
-void handler() {
-    puts("\nCtrl-C was pressed.");
-}
+#include "handler.h"
 
 int main() {
 	signal(SIGINT, handler);
