@@ -9,17 +9,10 @@
 #include "constants.h"
 #include "parse_input.h"
 #include "execute.h"
-
-int kill(pid_t pid, int sig);
+#include "kill_by_pid.h"
 
 void handler() {
     puts("\nCtrl-C was pressed.");
-}
-
-void kill_by_pid(int pid) {
-	if (kill(pid, 9) == -1) {
-		perror("");
-	}
 }
 
 int main() {
