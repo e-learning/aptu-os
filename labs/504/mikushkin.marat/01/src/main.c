@@ -4,15 +4,14 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <dirent.h>
 #include <signal.h>
 #include "constants.h"
 #include "ps.h"
+#include "ls.h"
 
 char * get_current_dir_name();
 int kill(pid_t pid, int sig);
 
-void ls();
 void pwd();
 //void ps();
 void kill_by_pid(int pid);
@@ -87,25 +86,6 @@ void execute(int number_of_arguments, char ** arguments) {
 		}
 	} else if (!found_ampersand) {
 		waitpid(pid, NULL, 0);
-	}
-}
-
-void ls() {
-	DIR * directory;
-
-	if ((directory = opendir("."))) {
-		struct dirent * content;
-
-		while ((content = readdir(directory))) {
-			if (strcmp(content->d_name, ".") != 0 && strcmp(content->d_name, "..") != 0) {
-				printf("%s\n", content->d_name);
-			}
-		}
-		closedir(directory);
-		free(content);
-	} else {
-		free(directory);
-		perror("");
 	}
 }
 
