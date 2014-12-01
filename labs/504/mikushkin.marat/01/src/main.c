@@ -8,23 +8,18 @@
 #include "kill_by_pid.h"
 #include "handler.h"
 
-int main() {
-	char cmd1[MAX];
-	char cmd2[MAX];
+typedef void (*fun)(void);
 
-	signal(SIGINT, handler);
+int main()
+{
+	int i;
+	fun ptr_array[5] = {normal, out_dir, in_dir, pip,exe_cu};
 
-	char * arguments[MAX_USER_COMMAND_LEN];
-
-	while (1) {
-		printf("$ ");
-		int number_of_arguments = parse_input(arguments);
-		execute(number_of_arguments, arguments);
-
-		for (int i = 0; i < number_of_arguments; ++i) {
-			free(arguments[i]);
-		}
+	printf("$ ");
+	while(fgets(inp_buf, sizeof(inp_buf), stdin) != NULL) {
+			i = parse();
+			(*ptr_array[i-1])();
+			printf("$ ");
 	}
-
-	return 0;
+	return EXIT_SUCCESS;
 }
