@@ -47,13 +47,20 @@ uint32_t read_thread_count(const char *str)
 }
 
 
-void threadf(bit_array &sieve, uint64_t prime, uint64_t left_bound, uint64_t right_bound)
+void threadf(bit_array &sieve, uint64_t left_bound, uint64_t right_bound)
 {
-    for (uint64_t i = (left_bound / prime) * prime; i <= right_bound; i += prime)
+
+    for (uint64_t j = 2; j * j <= right_bound; ++j)
     {
-        if (i < left_bound)
-            continue;
-        sieve.set(i, true);
+        if (!sieve.get(j))
+        {
+            for (uint64_t i = max((left_bound / j) * j, j * j); i <= right_bound; i += j)
+            {
+                if (i < left_bound)
+                    continue;
+                sieve.set(i, true);
+            }
+        }
     }
 }
 
@@ -119,28 +126,24 @@ int main(int argc, const char **argv)
 
     stack<thread> active_thread;
 
-    for (uint64_t i = 2; i * i < limit; ++i)
+    uint64_t count_to_thread = limit / threads_count;
+    uint64_t left_bound = 3;
+    uint64_t right_bound;
+    for (uint32_t j = 1; j < threads_count; ++j)
     {
-        if (!sieve.get(i))
-        {
-            uint64_t count_to_thread = (limit - i * i) / threads_count;
-            uint64_t left_bound = i * i;
-            uint64_t right_bound;
-            for (uint32_t j = 1; j < threads_count; ++j)
-            {
-                left_bound  = (left_bound / 8) * 8;
-                right_bound = min(((left_bound + count_to_thread) / 8 + 1) * 8, limit);
-                active_thread.push(thread(threadf, ref(sieve), i, left_bound, right_bound));
-                left_bound  = right_bound + 8;
-            }
-            active_thread.push(thread(threadf, ref(sieve), i, left_bound, limit));
-            while (!active_thread.empty())
-            {
-                thread &thr = active_thread.top();
-                thr.join();
-                active_thread.pop();
-            }
-        }
+        left_bound  = (left_bound / 8) * 8;
+        right_bound = min(((left_bound + count_to_thread) / 8 + 1) * 8, limit);
+        cerr << left_bound << " "  << right_bound << endl;
+        active_thread.push(thread(threadf, ref(sieve), left_bound, right_bound));
+        left_bound  = right_bound;
+    }
+    active_thread.push(thread(threadf, ref(sieve), left_bound, limit));
+    cerr << left_bound << " "  << limit << endl;
+    while (!active_thread.empty())
+    {
+        thread &thr = active_thread.top();
+        thr.join();
+        active_thread.pop();
     }
 
     if (print)
