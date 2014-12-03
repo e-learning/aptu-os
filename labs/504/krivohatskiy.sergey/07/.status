@@ -1,3 +1,7 @@
-done
+rejected
 
+The app hangs/returns '------' on 8.8.8.8 input (Ubuntu 14.04).
+If I run system's traceroute simultaneously -- it magically returns correct output.
+This must be fixed.
+---
 1 week after deadline
