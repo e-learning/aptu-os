@@ -1,4 +1,15 @@
-done
+rejected
+
+Unable to build with make command.
+
+06> make
+gcc -c -o bin/sieve_unith.o src/sieve_unith.c -Isrc -Wall -Werror -lm
+Assembler messages:
+Fatal error: can't create bin/sieve_unith.o: No such file or directory
+make: *** [bin/sieve_unith.o] Error 1
+
+---
+
 clarification is required.
 
 Questions have been added in REPORT
