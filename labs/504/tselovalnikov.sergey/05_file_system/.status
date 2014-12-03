@@ -1,5 +1,17 @@
-rejected
+done
 
+Исправил (stselovalnikov)
+* ls for "root" directory is broken
+mkdir test_root
+echo -e "1024\n100" > test_root/config
+./init test_root
+./format test_root
+./ls test_root /
+terminate called after throwing an instance of 'std::runtime_error'
+  what():  Empty directory! '/'
+Aborted (core dumped)
+
+---
 * Looks like init command is broken:
 
 echo -e "100\n100" >config
@@ -7,3 +19,5 @@ mkdir test
 ./init test
 
 # init hangs; more than 6+k files are created.
+
+UPD (Artur): my bad, wrong test
