@@ -1,1 +1,13 @@
-done
+rejected
+
+Reason: build error
+
+4> make
+g++ -Werror -Wall  -std=c++11 -c main.cpp
+main.cpp: In function ‘unsigned int get_linear_address(uint32_t&, uint32_t, descriptor_table&, descriptor_table&)’:
+main.cpp:124:52: error: right shift count >= width of type [-Werror]
+     if(!(segment_descriptor&segment_present_mask)>>47){
+                                                    ^
+cc1plus: all warnings being treated as errors
+make: *** [main.o] Error 1
+
