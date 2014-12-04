@@ -17,7 +17,7 @@ int tokenize(char * string)
     token = strtok(command, " \t\n");
     while(token)
     {
-        if ((token_len = strlen(token)) > 1)
+        if ((token_len = strlen(token)) > 0)
         {
             tokens[token_count] = (char *) malloc(token_len);
             strcpy(tokens[token_count++], token);
@@ -60,9 +60,9 @@ void run_command(int argc, char ** argv)
     }
     else
     {
-        printf("%s", argv[0]);
-        exec_command(argc, argv);
+         exec_command(argc, argv);
     }
+
 }
 
 void run()
@@ -89,8 +89,8 @@ void signal_handler(int sig)
     switch (sig)
     {
         case SIGINT:
-            printf("%d", getpid());
-            break;
+	    printf("SIGINT received\n");
+            exit(EXIT_SUCCESS);
         default:
             break;
     }
