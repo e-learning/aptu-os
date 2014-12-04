@@ -1,46 +1,75 @@
 #!/usr/bin/env python3
 
 import socket
+import os
 import sys
+import struct
+import time
 
-def traceroute(hostName):
-    hostAddress = socket.gethostbyname(hostName)
-    port = 33434
-    hopsLimit = 30
-    icmp = socket.getprotobyname('icmp')
-    udp = socket.getprotobyname('udp')
-    ttl = 1
-    
-    while True:
-        receivingSocket = socket.socket(socket.AF_INET, socket.SOCK_RAW, icmp)
-        sendingSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, udp)
-        sendingSocket.setsockopt(socket.SOL_IP, socket.IP_TTL, ttl)
-        receivingSocket.bind(("", port))
-        sendingSocket.sendto(b"", (hostName, port))
-        currentHostAddress = None
-        currentHostName = None
-        try:
-            _, currentHostAddress = receivingSocket.recvfrom(512)
-            currentHostAddress = currentHostAddress[0]
-            try:
-                currentHostName = socket.gethostbyaddr(currentHostAddress)[0]
-            except socket.error:
-                currentHostName = currentHostAddress
-        except socket.error:
-            pass
-        finally:
-            sendingSocket.close()
-            receivingSocket.close()
+ICMP_ECHO_REQUEST = 8
+MAX_HOPS = 30
+TIMEOUT = 2.0
+TRIES = 2
 
-        if currentHostAddress != None:
-            currentHost = "%s (%s)" % (currentHostName, currentHostAddress)
-        else:
-            currentHost = "*"
-        print("%d\t%s" % (ttl, currentHost))
 
-        ttl += 1
-        if currentHostAddress == hostAddress or ttl > hopsLimit:
-            break
+def calculate_checksum(string):
+	checksum = 0
+	limit = (len(string) / 2) * 2
+	count = 0
+	while count < limit:
+		value = string[count + 1] * 256 + string[count]
+		checksum += value
+		checksum &= 0xffffffff
+		count += 2
+	if limit < len(string):
+		checksum += ord(string[len(string) - 1])
+		checksum &= 0xffffffff
+	checksum = (checksum >> 16) + (checksum & 0xffff)
+	checksum += (checksum >> 16)
+	answer = ~checksum
+	answer &= 0xffff
+	answer = answer >> 8 | (answer << 8 & 0xff00)
+	return answer
 
-if __name__ == "__main__":
-    traceroute(sys.argv[1])
+
+def build_packet():
+	checksum = 0
+	id = os.getpid() & 0xFFFF
+	header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, checksum, id, 1)
+	data = struct.pack("d", time.time())
+	checksum = calculate_checksum(header + data)
+	checksum = socket.htons(checksum)
+	header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, checksum, id, 1)
+	packet = header + data
+	return packet
+
+
+def show_route_path_to(hostname):
+	for ttl in range(1, MAX_HOPS):
+		for tries in range(TRIES):
+			icmp = socket.getprotobyname("icmp")
+			current_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, icmp)
+			current_socket.setsockopt(socket.IPPROTO_IP, socket.IP_TTL, struct.pack('I', ttl))
+			current_socket.settimeout(TIMEOUT)
+			try:
+				packet = build_packet()
+				current_socket.sendto(packet, (hostname, 0))
+				received_packet, address = current_socket.recvfrom(1024)
+			except socket.timeout:
+				continue
+			else:
+				icmp_header_content = received_packet[20:28]
+				unpack_type = struct.unpack("bbHHh", icmp_header_content)[0]
+				if unpack_type in [11, 3, 0]:
+					print(ttl, address[0])
+					if unpack_type == 0:
+						return
+				else:
+					raise Exception("Unknown icmp type")
+				break
+			finally:
+				current_socket.close()
+
+
+if __name__ == '__main__':
+	show_route_path_to(sys.argv[1])
