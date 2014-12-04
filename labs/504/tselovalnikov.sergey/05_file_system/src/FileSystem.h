@@ -401,6 +401,14 @@ public:
     }
 
     void file_info(string file_name) {
+        if(file_name == "/") {
+            for (INode nd : inodes) {
+                if (nd.parent == -1) {
+                    cout << nd.filename << " " << (nd.is_directory ? 'd' : 'f') << endl;
+                }
+            }
+            return;
+        }
         INode node = findINode(file_name);
         if (node.is_directory) {
 

@@ -1,5 +1,17 @@
 rejected
 
+Export/Import is broken
+
+echo -e "1024\n100" > test_root/config
+./init test_root
+./format test_root
+./import test_root import /imprt
+./export test_root /imprt import_restored
+Segmentation fault (core dumped)
+
+Hint: what if we want to store (import) too big file?
+---
+Исправил (stselovalnikov)
 * ls for "root" directory is broken
 mkdir test_root
 echo -e "1024\n100" > test_root/config

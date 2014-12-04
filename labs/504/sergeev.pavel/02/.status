@@ -1,4 +1,19 @@
-done
+rejected
+
+The following test failed:
+
+5
+PROC1 0 10 1 1
+PROC2 0 10 6 1
+
+Output:
+
+0 PROC1
+1 PROC2
+6 PROC1 (?! -- must be PROC2)
+<cropped>
+
+---
 
 The following test failed:
 
