@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 #include "utils.h"
 
 ProcessCommunicationType parse(int numberOfArguments, char** arguments, char** command1, char** command2) {
@@ -151,6 +152,70 @@ void runCommand(int numberOfArguments, char** arguments) {
 		if (isAmpersand) {
 			arguments[numberOfArguments - 1] = NULL;
 			numberOfArguments--;
+		}
+
+		if (strcmp(arguments[0], "exit") == 0) {
+			exit(0);
+			return;
+		} else if (strcmp(arguments[0], "pwd") == 0) {
+			char * directory = get_current_dir_name();
+			printf("%s\n", directory);
+			free(directory);
+			exit(0);
+			return;
+		} else if (strcmp(arguments[0], "kill") == 0) {
+			kill(atoi(arguments[1]), SIGTERM);
+			exit(0);
+			return;
+		} else if (strcmp(arguments[0], "ls") == 0) {
+			DIR * directory;
+			if ((directory = opendir("."))) {
+				struct dirent * content;
+
+				while ((content = readdir(directory))) {
+					if (strcmp(content->d_name, ".") != 0 && strcmp(content->d_name, "..") != 0) {
+						printf("%s\n", content->d_name);
+					}
+				}
+				closedir(directory);
+				free(content);
+			} else {
+				free(directory);
+				perror("");
+			}
+			exit(0);
+			return;
+		} else if (strcmp(arguments[0], "ps") == 0) {
+			DIR * directory;
+
+				if ((directory = opendir("/proc"))) {
+					struct dirent * content;
+
+					while ((content = readdir(directory))) {
+						if (atoi(content->d_name)) {
+							char process_path[100];
+							strcpy(process_path, "/proc/");
+							strcat(process_path, content->d_name);
+							strcat(process_path, "/comm");
+
+							char process_name[100];
+							FILE * f = fopen(process_path, "r");
+							fgets(process_name, 100, f);
+
+							printf("%s:  %s", content->d_name, process_name);
+
+							fclose(f);
+						}
+					}
+					free(content);
+					closedir(directory);
+				} else {
+					free(directory);
+					perror("");
+				}
+
+			exit(0);
+			return;
 		}
 
 		execvp(arguments[0], arguments);
