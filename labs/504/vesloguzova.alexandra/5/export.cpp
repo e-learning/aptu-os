@@ -1,5 +1,6 @@
 #include <iostream>
-#include "fs.h"
+#include <exception>
+#include "file_system.h"
 
 int main(const int argc, const char *argv[])
 {
@@ -7,14 +8,16 @@ int main(const int argc, const char *argv[])
     {
         if (argc < 4)
         {
-            std::cout << "usage: export <root> <system_file> <host_file> " << std::endl;
+            std::cout << "Usage: export <root> <system_file> <host_file> " << std::endl;
             return 0;
         } else
         {
-            file_system(argv[1]).fexport(argv[2], argv[3]);
+            file_system(argv[1]).file_export(argv[2], argv[3]
+            );
         }
         return 0;
-    } catch (std::exception &e)
+    }
+    catch (std::exception &e)
     {
         std::cerr << e.what() << std::endl;
         return 1;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <ctime>
+#include <time.h>
 #include <vector>
 #include <iostream>
 #include <iterator>
@@ -19,21 +19,21 @@ public:
 
     void init();
 
-    void format();
-
-    void import(std::string host_file, std::string fs_file);
-
-    void fexport(std::string fs_file, std::string host_file);
+    void move(std::string src, std::string dst);
 
     void copy(std::string src, std::string dest);
 
-    void ls(std::string filename);
+    void file_export(std::string filesystem_file, std::string host_file);
+
+    void format();
+
+    void ls(std::string path);
 
     void mkdir(std::string path);
 
-    void move(std::string src, std::string dst);
-
     void rm(std::string path);
+
+    void import(std::string host_file, std::string filesystem_file);
 
 
 private:
@@ -41,12 +41,12 @@ private:
 
     void rm(file_descriptor file);
 
-    config_info read_config();
+    filesystem_config read_config();
 
-    meta_info meta;
+    meta_inf meta;
     bool initialized;
     std::string _root;
-    const config_info config;
+    const filesystem_config config;
 
     std::string get_block_name(int block_id);
 
@@ -56,17 +56,17 @@ private:
 
     void reserve_block(int n);
 
-    void write_data(void *data, int size, block_t *first_block);
+    void write_data(void *data, int size, block *first_block);
 
-    void read_data(void *data, int size, block_t *first_block);
+    void read_data(void *data, int size, block *first_block);
 
-    void write_meta();
+    void write_metainformation();
 
-    void read_meta();
+    void read_metainformation();
 
-    void update_descriptor(file_descriptor &fd, block_t *block);
+    void update_descriptor(file_descriptor &fd, block *block);
 
-    block_t *get_free_block();
+    block *get_free_block();
 
     friend class dir_iterator;
 };
@@ -74,8 +74,8 @@ private:
 class dir_iterator : std::iterator<std::forward_iterator_tag, file_descriptor>
 {
 public:
-    dir_iterator(file_system &file_sys) :
-            fs(file_sys)
+    dir_iterator(file_system &fs) :
+            _fs(fs)
     {
         p = 0;
     }
@@ -87,7 +87,7 @@ public:
     dir_iterator operator++(int)
     {
         dir_iterator tmp(*this);
-        (*this).operator++();
+        operator++();
         return tmp;
     }
 
@@ -98,7 +98,7 @@ public:
 
     bool operator!=(const dir_iterator &rhs)
     {
-        return !((*this) == rhs);
+        return p->filename != rhs.p->filename;
     }
 
     file_descriptor &operator*()
@@ -109,7 +109,6 @@ public:
 
 private:
     file_descriptor *p;
-    file_system &fs;
+    file_system &_fs;
 };
-
 
