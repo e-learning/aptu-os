@@ -2,6 +2,7 @@
 #include <string.h>
 #include <dirent.h>
 #include "utils.h"
+#include "ps.h"
 
 ProcessCommunicationType parse(int numberOfArguments, char** arguments, char** command1, char** command2) {
 	ProcessCommunicationType result = ANOTHER;
@@ -186,34 +187,7 @@ void runCommand(int numberOfArguments, char** arguments) {
 			exit(0);
 			return;
 		} else if (strcmp(arguments[0], "ps") == 0) {
-			DIR * directory;
-
-				if ((directory = opendir("/proc"))) {
-					struct dirent * content;
-
-					while ((content = readdir(directory))) {
-						if (atoi(content->d_name)) {
-							char process_path[100];
-							strcpy(process_path, "/proc/");
-							strcat(process_path, content->d_name);
-							strcat(process_path, "/comm");
-
-							char process_name[100];
-							FILE * f = fopen(process_path, "r");
-							fgets(process_name, 100, f);
-
-							printf("%s:  %s", content->d_name, process_name);
-
-							fclose(f);
-						}
-					}
-					free(content);
-					closedir(directory);
-				} else {
-					free(directory);
-					perror("");
-				}
-
+			ps();
 			exit(0);
 			return;
 		}
