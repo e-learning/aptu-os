@@ -1,4 +1,7 @@
-done
+rejected
 
+Please add explanation of TEST1_DATA and TEST2_DATA results to REPORT file.
+
+--
 Number of explicitly created threads is bounded by M.
 Your implementation violates this restriction.

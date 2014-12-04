@@ -113,7 +113,12 @@ bitset<32> logical_to_linear(bitset<32> logical, bitset<16> selector)
     }
 
     uint64_t offset = logical.to_ulong();
-    if (offset > max_offset || offset < min_offset)
+    if (desc[55])
+    {
+        if ((offset >> 12) << 12 > max_offset || offset < min_offset)
+            invalid();
+    }
+    else if (offset > max_offset || offset < min_offset)
         invalid();
 
     uint64_t linear = base.to_ulong() + offset;
@@ -125,8 +130,14 @@ bitset<32> logical_to_linear(bitset<32> logical, bitset<16> selector)
 
 uint32_t linear_to_phys(bitset<32> linear)
 {
+    uint32_t dir  = (linear >> 22).to_ulong();
+    if (dir >= pd.size())
+        invalid();
     uint32_t page = ((linear << 10) >> 22).to_ulong();
     if (page >= pt.size())
+        invalid();
+
+    if ((pd[dir].to_ulong() & 1) == 0 || (pt[page].to_ulong() & 1) == 0)
         invalid();
 
     uint32_t phys = (pt[page] >> 12).to_ulong();

@@ -1,0 +1,19 @@
+rejected
+
+Build error.
+
+06_sieve> make
+g++     sieve_unith.cpp   -o sieve_unith
+In file included from /usr/include/c++/4.8/thread:35:0,
+                 from sieve_unith.cpp:4:
+/usr/include/c++/4.8/bits/c++0x_warning.h:32:2: error: #error This file requires compiler and library support for the ISO C++ 2011 standard. This support is currently experimental, and must be enabled with the -std=c++11 or -std=gnu++11 compiler options.
+ #error This file requires compiler and library support for the \
+  ^
+sieve_unith.cpp: In function ‘int main(int, char**)’:
+sieve_unith.cpp:15:25: error: ‘atoi’ was not declared in this scope
+         n = atoi(argv[1]);
+                         ^
+sieve_unith.cpp:19:25: error: ‘atoi’ was not declared in this scope
+         n = atoi(argv[2]);
+                         ^
+make: *** [sieve_unith] Error 1

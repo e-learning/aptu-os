@@ -1,15 +1,28 @@
-CFLAGS=-Werror -Wall
 CC=gcc
+FLAGS=-Wall -Werror
+OBJECTS=main.o sh.o commands.o utils.o
 
 all: shell
 
-shell: main.o 
-	$(CC) main.o -o shell
+main.o: main.c sh.h 
+	$(CC) $(FLAGS) -c main.c
 
-main.o: main.c 
-	$(CC) $(CFLAGS) -c main.c
+sh.o: sh.c sh.h commands.c
+	$(CC) $(FLAGS) -c sh.c
+
+utils.o: utils.c utils.h
+	$(CC) $(FLAGS)  -c utils.c 
+	
+commands.o: commands.c commands.h utils.c
+	$(CC) $(FLAGS) -fPIC -c commands.c
+
+libcommands.so: commands.o
+	$(CC) -shared -o libcommands.so commands.o
+
+shell: main.o sh.o libcommands.so utils.o
+	$(CC) $(FLAGS) main.o sh.o utils.o -L. -lcommands -o shell
 
 .PHONY: clean
 
 clean:
-	rm -rf *o 
+	rm -f shell $(OBJECTS) libcommands.so

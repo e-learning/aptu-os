@@ -36,8 +36,8 @@ void bit_array::set(uint64_t pos, bool val)
     }
     else
     {
-        data[idx] = ~data[idx];
-        data[idx] |= (1 << offset);
-        data[idx] = ~data[idx];
+        uint8_t temp = ~data[idx];
+        temp |= (1 << offset);
+        data[idx] = ~temp;
     }
 }
