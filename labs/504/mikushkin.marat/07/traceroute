@@ -10,20 +10,16 @@ ICMP_ECHO_REQUEST = 8
 MAX_HOPS = 30
 TIMEOUT = 2.0
 TRIES = 2
-
+PACKET_FORMAT = "bbHHh"
 
 def calculate_checksum(string):
 	checksum = 0
-	limit = (len(string) / 2) * 2
-	count = 0
-	while count < limit:
+	limit = (len(string) // 2) * 2
+	for count in range(0, limit, 2):
 		value = string[count + 1] * 256 + string[count]
-		checksum += value
-		checksum &= 0xffffffff
-		count += 2
+		checksum = (checksum + value) & 0xffffffff
 	if limit < len(string):
-		checksum += ord(string[len(string) - 1])
-		checksum &= 0xffffffff
+		checksum = (checksum + string[-1]) & 0xffffffff
 	checksum = (checksum >> 16) + (checksum & 0xffff)
 	checksum += (checksum >> 16)
 	answer = ~checksum
@@ -35,11 +31,11 @@ def calculate_checksum(string):
 def build_packet():
 	checksum = 0
 	id = os.getpid() & 0xFFFF
-	header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, checksum, id, 1)
+	header = struct.pack(PACKET_FORMAT, ICMP_ECHO_REQUEST, 0, checksum, id, 1)
 	data = struct.pack("d", time.time())
 	checksum = calculate_checksum(header + data)
 	checksum = socket.htons(checksum)
-	header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, checksum, id, 1)
+	header = struct.pack(PACKET_FORMAT, ICMP_ECHO_REQUEST, 0, checksum, id, 1)
 	packet = header + data
 	return packet
 
@@ -59,7 +55,7 @@ def show_route_path_to(hostname):
 				continue
 			else:
 				icmp_header_content = received_packet[20:28]
-				unpack_type = struct.unpack("bbHHh", icmp_header_content)[0]
+				unpack_type = struct.unpack(PACKET_FORMAT, icmp_header_content)[0]
 				if unpack_type in [11, 3, 0]:
 					print(ttl, address[0])
 					if unpack_type == 0:
