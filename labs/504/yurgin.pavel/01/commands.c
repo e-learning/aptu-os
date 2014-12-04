@@ -9,6 +9,7 @@
 #include "wait.h"
 
 #define BUFFER_SIZE 100
+#define MAX_PATH 100
 
 void ls_command(int argc, char ** argv)
 {
@@ -52,7 +53,7 @@ void ps_command(int argc, char ** argv)
         perror("Unable to open /proc");
     }
     printf("%.12s%25s\n", "PPID", "COMM");
-    char * proc_path = (char*) malloc(100);
+    char * proc_path = (char*) malloc(MAX_PATH);
     while((entry = readdir(dir)) != NULL)
         if (entry->d_type == DT_DIR && is_num(entry->d_name)) {
 
@@ -73,16 +74,17 @@ void ps_command(int argc, char ** argv)
             close(comm);
         }
     free(proc_path);
-    printf("\n");
 }
 
 void kill_command(int argc, char ** argv)
 {
     pid_t pid;
     unsigned signal;
+    printf("signal %s, pid %s\n", argv[0], argv[1]);
     if (argc != 2)
     {
         printf("Wrong arguments. Use kill <signal> <pid>\n");
+	printf("Args count %d", argc);
         return;
     }
     if ((sscanf(argv[1],"%u", &pid)) && (sscanf(argv[0], "%u", &signal)))
@@ -96,7 +98,7 @@ void kill_command(int argc, char ** argv)
     {
         printf("Wrong arguments. Use kill <signal> <pid>\n");
     }
-    printf("\n");
+    
 }
 
 void exec_command(int argc, char ** argv)
