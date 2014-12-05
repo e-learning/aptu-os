@@ -6,58 +6,60 @@ import sys
 import struct
 import time
 
-ICMP_ECHO_REQUEST = 8
-MAX_HOPS = 30
-TIMEOUT = 2.0
-TRIES = 2
-PACKET_FORMAT = "bbHHh"
 
-def calculate_checksum(string):
-	checksum = 0
-	limit = (len(string) // 2) * 2
-	for count in range(0, limit, 2):
-		value = string[count + 1] * 256 + string[count]
-		checksum = (checksum + value) & 0xffffffff
-	if limit < len(string):
-		checksum = (checksum + string[-1]) & 0xffffffff
-	checksum = (checksum >> 16) + (checksum & 0xffff)
-	checksum += (checksum >> 16)
-	answer = ~checksum
-	answer &= 0xffff
-	answer = answer >> 8 | (answer << 8 & 0xff00)
-	return answer
+class Packet:
+	@staticmethod
+	def __calculate_checksum(string):
+		checksum = 0
+		limit = (len(string) // 2) * 2
+		for count in range(0, limit, 2):
+			value = string[count + 1] * 256 + string[count]
+			checksum = (checksum + value) & 0xffffffff
+		if limit < len(string):
+			checksum = (checksum + string[-1]) & 0xffffffff
+		checksum = (checksum >> 16) + (checksum & 0xffff)
+		checksum += (checksum >> 16)
+		answer = ~checksum
+		answer &= 0xffff
+		answer = answer >> 8 | (answer << 8 & 0xff00)
+		return answer
+
+	def __init__(self, current_time, packet_format, icmp_echo_request):
+		checksum = 0
+		id = os.getpid() & 0xFFFF
+		header = struct.pack(packet_format, icmp_echo_request, 0, checksum, id, 1)
+		data = struct.pack("d", current_time)
+		checksum = self.__calculate_checksum(header + data)
+		checksum = socket.htons(checksum)
+		header = struct.pack(packet_format, icmp_echo_request, 0, checksum, id, 1)
+		self.__packet = header + data
+		self.__format = packet_format
+
+	def to_string(self):
+		return self.__packet
+
+	def get_format(self):
+		return self.__format
 
 
-def build_packet():
-	checksum = 0
-	id = os.getpid() & 0xFFFF
-	header = struct.pack(PACKET_FORMAT, ICMP_ECHO_REQUEST, 0, checksum, id, 1)
-	data = struct.pack("d", time.time())
-	checksum = calculate_checksum(header + data)
-	checksum = socket.htons(checksum)
-	header = struct.pack(PACKET_FORMAT, ICMP_ECHO_REQUEST, 0, checksum, id, 1)
-	packet = header + data
-	return packet
-
-
-def show_route_path_to(hostname):
-	for ttl in range(1, MAX_HOPS):
-		for tries in range(TRIES):
+def show_route_path_to(hostname, max_hops):
+	for ttl in range(1, max_hops):
+		for tries in range(2):
 			icmp = socket.getprotobyname("icmp")
 			current_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, icmp)
 			current_socket.setsockopt(socket.IPPROTO_IP, socket.IP_TTL, struct.pack('I', ttl))
-			current_socket.settimeout(TIMEOUT)
+			current_socket.settimeout(2.0)
 			try:
-				packet = build_packet()
-				current_socket.sendto(packet, (hostname, 0))
+				packet = Packet(time.time(), "bbHHh", 8)
+				current_socket.sendto(packet.to_string(), (hostname, 0))
 				received_packet, address = current_socket.recvfrom(1024)
 			except socket.timeout:
 				continue
 			else:
 				icmp_header_content = received_packet[20:28]
-				unpack_type = struct.unpack(PACKET_FORMAT, icmp_header_content)[0]
+				unpack_type = struct.unpack(packet.get_format(), icmp_header_content)[0]
 				if unpack_type in [11, 3, 0]:
-					print(ttl, address[0])
+					print(address[0])
 					if unpack_type == 0:
 						return
 				else:
@@ -68,4 +70,4 @@ def show_route_path_to(hostname):
 
 
 if __name__ == '__main__':
-	show_route_path_to(sys.argv[1])
+	show_route_path_to(sys.argv[1], 30)
