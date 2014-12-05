@@ -24,11 +24,11 @@ class Packet:
 		answer = answer >> 8 | (answer << 8 & 0xff00)
 		return answer
 
-	def __init__(self, current_time, packet_format, icmp_echo_request):
+	def __init__(self, creation_time, packet_format, icmp_echo_request):
 		checksum = 0
 		id = os.getpid() & 0xFFFF
 		header = struct.pack(packet_format, icmp_echo_request, 0, checksum, id, 1)
-		data = struct.pack("d", current_time)
+		data = struct.pack("d", creation_time)
 		checksum = self.__calculate_checksum(header + data)
 		checksum = socket.htons(checksum)
 		header = struct.pack(packet_format, icmp_echo_request, 0, checksum, id, 1)
@@ -50,7 +50,7 @@ def show_route_path_to(hostname, max_hops):
 			current_socket.setsockopt(socket.IPPROTO_IP, socket.IP_TTL, struct.pack('I', ttl))
 			current_socket.settimeout(2.0)
 			try:
-				packet = Packet(time.time(), "bbHHh", 8)
+				packet = Packet(creation_time = time.time(), packet_format = "bbHHh", icmp_echo_request = 8)
 				current_socket.sendto(packet.to_string(), (hostname, 0))
 				received_packet, address = current_socket.recvfrom(1024)
 			except socket.timeout:
