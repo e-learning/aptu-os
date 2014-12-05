@@ -142,6 +142,9 @@ public:
         char *content = new char[bytes];
         ifs.read(content, bytes);
         int offset = 0;
+        if(ctx->block_size * to_fill.size() < bytes) {
+            throw runtime_error("Not enought space to import file");
+        }
         for (int i = 0; i < to_fill.size(); i++) {
             ofstream ofs(ctx->root + "/" + to_string(to_fill[i]), ios::out | ios::in | ios::binary);
             if (offset + ctx->block_size > bytes)
@@ -151,7 +154,6 @@ public:
             offset += ctx->block_size;
         }
         delete[] content;
-
         inodes.push_back(node);
         saveINodes();
     }

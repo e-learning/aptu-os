@@ -1,5 +1,6 @@
-rejected
+done
 
+fixed (stselovalnikov)
 Export/Import is broken
 
 echo -e "1024\n100" > test_root/config
