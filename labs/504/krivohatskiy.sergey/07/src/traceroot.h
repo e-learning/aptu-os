@@ -22,7 +22,7 @@ class traceroot
 {
 private:
     static const int MAX_TTL = 30;
-    static const int MAX_TIMEOUT = 10; //Seconds
+    static const int MAX_TIMEOUT = 2; //Seconds
 private:
     traceroot();
     static std::string do_hop(int hops, const std::string &dest_ip);

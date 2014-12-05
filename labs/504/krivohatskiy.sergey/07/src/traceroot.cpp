@@ -104,7 +104,8 @@ std::string traceroot::do_hop(int ttl, const std::string &ip_adress)
     }
 
     // set option header is included with data = false
-    if(setsockopt(raw_socket, IPPROTO_IP, IP_HDRINCL, 0, 0) < 0)
+    int val = 1;
+    if(setsockopt(raw_socket, IPPROTO_IP, IP_HDRINCL, &val, sizeof(int)) < 0)
     {
         close(raw_socket);
         throw traceroot_exception("setsockopt()");
