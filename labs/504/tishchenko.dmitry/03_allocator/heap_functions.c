@@ -13,13 +13,10 @@ inline unsigned short get_block_size(const struct Heap *heap, struct Block *bloc
 
 void init(struct Heap *heap, unsigned short size)
 {
-    heap->memory = malloc(size);
+    heap->memory = calloc(size,sizeof(char));
     heap->size = size;
 
-    //heap->usedBlocks = NULL;
-
     heap->blocksList = (struct Block*)heap->memory;
-    //heap->blocksList->size = size - sizeof(struct Block);
     heap->blocksList->offset = sizeof(struct Block);
     heap->blocksList->isFree = 1;
     heap->blocksList->next = NULL;
@@ -70,7 +67,7 @@ short heap_free(struct Heap *heap, unsigned short offset)
     currentParentBlock = NULL;
     while(currentBlock)
     {
-        if(currentBlock->offset == offset)
+        if((currentBlock->offset == offset) && !(currentBlock->isFree))
         {
             if(!currentParentBlock || !currentParentBlock->isFree)
             {

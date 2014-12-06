@@ -1,4 +1,11 @@
-done
+rejected
+
+Fix ls output format according to spec.
+E.g.
+5> ./ls test_root /
+/ 0 Sat Dec  6 15:08:40 2014
+No output is expected since dir is empty.
+
 ===================================
 rejected
 
