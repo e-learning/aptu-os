@@ -1,4 +1,4 @@
-rejected
+updated 6.12.14
 
 100
 FREE 16
@@ -9,3 +9,9 @@ FREE 16
 * Same compiler, same error. Try the following:
 FREE <sizeof(struct Block) on our machine>
 * Why don't you init malloced memory?
+-------------
+>>FREE <sizeof(struct Block)>
+Воспроизвёл, исправил.
+>>init malloced memory
+Вот этого я не понял. Каким образом её нужно проинициализировать?
+Имеется в виду, что там лежит мусор? Вставил calloc вместо malloc. 
