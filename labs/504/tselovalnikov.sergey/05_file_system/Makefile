@@ -13,3 +13,7 @@ all:
 	${CXX} ${CXXFLAGS} src/*.cpp src/utils/*.cpp src/cmds/rm.cpp -o rm
 	${CXX} ${CXXFLAGS} src/*.cpp src/utils/*.cpp src/cmds/mkdir.cpp -o mkdir
 	    
+
+clean:
+	rm init format import export ls copy move rm mkdir	
+
