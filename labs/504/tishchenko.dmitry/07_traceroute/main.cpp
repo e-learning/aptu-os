@@ -1,4 +1,5 @@
-#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -9,8 +10,6 @@
 #include <linux/ip.h>
 #include <linux/icmp.h>
 
-
-using namespace std;
 
 uint16_t checksum(uint16_t *buffer, int size) {
     ulong cksum = 0;
