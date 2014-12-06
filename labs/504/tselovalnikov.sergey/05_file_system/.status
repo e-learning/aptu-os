@@ -1,4 +1,20 @@
-done
+rejected
+
+0. (Opt) Please add clean target to main that removes build results
+1. (Opt)  Please return user-friendly message in case of failed import.
+
+2. (Crucial) Bug in copy:
+
+echo -e "1024\n100" > test_root/config
+./init test_root
+./format test_root
+./import test_root test_root/config /cfg
+./mkdir test_root /dirA
+./copy test_root /cfg /dirA/cfg
+./ls test_root /dirA
+<empty> (?!)
+
+---
 
 fixed (stselovalnikov)
 Export/Import is broken
