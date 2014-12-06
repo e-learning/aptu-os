@@ -1,4 +1,4 @@
-done
+accepted
 
 0. (Opt) Please add clean target to main that removes build results (done)
 1. (Opt)  Please return user-friendly message in case of failed import.
