@@ -1,4 +1,12 @@
 rejected
 
+03_allocator> ./allocator 
+100
+MAP
+Segmentation fault (core dumped)
+
+---
 Unable to build app with make command.
 Hint: whitespaces in Makefile
+
+Corrected

@@ -52,9 +52,6 @@ int main()
     offset = read_hex_int();
     segment_selector = read_hex_int();
 
-//    cout <<"logical:"<< std::hex << offset << std::endl;
-//    cout<<segment_selector;
-
     descriptor_table GDT = read_descriptor_table();
     descriptor_table LDT = read_descriptor_table();
 
@@ -64,9 +61,8 @@ int main()
     try
     {
         uint32_t linear_address = get_linear_address(offset, segment_selector, GDT, LDT);
-//    cout << "linear_address:"<<linear_address<< std::endl;
         uint32_t physical_address = get_physical_address(linear_address, PDE, PTE);
-        cout << std::hex << physical_address;
+
     } catch (address_translation_exception)
     {
         cout << "INVALID";
@@ -87,7 +83,6 @@ uint32_t get_physical_address(uint32_t linear_address, page_entry &pde, page_ent
     uint32_t offset_mask = 0x00000fff;
     uint32_t offset = offset_mask & linear_address;
 
-//    cout << offset << std::endl;
     return (pte.table[pt_index] & 0xfffff000) | offset;
 
 }
@@ -98,14 +93,11 @@ unsigned int get_linear_address(uint32_t &offset, uint32_t segment_selector, des
     unsigned const int TI_mask = 1 << 2;
     unsigned const int index_mask = 0x0000fff8;
     uint32_t const TI = ((TI_mask & segment_selector) >> 2);
-//    cout<<TI<<' ';
     uint32_t index = (index_mask & segment_selector) >> 3;
-//    cout<<index<<" ";
-
     uint64_t segment_descriptor;
     if (TI)
     {
-        if (index < 0 && index >= ldt.size)
+        if ( index >= ldt.size)
         {
             throw address_translation_exception();
         }
@@ -121,7 +113,7 @@ unsigned int get_linear_address(uint32_t &offset, uint32_t segment_selector, des
     }
     uint64_t segment_present_mask = (uint64_t) 0x0000a00000000000;
 
-    if(!(segment_descriptor&segment_present_mask)>>47){
+    if(!((segment_descriptor&segment_present_mask)>>47)){
         throw address_translation_exception();
     }
     uint64_t base_address_mask1 = (uint64_t) 0x000000ffffff0000;
@@ -129,7 +121,6 @@ unsigned int get_linear_address(uint32_t &offset, uint32_t segment_selector, des
 
     uint32_t base_address = (uint32_t) (((segment_descriptor & base_address_mask1) >> 16) | (segment_descriptor & base_address_mask2 >> 32));
     linear_address = offset + base_address;
-//    cout<<"linear_address in functoin:"<<linear_address<<std::endl;
     return linear_address;
 }
 
@@ -143,7 +134,6 @@ descriptor_table read_descriptor_table()
     for (int i = 0; i < size_dt; ++i)
     {
         dt.table[i] = read_hex_long();
-//        cout<<dt.table[i]<<std::endl;
     }
     return dt;
 }
@@ -158,7 +148,6 @@ page_entry read_page_entry()
     for (int j = 0; j < size_pe; ++j)
     {
         pe.table[j] = read_hex_int();
-//        cout<<pe.table[j]<<std::endl;
     }
     return pe;
 }
