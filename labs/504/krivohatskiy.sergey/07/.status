@@ -1,0 +1,49 @@
+done
+Problem was in too low TIMEOUT value (2 sec)
+---
+rejecet
+
+Unable to trace full route to 8.8.8.8.
+
+07> sudo ./traceroute 8.8.8.8
+traceroot to 8.8.8.8:
+10.0.2.2
+192.168.0.1
+10.181.184.1
+10.180.90.247
+93.92.200.254
+193.28.6.50
+209.85.243.133
+209.85.249.79
+72.14.233.170
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+MAX_TTL limit exeeded
+
+---
+rejected
+
+The app hangs/returns '------' on 8.8.8.8 input (Ubuntu 14.04).
+If I run system's traceroute simultaneously -- it magically returns correct output.
+This must be fixed.
+---
+1 week after deadline

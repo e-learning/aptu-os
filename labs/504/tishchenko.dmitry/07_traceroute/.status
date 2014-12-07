@@ -1,0 +1,8 @@
+accepted
+
+Исправлена сборка.
+---
+07_traceroute> make
+make: /usr/bin/cmake: Command not found
+make: *** [cmake_check_build_system] Error 127
+

@@ -1,6 +1,6 @@
-rejected
+accepted
 
-* ps doesn't work as expected (~ ps -aux). Implement it manually
-* ls oeuoaeu --> Aborted(core dumped)
-
-
+* ls had fixed (note: ls can have one argument — path (default = .))
+* ps had fixed
+* ps had implemented as shared library libps.so (./shell is bash-scipt where libpath sets and then ./shell.bin runs) — lib interface is in libps.h (for shell.c), lib source code is in ps.c
+* Ctrl+C capturing had implemented

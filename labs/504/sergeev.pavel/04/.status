@@ -1,1 +1,19 @@
-Second sample is INVALID, because offset is 0x02407000, but granularity bit is not seted and segment limit is 0xfffff. If offset is greater than segment size address has been invalidated.
+accepted
+
+Present bit is checked.
+---
+rejeced
+
+Test failed.
+Looks like you don't check whether page table is present in memory ("P" bit is set).
+
+---
+
+Q: Second sample is INVALID, because offset is 0x02407000, but granularity bit is not seted and segment limit is 0xfffff. If offset is greater than segment size address has been invalidated.
+A: AFAIU granularity bit is set. Run in terminal the following (obtain the 55th bit from a segment) to verify:
+> echo $((0x008f90000000ffff & (1 << (23 + 32))))
+36028797018963968
+
+FYI committed implementation is false-negative (returns INVALID even if address can be calculated).
+
+fixed.

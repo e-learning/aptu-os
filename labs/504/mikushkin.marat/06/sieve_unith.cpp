@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/time.h>
+#include <chrono>
 
 using namespace std;
 
@@ -37,8 +38,7 @@ void print_usage() {
 }
 
 int main(int argc, char *argv[]) {
-	clock_t start, end;
-	start = clock();
+	auto start = std::chrono::high_resolution_clock::now();
 
 	if (argc < 2) {
 		print_usage();
@@ -65,11 +65,9 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	end = clock();
-	float exec_time((float) end - (float) start);
-	exec_time /= (CLOCKS_PER_SEC / 1000);
+	auto elapsed = std::chrono::high_resolution_clock::now();
 	if (string(argv[1]) != "-p") {
-		cout << exec_time << endl;
+	    std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed - start).count() << "\n";
 	}
 
 	return 0;

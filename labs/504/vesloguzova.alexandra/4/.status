@@ -1,1 +1,33 @@
+
 done
+---
+rejected
+
+Build error. 
+
+4> make
+g++ -Werror -Wall  -std=c++11 -c main.cpp
+main.cpp: In function ‘int main()’:
+main.cpp:64:18: error: unused variable ‘physical_address’ [-Werror=unused-variable]
+         uint32_t physical_address = get_physical_address(linear_address, PDE, PTE);
+                  ^
+main.cpp: In function ‘unsigned int get_linear_address(uint32_t&, uint32_t, descriptor_table&, descriptor_table&)’:
+main.cpp:100:27: error: comparison between signed and unsigned integer expressions [-Werror=sign-compare]
+         if ( index >= ldt.size)
+                           ^
+cc1plus: all warnings being treated as errors
+make: *** [main.o] Error 1
+
+---
+
+Reason: build error
+
+4> make
+g++ -Werror -Wall  -std=c++11 -c main.cpp
+main.cpp: In function ‘unsigned int get_linear_address(uint32_t&, uint32_t, descriptor_table&, descriptor_table&)’:
+main.cpp:124:52: error: right shift count >= width of type [-Werror]
+     if(!(segment_descriptor&segment_present_mask)>>47){
+                                                    ^
+cc1plus: all warnings being treated as errors
+make: *** [main.o] Error 1
+

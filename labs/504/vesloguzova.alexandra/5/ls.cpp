@@ -1,5 +1,6 @@
 #include <iostream>
-#include "fs.h"
+#include <exception>
+#include "file_system.h"
 
 int main(const int argc, const char *argv[])
 {
@@ -7,14 +8,15 @@ int main(const int argc, const char *argv[])
     {
         if (argc < 3)
         {
-            std::cout << "usage: ls <root> <path>" << std::endl;
+            std::cout << "Usage: format <root> <path>" << std::endl;
             return 0;
         } else
         {
             file_system(argv[1]).ls(argv[2]);
         }
         return 0;
-    } catch (std::exception &e)
+    }
+    catch (std::exception &e)
     {
         std::cerr << e.what() << std::endl;
         return 1;

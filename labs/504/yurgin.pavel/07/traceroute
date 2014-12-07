@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+__author__ = 'Yurgin Pavel'
+
+
+import socket as sk
+from contextlib import ExitStack
+import argparse
+
+
+def traceroute(dest_addr):
+    if len([True for i in dest_addr.split(".") if int(i) in range(256)]) != 4:
+        raise Exception("Wrong address!")
+    port = 33434
+    max_hops = 30
+    timeout = 5.0
+    icmp = sk.getprotobyname('icmp')
+    udp = sk.getprotobyname('udp')
+    for ttl in range(1, max_hops):
+        with ExitStack() as stack:
+            recv_sk = stack.enter_context(sk.socket(sk.AF_INET, sk.SOCK_RAW, icmp))
+            send_sk = stack.enter_context(sk.socket(sk.AF_INET, sk.SOCK_DGRAM, udp))
+            send_sk.setsockopt(sk.IPPROTO_IP, sk.IP_TTL, ttl)
+            recv_sk.bind(("", port))
+            send_sk.sendto(bytes("", "ascii"), (dest_addr, port))
+            recv_sk.settimeout(timeout)
+            curr_addr = None
+            try:
+                dummy, curr_addr = recv_sk.recvfrom(512)
+                curr_addr = curr_addr[0]
+            except sk.error:
+                pass
+            if curr_addr:
+                print(curr_addr)
+            else:
+                print("no reply")
+            if curr_addr == dest_addr:
+                break
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="tracepath to distinition ip")
+    parser.add_argument("dest_addr", type=str, help="destinition address in xxx.xxx.xxx.xxx")
+    dest_addr = parser.parse_args().dest_addr
+    traceroute(dest_addr)

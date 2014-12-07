@@ -1,2 +1,4 @@
-done
+accepted
 
+Some tests aren't passed. Looks like you don't check "P" bit for a page.
+Fixed: "P" bit for a page, ignoring least 12 bit for segment boundary check in case then "G" bit for a segment is set.

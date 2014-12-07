@@ -6,7 +6,7 @@
 #include <atomic>
 
 uint64_t n;
-std::vector<bool> result;
+std::vector<char> result;
 std::atomic<uint64_t> point;
 
 void run_sieve() {
@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 
     point.store(2);
 
-    result = std::vector<bool>(n, true);
+    result = std::vector<char>(n, true);
 
     std::vector<std::thread> threads(m);
 

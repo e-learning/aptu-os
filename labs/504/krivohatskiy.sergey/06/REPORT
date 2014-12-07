@@ -1,0 +1,59 @@
+sudo lshw -short
+H/W path       Device     Class          Description
+====================================================
+                          system         UX32LN (ASUS-Ultrabook)
+/0                        bus            UX32LN
+/0/0                      memory         64KiB BIOS
+/0/8                      processor      Intel(R) Core(TM) i5-4210U CPU @ 1.70GHz
+/0/8/9                    memory         512KiB L2 cache
+/0/8/a                    memory         128KiB L1 cache
+/0/8/b                    memory         3MiB L3 cache
+/0/c                      memory         8GiB System Memory
+/0/c/0                    memory         4GiB SODIMM DDR3 Synchronous 1600 MHz (0,6 ns)
+/0/c/1                    memory         DIMM [empty]
+/0/c/2                    memory         4GiB SODIMM DDR3 Synchronous 1600 MHz (0,6 ns)
+/0/c/3                    memory         DIMM [empty]
+/0/100                    bridge         Haswell-ULT DRAM Controller
+/0/100/2                  display        Haswell-ULT Integrated Graphics Controller
+/0/100/3                  multimedia     Haswell-ULT HD Audio Controller
+/0/100/4                  generic        Intel Corporation
+/0/100/14                 bus            Lynx Point-LP USB xHCI HC
+/0/100/16                 communication  Lynx Point-LP HECI #0
+/0/100/1b                 multimedia     Lynx Point-LP HD Audio Controller
+/0/100/1c                 bridge         Lynx Point-LP PCI Express Root Port 1
+/0/100/1c.3               bridge         Lynx Point-LP PCI Express Root Port 4
+/0/100/1c.3/0  wlan0      network        AR9462 Wireless Network Adapter
+/0/100/1c.4               bridge         Lynx Point-LP PCI Express Root Port 5
+/0/100/1c.4/0             display        GM108M [GeForce 840M]
+/0/100/1f                 bridge         Lynx Point-LP LPC Controller
+/0/100/1f.2               storage        Lynx Point-LP SATA Controller 1 [AHCI mode]
+/0/100/1f.3               bus            Lynx Point-LP SMBus Controller
+/0/100/1f.6               generic        Lynx Point-LP Thermal
+
+
+lscpu
+Architecture:          x86_64
+CPU op-mode(s):        32-bit, 64-bit
+Byte Order:            Little Endian
+CPU(s):                4
+On-line CPU(s) list:   0-3
+Thread(s) per core:    2
+Core(s) per socket:    2
+Socket(s):             1
+NUMA node(s):          1
+Vendor ID:             GenuineIntel
+CPU family:            6
+Model:                 69
+Stepping:              1
+CPU MHz:               768.000
+BogoMIPS:              4788.73
+Virtualization:        VT-x
+L1d cache:             32K
+L1i cache:             32K
+L2 cache:              256K
+L3 cache:              3072K
+NUMA node0 CPU(s):     0-3
+
+Объяснение полученных данных:
+TASK1 - Многопоточный вариант работает быстрее однопоточного, но при увеличении числа потоков возникают коллизии(Так, что несколько потоков зачеркивают одни и те- же числа). Наиболее эффективный вариант- использовать 2 потока. Для эффективного использования большего количества потоков следует изменить алгоритм- добавить проверку пересечения нескольких потоков по вычеркиваемым числам.
+TASK2 - Время работы многопоточного варианта с 1 потоком немного больше в основном из- за использования atomic int внутри цикла

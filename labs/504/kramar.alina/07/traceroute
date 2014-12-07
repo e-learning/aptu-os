@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+import sys
+import socket
+
+def trace_route(dest):
+    port = 2**15
+    icmp = socket.getprotobyname('icmp')
+    udp = socket.getprotobyname('udp')
+    for ttl in range(1, 2**8 - 1):
+        with socket.socket(type=socket.SOCK_DGRAM, proto=udp) as sock, \
+             socket.socket(type=socket.SOCK_RAW, proto=icmp) as row:
+            sock.setsockopt(socket.SOL_IP, socket.IP_TTL, ttl)
+            row.bind(('', port))
+            sock.sendto(b'', (dest, port))
+
+            last = None
+            try:
+                row.settimeout(20)
+                _, last = row.recvfrom(2**8)
+                last = last[0]
+                print(last)
+            except (socket.timeout, socket.error):
+                print("* * *")
+
+        if last == dest:
+            break
+
+if __name__ == '__main__':
+    try:
+        ip = sys.argv[1]
+    except IndexError:
+        print("Usage: traceroute [ip address]")
+        exit(-1)
+    trace_route(ip)

@@ -59,9 +59,12 @@ void* thread_function(void* arg)
 		i = next_prime;
 		next_prime++;
 		pthread_mutex_unlock(&next_prime_lock);
-		for (j = i * i; j < n; j += i)
+		if (primes[i])
 		{
-			primes[j] = 0;
+			for (j = i * i; j < n; j += i)
+			{
+				primes[j] = 0;
+			}
 		}
 	}
 }

@@ -1,2 +1,7 @@
-done
-additional: defragmentation implementet
+accepted
+
+additional: defragmentation implementet (AFAIU this is for allocator)
+
+Notes (Prog. style):
+* code duplication (table reading (use templates), memory cleanup (use RAII))
+* main function is excellent example of spaghetti code

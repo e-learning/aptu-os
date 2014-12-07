@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+
+__author__ = "Andrew Kozlov"
+__copyright__ = "Copyright 2014, SPbAU"
+
+import socket
+import sys
+
+def print_address(address, ttl):
+	print("%d %s" % (ttl, address if address is not None else "*"))
+
+def init_sockets(address, ttl, port=5000, timeout=30):
+	receive_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.getprotobyname('icmp'))
+	send_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.getprotobyname('udp'))
+
+	send_socket.setsockopt(socket.SOL_IP, socket.IP_TTL, ttl)
+	receive_socket.bind((bytes("", 'UTF-8'), port))
+	receive_socket.settimeout(timeout)
+	send_socket.sendto(bytes("", 'UTF-8'), (address, port))
+
+	return (receive_socket, send_socket)
+
+def get_trace_route(host_name, attempts=256, receive_bytes=512):
+	current = None
+
+	destination = socket.gethostbyname(host_name)
+	for ttl in range(1, attempts):
+		receive_socket, send_socket = init_sockets(destination, ttl)
+
+		try:
+			_, current = receive_socket.recvfrom(receive_bytes)
+			current = current[0]
+		except socket.error as e:
+			print(str(e), file=sys.stderr)
+		finally:
+			receive_socket.close()
+			send_socket.close()
+
+		print_address(current, ttl)
+
+		if destination == current:
+			break
+
+if __name__ == "__main__":
+	if (len(sys.argv) != 2):
+		print("Usage: <host_name>")
+		sys.exit(1)
+
+	get_trace_route(sys.argv[1])

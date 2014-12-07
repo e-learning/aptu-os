@@ -14,6 +14,7 @@
 #define ENBOLD "\033[1m" // enable bold
 #define DISBOLD "\033[0m" // disable bold
 
+
 #define LONGSPACESTR "                                          "
 
 void exec_ls(char ** arguments)
@@ -29,8 +30,10 @@ void exec_ls(char ** arguments)
 	
 	
 	entries_num = scandir(dirname, &namelist, NULL, alphasort);
-	if (entry < 0)
+    if (entries_num < 0)
+    {
 		fprintf(stderr, "ls: cannot scan %s\n", dirname);
+    }
 	else
 	{
 		// find maximal name length
@@ -73,11 +76,10 @@ void exec_ls(char ** arguments)
 			}
 			printf("\n");
 		}
+        
 		free(namelist);
 	}
 }
-
-
 
 
 
@@ -124,3 +126,5 @@ void exec_kill(char ** arglist)
 		}
 	}
 }
+
+

@@ -1,9 +1,8 @@
-rejected
+accepted (5+3)
+defragmentation implemented
 
+Bugs (don't delete this list):
+* ./allocator
 1000
-FREE 1
--
 FREE 0
-+ (?!)
-
-"0" ptr hasn't been allocated.
++ (?!, must be -)

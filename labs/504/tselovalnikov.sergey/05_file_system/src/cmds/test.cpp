@@ -8,8 +8,14 @@ int main(int argc, char *argv[]) {
         FileSystem::init(ctx);
         FileSystem fs(ctx);
         fs.import_file("/tmp/fs/config", "/b");
+        fs.mkdir("/dir");
+        fs.copy("/b", "/dir/b2");
+        fs.file_info("/dir/");
+        fs.file_info("/");
         fs.file_info("/b");
+
         fs.move("/b", "/bb");
+
         fs.import_file("/tmp/fs/config3", "/sec");
         fs.file_info("/sec");
         fs.export_file("/bb", "/tmp/fs/config2");
