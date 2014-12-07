@@ -61,7 +61,7 @@ int main()
     try
     {
         uint32_t linear_address = get_linear_address(offset, segment_selector, GDT, LDT);
-        uint32_t physical_address = get_physical_address(linear_address, PDE, PTE);
+        get_physical_address(linear_address, PDE, PTE);
 
     } catch (address_translation_exception)
     {
