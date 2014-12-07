@@ -7,7 +7,7 @@ using std::cin;
 
 struct descriptor_table
 {
-    int size;
+    size_t size;
     uint64_t *table;
 
     ~descriptor_table()
@@ -18,7 +18,7 @@ struct descriptor_table
 
 struct page_entry
 {
-    int size;
+    size_t size;
     uint32_t *table;
 
     ~page_entry()
@@ -129,7 +129,7 @@ descriptor_table read_descriptor_table()
     int size_dt;
     descriptor_table dt;
     cin >> size_dt;
-    dt.size = size_dt;
+    dt.size = (size_t) size_dt;
     dt.table = new uint64_t[size_dt];
     for (int i = 0; i < size_dt; ++i)
     {
@@ -143,7 +143,7 @@ page_entry read_page_entry()
     int size_pe;
     page_entry pe;
     cin >> size_pe;
-    pe.size = size_pe;
+    pe.size = (size_t) size_pe;
     pe.table = new uint32_t[size_pe];
     for (int j = 0; j < size_pe; ++j)
     {
