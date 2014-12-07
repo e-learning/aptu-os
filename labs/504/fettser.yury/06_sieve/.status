@@ -1,5 +1,10 @@
 rejected
 
+1. Update status after your fixes
+2. Analyze on your measurements and add conclusion to REPORT as 6th task requires. Make sure your are using correct encoding.
+
+-----
+
 Build error.
 
 06_sieve> make
