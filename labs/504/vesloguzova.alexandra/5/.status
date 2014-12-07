@@ -1,4 +1,7 @@
-done
+rejected
+
+Well, fix ls output according to spec. 
+Your implementation doesn't print path entry type (f or d)
 ==================================
 rejected
 
