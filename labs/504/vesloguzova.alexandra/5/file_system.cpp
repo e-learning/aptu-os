@@ -239,10 +239,7 @@ void file_system::ls(std::string path)
     {throw "Not initialized";}
     read_metainformation();
     file_descriptor file = get_file(path, false, true);
-
-    std::cout << file.filename << ' ';
-    std::cout << file.size << ' ';
-    std::cout << ctime(&(file.last_update));
+    
     if (file.directory)
     {
         for (auto it = dir_iterator(*this, file); it != dir_iterator(*this); ++it)
@@ -250,6 +247,10 @@ void file_system::ls(std::string path)
             file_descriptor f = *it;
             std::cout << std::string(f.filename) << std::endl;
         }
+    }
+    else{
+        std::cout << file.filename << ' ';
+        std::cout << file.size << ' ';
     }
 }
 

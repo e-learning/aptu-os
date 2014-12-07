@@ -28,7 +28,7 @@ def trace(address):
             ssocket.close()
             rsocket.close()
 
-        if last_addr == address and last_addr is not None:
+        if last_addr == address:
             break
         else:
             ttl += 1

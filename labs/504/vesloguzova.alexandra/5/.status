@@ -1,4 +1,16 @@
-done
+rejected
+
+Well, fix ls output according to spec. 
+Your implementation doesn't print path entry type (f or d)
+==================================
+rejected
+
+Fix ls output format according to spec.
+E.g.
+5> ./ls test_root /
+/ 0 Sat Dec  6 15:08:40 2014
+No output is expected since dir is empty.
+
 ===================================
 rejected
 

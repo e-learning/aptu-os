@@ -119,3 +119,4 @@ Q1: Please explain your result (I've measured the same and noticed a difference)
 A1: I repeat measurement, and got the same result.
 	Best performance has been achieved with M=3..8 (for N=1000000 M=3, for N=100000000, M=8). In my CPU there are 4 virtual cores, but optimal M for
 	big N are 8. I think the reason of this is concurency with operation system and other applications threads.
+(Artur): Well, I've definitely noticed 10% difference between unith and multith (M=1). Well, maybe this is machine specific result. Answer is accepted.

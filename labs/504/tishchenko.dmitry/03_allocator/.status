@@ -1,5 +1,23 @@
-updated 6.12.14
+rejected
 
+1.
+100
+ALLOC 1
++ 16
+ALLOC 2
++ 33
+INFO
+2 3 49       (1)
+FREE 16  
++
+INFO
+1 2 49       (2)
+
+There is no available storage increasing after successful FREE.
+
+2. ALLOC 0 returns + and consumes some memory. This behavior doesn't look useful.
+
+-----------
 100
 FREE 16
 + # ?!

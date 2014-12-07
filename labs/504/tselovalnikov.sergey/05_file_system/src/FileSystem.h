@@ -376,13 +376,23 @@ public:
         string to_name = to_path[to_path.size() - 1];
         INode node = findINode(from);
         if (!node.is_directory) {
+            int parId = -1;
+            try {
+                vector<string> pardir;
+                for(int i = 0; i < to_path.size() -1; i++) {
+                    pardir.push_back(to_path[i]);
+                }
+                parId = findINode(utils::join(pardir, "/")).id;
+            } catch (runtime_error e) {
+            }
             INode to_node = INode(node);
             to_node.id = inodes.size();
-            inodes.push_back(to_node);
+            to_node.parent = parId;
             to_node.filename = to_name;
             vector<int> to_fill;
             find_free(to_node.block_count, to_fill);
             to_node.blocks = to_fill;
+            inodes.push_back(to_node);
             for (int i = 0; i < node.block_count; i++) {
                 int from_block = node.blocks[i];
                 int to_block = to_node.blocks[i];
