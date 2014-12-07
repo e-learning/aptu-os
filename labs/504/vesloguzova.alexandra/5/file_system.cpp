@@ -239,13 +239,19 @@ void file_system::ls(std::string path)
     {throw "Not initialized";}
     read_metainformation();
     file_descriptor file = get_file(path, false, true);
-    
+
     if (file.directory)
     {
         for (auto it = dir_iterator(*this, file); it != dir_iterator(*this); ++it)
         {
             file_descriptor f = *it;
-            std::cout << std::string(f.filename) << std::endl;
+            std::cout << std::string(f.filename) ;
+            if(f.directory){
+                std::cout<<" d"<< std::endl;
+            }
+            else{
+                std::cout<<" f" << std::endl;
+            }
         }
     }
     else{
