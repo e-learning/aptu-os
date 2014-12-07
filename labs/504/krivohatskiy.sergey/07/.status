@@ -1,3 +1,6 @@
+done
+Problem was in too low TIMEOUT value (2 sec)
+---
 rejecet
 
 Unable to trace full route to 8.8.8.8.
