@@ -24,6 +24,10 @@ void init(struct Heap *heap, unsigned short size)
 
 short heap_allocate(struct Heap *heap, unsigned short size)
 {
+    if(size == 0)
+    {
+        return -1;
+    }
     struct Block *currentBlock;
     currentBlock = heap->blocksList;
     while(currentBlock)
