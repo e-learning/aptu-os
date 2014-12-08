@@ -1,1 +1,16 @@
-updated 7.12.14
+rejected
+
+Measurements are incomplete --> wrong conclusion in REPORT.
+
+Reason:
+06_sieve> time ./sieve_multith 1000000000 4
+
+real	0m15.098s
+user	0m25.591s
+sys	0m3.382s
+06_sieve> time ./sieve_unith 1000000000
+
+real	0m22.932s
+user	0m21.349s
+sys	0m1.553s
+
