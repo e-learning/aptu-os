@@ -50,7 +50,6 @@ int main(int argc, const char **argv)
         return 1;
     }
 
-    clock_t start = clock();
 
     bit_array *p_sieve;
     try
@@ -65,7 +64,6 @@ int main(int argc, const char **argv)
 
     bit_array& sieve = *p_sieve;
 
-    cerr << (clock() - start) / (float)CLOCKS_PER_SEC << endl;
     sieve.set(0, true);
     sieve.set(1, true);
 

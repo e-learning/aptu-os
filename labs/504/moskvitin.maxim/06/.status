@@ -1,6 +1,8 @@
 rejeceted
 
 Please add TASK2_DATA explanation to REPORT
+
+Fixed. Also fixed some error in test generation.
 ---
 Number of explicitly created threads is bounded by M.
 Your implementation violates this restriction.

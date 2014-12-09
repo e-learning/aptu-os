@@ -66,6 +66,7 @@ void threadf(bit_array &sieve, uint64_t left_bound, uint64_t right_bound)
 
 int main(int argc, const char **argv)
 {
+
     if (argc == 1)
     {
         cout << usage;
@@ -119,6 +120,7 @@ int main(int argc, const char **argv)
     }
 
 
+
     bit_array& sieve = *p_sieve;
 
     sieve.set(0, true);
@@ -132,13 +134,11 @@ int main(int argc, const char **argv)
     for (uint32_t j = 1; j < threads_count; ++j)
     {
         left_bound  = (left_bound / 8) * 8;
-        right_bound = min(((left_bound + count_to_thread) / 8 + 1) * 8, limit);
-        cerr << left_bound << " "  << right_bound << endl;
+        right_bound = min(((left_bound + count_to_thread) / 8 + 1) * 8 - 1, limit);
         active_thread.push(thread(threadf, ref(sieve), left_bound, right_bound));
         left_bound  = right_bound;
     }
     active_thread.push(thread(threadf, ref(sieve), left_bound, limit));
-    cerr << left_bound << " "  << limit << endl;
     while (!active_thread.empty())
     {
         thread &thr = active_thread.top();
