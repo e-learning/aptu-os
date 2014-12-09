@@ -72,6 +72,6 @@ int main(int argc, char **argv) {
             }
         }
     }
-    delete[] isComposite;
+    free(isComposite);
     return 0;
 }

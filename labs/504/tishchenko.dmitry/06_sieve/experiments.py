@@ -24,7 +24,7 @@ def perform_iters(progname, argsline, iterations):
 def findopt(iterations, outfile):
     #M; N; time M[1,20]
     outformat = "{:d}; {:d}; {:.3f}\n"
-    test_intervals = (100000, 1000000, 10000000, 100000000, 1000000000)
+    test_intervals = (1000000000, 100000000, 10000000, 1000000, 100000)
 
     with open(outfile, 'w') as out:
         for interval in test_intervals:
@@ -32,7 +32,7 @@ def findopt(iterations, outfile):
             out.write(str.format(outformat, 1, interval, result*1000))
         for threads_count in range(2,21):
             for interval in test_intervals:
-                result = perform_iters(multprog, [str(threads_count), str(interval)], iterations)
+                result = perform_iters(multprog, [str(interval), str(threads_count)], iterations)
                 out.write(str.format(outformat, threads_count, interval, result*1000))
 
 def compare(iterations, outfile):
@@ -41,7 +41,7 @@ def compare(iterations, outfile):
         for interval in range(1000000, 1000000001, 1000000):
             uniresult = perform_iters(uniprog, [str(interval),], iterations)
             out.write(str.format(outformat, "UNI", interval, uniresult*1000))
-            multresult = perform_iters(multprog, ["1", str(interval)], iterations)
+            multresult = perform_iters(multprog, [str(interval),"1"], iterations)
             out.write(str.format(outformat, "MULT", interval, multresult*1000))
 
 if __name__ == "__main__":
