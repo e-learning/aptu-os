@@ -9,8 +9,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdint>
-
-
+#include <limits>
 
 using namespace std;
 
@@ -23,13 +22,34 @@ void usage()
 
 char buf[512];
 
-icmp* echo_header()
+uint16_t icmp_cksum(char *msg, int length)
+{
+    uint32_t acc = numeric_limits<uint16_t>::max();
+
+    for (int i = 0; i < length - 1; i += 2)
+    {
+        acc += ntohs(*reinterpret_cast<uint16_t*>(msg + i));
+
+    }
+    if (length % 2)
+    {
+       acc += (uint8_t)msg[length - 1];
+    }
+
+    acc %= numeric_limits<uint16_t>::max();
+
+    return htons(~acc);
+}
+
+icmp* echo_header(int id)
 {
     memset(buf, 0, 512);
     icmp *ret = (icmp*)buf;
     ret->icmp_type = ICMP_ECHO;
     ret->icmp_code = static_cast<uint8_t>(htons(0));
-    ret->icmp_cksum = 65527;
+    ret->icmp_seq = id;
+    ret->icmp_id  = 111;
+    ret->icmp_cksum = icmp_cksum(buf, sizeof(icmp));
     return ret;
 }
 
@@ -56,6 +76,21 @@ int main(int argc, const char **argv)
         return -1;
     }
 
+    timeval tv;
+
+    tv.tv_sec = 10;
+    tv.tv_usec = 0;
+
+    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&tv, sizeof(timeval)) == -1)
+    {
+        perror("Error on set timeout");
+    }
+
+    if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&tv, sizeof(timeval)) == -1)
+    {
+        perror("Error on set timeout");
+    }
+
     char response[512];
 
     vector<in_addr> route;
@@ -66,44 +101,39 @@ int main(int argc, const char **argv)
             perror("Error on set TTL");
             return -1;
         }
-        echo_header();
+        echo_header(ttl);
         if (sendto(sock, buf, 8, 0, (sockaddr*)&host_addr, sizeof(host_addr)) == -1)
         {
             perror("Error on sending request");
             return -1;
         }
-        int fails = 0;
-        while (fails < 100)
+
+        bool fail = false;
+
+        int bytes_received = recvfrom(sock, &response, 512, 0, 0, 0);
+        if (bytes_received == -1)
         {
-            int bytes_received = recvfrom(sock, &response, 512, 0, 0, 0);
-            if (bytes_received == -1)
-            {
-                ++fails;
-                continue;
-            }
+            fail = true;
+            perror("Error on recvfrom");
+        }
 
-            ip *response_ip_s = (ip*)response;
+        ip *response_ip_s = (ip*)response;
 
-            if (response_ip_s->ip_p != IPPROTO_ICMP)
-            {
-                ++fails;
-                continue;
-            }
+        icmp *response_icmp = (icmp*)(response + response_ip_s->ip_hl * 4);
+        if (!fail && response_icmp->icmp_type != ICMP_ECHOREPLY && response_icmp->icmp_code != ICMP_EXC_TTL)
+        {
+            fail = true;
+            cerr << "Wrong response" << endl;
+        }
 
-            icmp *response_icmp = (icmp*)(response + response_ip_s->ip_hl * 4);
-            if (response_icmp->icmp_type != ICMP_ECHOREPLY && response_icmp->icmp_code != ICMP_EXC_TTL)
-            {
-                ++fails;
-                continue;
-            }
-
+        if (!fail)
+        {
             cout << inet_ntoa(response_ip_s->ip_src) << endl;
             if (response_icmp->icmp_type == ICMP_ECHOREPLY)
                 exit(0);
-            break;
         }
 
-        if (fails >= 100)
+        if (fail)
         {
             cout << "no reply" << endl;
         }
