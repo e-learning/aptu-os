@@ -1,0 +1,4 @@
+i5-3337U 1.8GHz 2 kernels
+4GB RAM
+Optimal result is when there are 9 threads for 10000 numbers.
+Sieve_unith works faster then multi-threaded version with 1 thread.
