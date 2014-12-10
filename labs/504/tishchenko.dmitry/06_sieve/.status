@@ -1,4 +1,11 @@
-rejected
+accepted (4/7)
+
+TASK2_DATA conclusion is incorrect.
+unith -- 1 executor thread only
+multith -- 1 executer thread + extra atomic
+
+IMHO the 1st one is more preferable.
+---
 
 Measurements are incomplete --> wrong conclusion in REPORT.
 
