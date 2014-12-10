@@ -61,7 +61,7 @@ int main()
     try
     {
         uint32_t linear_address = get_linear_address(offset, segment_selector, GDT, LDT);
-        get_physical_address(linear_address, PDE, PTE);
+        cout<<get_physical_address(linear_address, PDE, PTE);
 
     } catch (address_translation_exception)
     {
@@ -80,6 +80,10 @@ uint32_t get_physical_address(uint32_t linear_address, page_entry &pde, page_ent
     }
     const uint32_t pt_index_mask = 0x003ff000;
     uint32_t pt_index = (pt_index_mask & linear_address) >> 12;
+    if ((uint32_t)pte.size < pt_index || !(pte.table[pt_index] & 0x00000001))
+    {
+        throw address_translation_exception();
+    }
     uint32_t offset_mask = 0x00000fff;
     uint32_t offset = offset_mask & linear_address;
 
