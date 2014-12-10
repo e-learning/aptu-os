@@ -61,7 +61,7 @@ int main()
     try
     {
         uint32_t linear_address = get_linear_address(offset, segment_selector, GDT, LDT);
-        cout<<get_physical_address(linear_address, PDE, PTE);
+        cout << std::hex << get_physical_address(linear_address, PDE, PTE);
 
     } catch (address_translation_exception)
     {
