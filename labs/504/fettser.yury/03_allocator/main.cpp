@@ -87,6 +87,10 @@ void info()
 
 void map()
 {
+    if (blocks.size() == 0)
+    {
+        return;
+    }
     for (unsigned int i = 0; i < blocks.size() - 1; i++)
     {
         for (int j = 0; j < blocks[i].size; j++)
