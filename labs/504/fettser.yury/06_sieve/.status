@@ -1,4 +1,15 @@
-corrected
+rejcted
+
+1. Both sieve_multith and sieve_unith should output only if -p option is set.
+2. Looks like your implementation has a bug:
+06_sieve> ./sieve_multith 10000 2
+terminate called after throwing an instance of 'std::system_error'
+  what():  Enable multithreading to use std::thread: Operation not permitted
+Aborted (core dumped)
+
+3. "Conclusion" in REPORT implies some sort explanation, not simple data description.
+
+4. 10000 is too small for upper bound. ~10^9 should be used, step is 1 (log scale)
 -----
 rejected
 
