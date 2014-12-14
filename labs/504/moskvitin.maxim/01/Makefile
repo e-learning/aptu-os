@@ -1,5 +1,5 @@
 MAIN_OUT=./shell
-MAIN_SRC=ls.c main.c
+MAIN_SRC=command_execute.c command_parsing.c Vector.c ls.c main.c
 PS_OUT=./ps.so
 PS_SRC=ps.c
 build: clean ps
