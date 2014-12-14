@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <stdbool.h>
+#include <signal.h>
 #include "ls.h"
 #include "ps.h"
 
@@ -14,8 +15,21 @@ void pwd();
 int kill_proc(char * const args[]);
 void freeArg(char **args);
 
-main(int argc, char** argv)
+void signal_handler(int signal)
 {
+    printf("\nInterrapted from keyboard\n");
+    exit(signal);
+}
+
+int main(int argc, char** argv)
+{
+    struct sigaction sig_action;
+    sig_action.sa_handler = signal_handler;
+    sigemptyset(&sig_action.sa_mask);
+    sig_action.sa_flags = 0;
+
+    sigaction(SIGINT, &sig_action, NULL);
+
     size_t commandLen = 0;
     char* command;
     while (1)
@@ -26,6 +40,7 @@ main(int argc, char** argv)
         free(command);
         commandLen = 0;
     }
+    return 0;
 }
 
 void pwd()
