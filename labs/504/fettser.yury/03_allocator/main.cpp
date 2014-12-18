@@ -14,6 +14,7 @@ struct ptr
 };
 
 vector <ptr> blocks;
+int N;
 
 bool comparator(ptr a, ptr b)
 {
@@ -26,7 +27,7 @@ void alloc(int size)
     {
         ptr temp;
         temp.offset = 0;
-        temp.size = size;
+        temp.size = size + sizeof(ptr);
         temp.pointer = temp.offset;
         blocks.push_back(temp);
         cout << "+ " << temp.pointer << endl;
@@ -38,7 +39,7 @@ void alloc(int size)
         {
             ptr temp;
             temp.offset = blocks[i].offset + blocks[i].size;
-            temp.size = size;
+            temp.size = size + sizeof(ptr);
             temp.pointer = temp.offset;
             cout << "+ " << temp.pointer << endl;
             auto it = blocks.begin() + i;
@@ -49,7 +50,7 @@ void alloc(int size)
     }
     ptr temp;
     temp.offset = (blocks.end() - 1)->offset + (blocks.end() - 1)->size;
-    temp.size = size;
+    temp.size = size + sizeof(ptr);
     temp.pointer = temp.offset;
     blocks.push_back(temp);
     cout << "+ " << temp.pointer << endl;
@@ -87,24 +88,51 @@ void info()
 
 void map()
 {
+    int counter = 0;
     if (blocks.size() == 0)
     {
+        for (int i = 0; i < sizeof(ptr); i++)
+        {
+            cout << "m";
+        }
+        for (int i = sizeof(ptr); i < N; i++)
+        {
+            cout << "f";
+        }
+        cout << endl;
         return;
     }
     for (unsigned int i = 0; i < blocks.size() - 1; i++)
     {
-        for (int j = 0; j < blocks[i].size; j++)
+        for (unsigned int j = 0; j < sizeof(ptr); j++)
         {
+            ++counter;
+            cout << "m";
+        }
+        for (int j = sizeof(ptr); j < blocks[i].size; j++)
+        {
+            ++counter;
             cout << "u";
         }
         for (int j = 0; j < blocks[i+1].offset - blocks[i].offset - blocks[i].size; j++)
         {
+            ++counter;
             cout << "f";
         }
     }
-    for (int i = 0; i < (blocks.end() - 1)->size; i++)
+    for (unsigned int i = 0; i < sizeof(ptr); i++)
     {
+        ++counter;
+        cout << "m";
+    }
+    for (int i = sizeof(ptr); i < (blocks.end() - 1)->size; i++)
+    {
+        ++counter;
         cout << "u";
+    }
+    for (int i = 0; i < N - counter/N; i++)
+    {
+        cout << "f";
     }
     cout << endl;
 }
@@ -124,7 +152,6 @@ void defragm()
 
 int main()
 {
-    int N;
     cin >> N;
     string input;
     while (input != "exit")
