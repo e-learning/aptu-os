@@ -1,4 +1,11 @@
-corrected
+rejected
+
+MAP doesn't work as expected (f and m bytes are not printed).
+
+03_allocator> ./allocator 
+1000
+MAP
+<no output at all>
 -----
 rejected
 

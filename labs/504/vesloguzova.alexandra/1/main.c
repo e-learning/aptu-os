@@ -1,17 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <dirent.h>
-#include <string.h>
-#include <signal.h>
-#include <unistd.h>
-#include <sys/wait.h> // wait, waitpid
+#include "common.h"
 
 
 size_t command_size = MAX_INPUT;
 
 void ls_run();
-
-void ps_run();
 
 void pwd_run();
 
@@ -21,8 +13,25 @@ void execute(char **args);
 
 char **parse_args(char *str, size_t *arg_number);
 
+static void catch_function(int signo) {
+    char  c;
+
+    signal(signo, SIG_IGN);
+    printf("OUCH, did you hit Ctrl-C?\n"
+            "Do you really want to quit? [y/n] ");
+    c = getchar();
+    if (c == 'y' || c == 'Y')
+        exit(0);
+    else
+        signal(SIGINT, catch_function);
+    getchar();
+}
 int main(void)
 {
+    if (signal(SIGINT, catch_function) == SIG_ERR) {
+        fputs("An error occurred while setting a signal handler.\n", stderr);
+        return EXIT_FAILURE;
+    }
     char *command_name;
     const char  ls_command[]    = "ls",
                 ps_command[]    = "ps",
@@ -61,7 +70,7 @@ int main(void)
     }
     free(command_name);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 void ls_run()
@@ -83,45 +92,7 @@ void ls_run()
 
 }
 
-void ps_run()
-{
-    DIR *pd = opendir("/proc");
-    if (!pd)
-    {
-        perror("opendir");
-        exit(1);
-    }
 
-    struct dirent *dent = readdir(pd);
-    while (dent != 0)
-    {
-        if (strcmp(dent->d_name, "self") == 0)
-        {
-            dent = readdir(pd);
-            continue;
-        }
-
-        char inf_fpath[PATH_MAX];
-        strcpy(inf_fpath, "/proc/");
-        strcat(inf_fpath, dent->d_name);
-        strcat(inf_fpath, "/comm");
-
-        FILE *inf = fopen(inf_fpath, "r");
-        if (inf)
-        {
-            char *cmdline = NULL;
-            size_t _ = 0;
-            getline(&cmdline, &_, inf);
-            printf("%s\t%s", dent->d_name, cmdline);
-            free(cmdline);
-            fclose(inf);
-        }
-
-        dent = readdir(pd);
-    }
-    closedir(pd);
-    return;
-}
 
 void pwd_run()
 {
