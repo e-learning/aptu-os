@@ -1,3 +1,15 @@
+accepted (7/8)
+
+Bug:
+
+Input:
+1000
+INFO
+0 0 0 (max size of available block is 0)
+ALLOC 1
++ 0 (?!)
+
+---
 rejected
 
 MAP doesn't work as expected (f and m bytes are not printed).
